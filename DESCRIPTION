@@ -1,0 +1,18 @@
+Package: BertopicR
+Title: Wraps bertopic through reticulate
+Version: 0.0.0.9000
+Authors@R: 
+    person("Jack", "Penzer", , "jack.penzer@sharecreative.com", role = c("cre"))
+Description: Convenience wrapper for extracting bertopic topic models in R, using reticulate to interactive with Python libraries and objects from the comfort of RStudio.
+License: MIT + file LICENSE
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Imports: 
+    dplyr (>= 1.1.2),
+    magrittr (>= 2.0.3),
+    reticulate (>= 1.26),
+    stringr (>= 1.5.0)
