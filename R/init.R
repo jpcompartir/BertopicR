@@ -1,6 +1,5 @@
 # This script is for setting up the Python environment:
 # https://rstudio.github.io/reticulate/articles/package.html
-
 .onAttach <- function(libname, pkgname) {
 
   bertopicr_env <- Sys.getenv("BERTOPICR_ENV")
@@ -34,9 +33,9 @@
   }
 
   #Get correct Python path
-  python_path <- reticulate::conda_list() %>%
-    dplyr::filter(name == bertopicr_env) %>%
-    dplyr::pull(python)
+  python_path <- reticulate::conda_list()
+  python_path <- python_path[python_path["name"] == bertopicr_env, 2]
+
 
   #Set correct Python path for reticulate
   Sys.setenv(RETICULATE_PYTHON = python_path)
@@ -61,10 +60,10 @@ install_python_dependencies <- function(){
 
   #Taken from BERTOPIC setup.py
   #https://github.com/MaartenGr/BERTopic/blob/master/setup.py
-  bertopic_0_14_1_deps <- c("bertopic==0.14.1", "numpy>=1.20.0", "hdbscan>=0.8.29", "umap-learn>=0.5.0", "pandas>=1.1.5", "scikit-learn>=0.22.2.post1", "tqdm>=4.41.1", "sentence-transformers>=0.4.1","plotly>=4.7.0")
+  bertopic_0_14_1_deps <- c("bertopic==0.14.0", "numpy>=1.20.0", "hdbscan>=0.8.29", "umap-learn>=0.5.0", "pandas>=1.1.5", "scikit-learn>=0.22.2.post1", "tqdm>=4.41.1", "sentence-transformers>=0.4.1","plotly>=4.7.0")
 
-  reticulate::conda_install(
+  reticulate::py_install(
     bertopicr_env,
-    packages = bertopic_0_14_1_deps
+    packages = bertopic_0_14_1_deps,
   )
 }
