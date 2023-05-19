@@ -36,9 +36,21 @@ reticulate::install_miniconda()
 
 Once you have reticulate and miniconda installed, you can then install the development version of BertopicR from [GitHub](https://github.com/) with:
 
-``` r
+``` {r, eval = FALSE}
 # install.packages("devtools")
 devtools::install_github("jpcompartir/BertopicR")
+
+library(BertopicR)
+
+#Check your environment has been loaded correctly and bertopic has been installed:
+BertopicR::check_python_dependencies()
+```
+
+If you receive the message:
+"bertopic not in installed packages of current environment..."
+run:
+```{r, eval = FALSE}
+BertopicR::install_python_dependencies()
 ```
 
 ## Example

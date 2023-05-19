@@ -1,0 +1,53 @@
+---
+title: "bertopic"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{bertopic}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+```{r}
+library(BertopicR)
+library(reticulate)
+library(dplyr)
+library(stringr)
+```
+
+Check that our environment has been configurec correctly
+```{r}
+check_python_dependencies()
+```
+
+Now we can import bertopic through BertopicR via reticulate
+```{r}
+BertopicR:::import_bertopic()
+
+"bertopic" %in% names(py) #quick test
+```
+
+Now we can look at what's been loaded in. We should see a vector containing: backend; BERTopic; cluster; plotting; representation; vectorizers
+```{r}
+names(py$bertopic)
+```
+
+An informal test which should return TRUE
+```{r}
+all(names(py$bertopic) == c("backend", "BERTopic", "cluster", "plotting", "representation", "vectorizers"))
+```
+
+
+Load in some data:
+```{r}
+data <- readr::read_csv("~/Google Drive/My Drive/data_science_project_work/microsoft/project_work/642_644_search_engine_ai_chatbot/642_phase_1/data/642_ai_search_landscape_data_v2.csv")
+data <- data %>%
+  select(-1, -2) 
+```
