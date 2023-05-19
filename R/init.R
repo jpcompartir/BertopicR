@@ -67,3 +67,55 @@ install_python_dependencies <- function(){
     packages = bertopic_0_14_1_deps,
   )
 }
+
+#' Check that dependencies are loaded
+#'
+#' @return A message confirming whether or not dependencies are loaded
+#' @export
+#'
+check_python_dependencies <- function(){
+  installed_packages <- reticulate::py_list_packages()
+
+  if("bertopic" %in% installed_packages[["package"]]){
+    message("bertopic is installed, setup looks good.")
+  } else {
+    message("bertopic not in installed packages of current environment.\nEither load BertopicR environment or run `bertopicr::install_python_dependencies()`")
+  }
+}
+
+# get the current python environment
+get_current_python_environment <- function() {
+  if (Sys.info()["sysname"] == "Windows") {
+    reticulate::py_config()$python %>%
+      stringr::str_extract(".*(?<=/huggingfaceR)")
+  } else {
+    paste0(
+      "/",
+      reticulate::py_config()$python %>%
+        stringr::str_extract("/.*(?<=/bin/python$)") %>%
+        stringr::str_remove_all("/bin/python") %>%
+        stringr::str_remove("/")
+    )
+  }
+}
+
+
+
+import_bertopic <- function(){
+  if (!"bertopic" %in% names(reticulate::py)){
+    result <- tryCatch({
+      reticulate::py_run_string("import bertopic")
+    },
+    error = function(e) {e}
+    )
+  }
+  if("error" %in% class(result)){
+    if(stringr::str_detect(result$message, "No module name")){
+      env <- get_current_python_environment()
+
+      stop(paste0("\nMissing Python Library! Run `BertopicR::install_python_dependencies()` before proceeding"))
+
+    }
+  }
+}
+

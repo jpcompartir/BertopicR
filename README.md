@@ -34,6 +34,18 @@ with:
 ``` r
 # install.packages("devtools")
 devtools::install_github("jpcompartir/BertopicR")
+
+library(BertopicR)
+
+#Check your environment has been loaded correctly and bertopic has been installed:
+BertopicR::check_python_dependencies()
+```
+
+If you receive the message: “bertopic not in installed packages of
+current environment…” run:
+
+``` r
+BertopicR::install_python_dependencies()
 ```
 
 ## Example
