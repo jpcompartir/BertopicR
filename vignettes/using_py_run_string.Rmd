@@ -1,8 +1,8 @@
 ---
-title: "bertopic"
+title: "using_py_run_string"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{bertopic}
+  %\VignetteIndexEntry{using_py_run_string}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -21,7 +21,6 @@ library(reticulate)
 library(dplyr)
 library(stringr)
 library(LimpiaR)
-library(plotly)
 ```
 
 Check that our environment has been configured correctly
@@ -85,13 +84,16 @@ NOTE: fit_transform() should only be used when first training and fitting the mo
 ```{r embedings and model}
 # import sentence transformer and umap library from python
 sentence_transformers <- reticulate::py_run_string("from sentence_transformers import SentenceTransformer")
-umap <- reticulate::py_run_string("from umap import UMAP")
+# umap <- reticulate::py_run_string("from umap import UMAP")
 
+import("sentence_transformers", convert = TRUE)
+import("bertopic")
 # choose sentence transformer to use and specify "mps" accelerator
-sentence_model_gpu <- sentence_transformers$SentenceTransformer("all-MiniLM-L6-v2", device = "mps")
+sentence_model_gpu2 <- py_run_string("sentence_transformers.SentenceTransformer(\"all-MiniLM-L6-v2\", device = \"mps\")")
 
+test <- sentence_transformers$SentenceTransformer("all-MiniLM-L6-v2")
 # embed text using sentence transformer
-embeddings <- sentence_model_gpu$encode(data$text_clean)
+embeddings <- py_run_string("r.sentence_model_gpu.encode(r.data.text_clean)")
 
 # define umap with random_state set
 # umap_model <- umap$UMAP(n_neighbors=15, 
@@ -100,11 +102,11 @@ embeddings <- sentence_model_gpu$encode(data$text_clean)
 #                        random_state = 50)
 
 # initiate the model
-model <- py$bertopic$BERTopic()
+model <- py_run_string("bertopic.BERTopic()")
 
 # fit the model
-model_output <- model$fit_transform(documents = data$text_clean,
-                                    embeddings = embeddings)
+model_output <- py_run_string("r.model.fit_transform(documents = r.data.text_clean,
+                                    embeddings = embeddings)")
 ```
 
 ```{r, echo = FALSE}
@@ -174,7 +176,7 @@ model_output <- model$fit_transform(documents = data$text_clean,
 
 Now that we have fit the model we can look at the topics it has predicted for our data. The -1 category here represents outlier posts that do not fit as well into the identified topics.
 ```{r get topics 1}
-model$get_topic_info()
+# model$get_topic_info()
 ```
 
 Bert has identified x number of topics, this is probably too many for us to process and perform meaningful analysis on, we can adjust the model parameters so that a more manageable number of topics are identified. It can be helpful to glance through all of these topics in order to get a more granular understanding of the data and to identify topics which might be irrelevant to the analysis and could be removed.
@@ -188,17 +190,17 @@ what else can we do here..
 Note: More information on hyperparameter tuning can be found on the BERTopic website
 
 ```{r regenerate model}
-model <- py$bertopic$BERTopic(min_topic_size = as.integer(50))
-
-
-model_output <- model$fit_transform(documents = data$text_clean, 
+# model <- py$bertopic$BERTopic(min_topic_size = as.integer(50))
+# 
+# 
+# model_output <- model$fit_transform(documents = data$text_clean, 
                                     embeddings = embeddings)
 ```
 
 Lets look at the output topics this time:
 
 ```{r get topics 2}
-model$get_topic_info()
+# model$get_topic_info()
 ```
 
 Maybe now we would like to manually merge some topics that we think might be similar and reduce the size of the large outlier category (-1). **Merging topics should be performed before outlier reduction**. Before merging topics we should take a closer look at the data to make sure we understand what each topic is and its semantic similarity to another topic.
@@ -208,35 +210,29 @@ Maybe now we would like to manually merge some topics that we think might be sim
 While the get_topic_info() function is very useful for giving us an overview of the topics present in our data it is important to also know which documents are in each topic.
 
 ```{r get docs}
-# model$get_document_info(data$text_clean) %>% head()
+# model$get_document_info(data$text_clean)
 ```
 
 We can also look at a umap that shows us the topic distribution. This can be helpful in showing us how closely different topics relate to one another and we should continue to check this diagram as we merge topics or reduce outliers.
 
 ```{r umap 1}
-model$visualize_documents(docs = data$text_clean, # data
-                          embeddings = embeddings) # embeddings
+# model$visualize_documents(docs = data$text_clean, # data
+#                           embeddings = embeddings) # embeddings
 ```
 
 A key difference between Bert and LDA is the use of hierarchical clustering, this means we can visualise how each cluster was formed and what other clusters it might be similar to.
 
 ```{r tree diagram 1}
-hierarchical_topics <- model$hierarchical_topics(data$text_clean)
-
-model$visualize_hierarchical_documents(data$text_clean, hierarchical_topics, embeddings = embeddings)
+# hierarchical_topics <- model$hierarchical_topics(data$text_clean)
+# 
+# model$visualize_hierarchical_documents(data$text_clean, hierarchical_topics, embeddings = embeddings)
 
 ```
 
 We can also look at a topic similarity heatmap to see how similar topics are.
 
 ```{r heatmap 1}
-viewer()
-model$visualize_heatmap()
-```
-
-
-```{python}
-r.model.visualize_heatmap()
+# model$visualise_heatmap()
 ```
 
 Now that we've had a closer look at the documents and the division of topics we can start to merge them. We can see from the tree diagram where we visualise the topic hierarchy that x and y and a and b are branches from the same cluster (is this the best way to say this?), having looked at the individual documents it is also apparent that they discuss similar topics (what are the topics), it might make sense to merge these. Make sure to save your model before merging topics in case you are unhappy with the result and want to revert back.
