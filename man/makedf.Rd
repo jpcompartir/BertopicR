@@ -2,7 +2,7 @@
 % Please edit documentation in R/makedf.R
 \name{makedf}
 \alias{makedf}
-\title{Title}
+\title{make a df combining bertopic output with columns in original data export}
 \usage{
 makedf(
 model
@@ -32,5 +32,5 @@ permalink = df$permalink)
 df with bertopic output merged with input columns from the sprinkr export
 }
 \description{
-Title
+make a df combining bertopic output with columns in original data export
 }

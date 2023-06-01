@@ -2,6 +2,7 @@
 
 export("%>%")
 export(check_python_dependencies)
+export(fit_model)
 export(install_python_dependencies)
 export(makedf)
 importFrom(magrittr,"%>%")
