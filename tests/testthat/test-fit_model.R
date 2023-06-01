@@ -13,17 +13,22 @@ data <- bert_example_data %>%
   limpiar_spaces(text_var = text_clean) %>% # remove unnecessary spaces
   distinct(text_clean, .keep_all = TRUE)  # remove duplicates
 
+
 # create umap model
 umap <- reticulate::import("umap")
-umap_model <- umap$UMAP(random_state = 42)
+umap_model <- umap$UMAP(n_neighbors=15, 
+                        n_components=5, 
+                        min_dist=0.0, 
+                        metric='cosine', 
+                        random_state = 42L)
 
 # create representation model
 representation <- reticulate::import("bertopic.representation")
-representation_model <- representation$MaximalMarginalRelevance(diversity = 0.3)
+representation_model <- representation$MaximalMarginalRelevance(diversity = NULL)
 
 
 vectorizer <- reticulate::import("sklearn.feature_extraction.text")
-vecrtorizer_model <- vectorizer$CountVectorizer(ngram_range = tuple(1L,3L),
+vectorizer_model <- vectorizer$CountVectorizer(ngram_range = tuple(1,2),
                                                 stop_words = "english")
 
 # embeddings
@@ -32,18 +37,48 @@ sentence_model <- sentence_transformers$SentenceTransformer("all-MiniLM-L6-v2")
 embeddings <- sentence_model$encode(data$text_clean, device = "mps")
 
 # initiate model
-model_eval1 <- py$bertopic$BERTopic(vectorizer_model = vecrtorizer_model)
-output <- model_eval1$fit_transform(data$text_clean)
+model_eval1 <- py$bertopic$BERTopic(min_topic_size = 20L,
+                                    umap_model = umap_model,
+                                    representation_model = representation_model,
+                                    vectorizer_model = vectorizer_model)
+
+output <- model_eval1$fit_transform(data$text_clean,
+                                    embeddings = embeddings)
 # run function
-model_test1 <- function(cleaned_text = data$text_clean,
-                  min_topic_size = 20,
-                  ngram_range = c(1,3),
+time_model_test1 <- system.time({
+  model_test1 <- fit_model(cleaned_text = data$text_clean,
+                  min_topic_size = 20L,
+                  ngram_range = tuple(1L,2L),
                   embedding_model = "all-MiniLM-L6-v2",
                   accelerator = "mps",
-                  diversity = 0.3,
+                  diversity = NULL,
                   stopwords = TRUE,
-                  random_state = 42)
+                  random_state = 42L)
+})["elapsed"]
+
+time_model_test2 <- system.time({
+  model_test2 <- fit_model(cleaned_text = data$text_clean,
+                           min_topic_size = 20L,
+                           ngram_range = tuple(1L,2L),
+                           embedding_model = "all-MiniLM-L6-v2",
+                           accelerator = NULL,
+                           diversity = NULL,
+                           stopwords = TRUE,
+                           random_state = 42L)
+  })["elapsed"]
 
 test_that("random state works", {
-  expect_equal(model_eval1$get_topic_info(), model_test1$get_topic_info())
+  expect_identical(model_eval1$get_topic_info(), model_test1$get_topic_info())
 })
+
+test_that("min_topic_size works", {
+  expect_true(any(model_test1$get_topic_info()$Count>20))
+})
+
+test_that("accelerator working", {
+  expect_true(time_model_test2 > time_model_test1)
+})
+
+# test_that("ngram_range works", {
+#   expect_true(any(model_test1$get_topic_info()$Count>20))
+# })
