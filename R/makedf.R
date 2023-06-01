@@ -1,4 +1,4 @@
-#' Title
+#' make a df combining bertopic output with columns in original data export
 #'
 #' @param model bertopic model
 #' @param embeddings embeddings used to generate the model
