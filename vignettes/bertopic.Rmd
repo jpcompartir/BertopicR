@@ -85,7 +85,7 @@ NOTE: fit_transform() should only be used when first training and fitting the mo
 ```{r embedings and model}
 # import sentence transformer and umap library from python
 sentence_transformers <- reticulate::py_run_string("from sentence_transformers import SentenceTransformer")
-umap <- reticulate::py_run_string("from umap import UMAP")
+umap <- reticulate::import("from umap import UMAP")
 
 # choose sentence transformer to use and specify "mps" accelerator
 sentence_model_gpu <- sentence_transformers$SentenceTransformer("all-MiniLM-L6-v2", device = "mps")
