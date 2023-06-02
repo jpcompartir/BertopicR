@@ -23,14 +23,14 @@
 #' stopwords = TRUE,
 #' random_state = 42)
 #' 
-fit_model <- function(cleaned_text,
-                      min_topic_size = NULL,
-                      ngram_range = c(1, 2),
-                      embedding_model = "all-MiniLM-L6-v2",
-                      accelerator = "mps",
-                      diversity = 0.3,
-                      stopwords = TRUE,
-                      random_state = 42){
+fit_transform_model <- function(cleaned_text,
+                                min_topic_size = NULL,
+                                ngram_range = c(1, 2),
+                                embedding_model = "all-MiniLM-L6-v2",
+                                accelerator = "mps",
+                                diversity = 0.3,
+                                stopwords = TRUE,
+                                random_state = 42){
   
  # create tuple for ngram_range
 ngram_tuple <- reticulate::tuple(as.integer(ngram_range[1]), as.integer(ngram_range[2]))
@@ -44,6 +44,7 @@ if (is.null(min_topic_size)) {
 } else {
   min_topic_int <- as.integer(min_topic_size)
 }
+
 # create umap model
   umap <- reticulate::import("umap")
   umap_model <- umap$UMAP(n_neighbors=15L, 
@@ -73,7 +74,7 @@ if (is.null(min_topic_size)) {
   embeddings <- sentence_model$encode(cleaned_text, device = accelerator)
   
   # initiate model
-  model <- py$bertopic$BERTopic(min_topic_size = min_topic_int,
+  model <- py$bertopic$BERTopic(min_topic_size = NULL,
                                 umap_model = umap_model,
                                 representation_model = representation_model,
                                 vectorizer_model = vectorizer_model)

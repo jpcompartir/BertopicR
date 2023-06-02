@@ -14,27 +14,30 @@ knitr::opts_chunk$set(
 )
 ```
 
-
+BertopicR is a package that allows us to use the Python BERTopic package in r. To do this we need to leverage the reticulate library which allows us to embed a python session within our r session. Firstly, we load our libraries:
 ```{r load libraries, message = FALSE}
 library(BertopicR)
 library(reticulate)
+```
+
+```{r, echo = FALSE}
 library(dplyr)
 library(stringr)
 library(LimpiaR)
 library(plotly)
 ```
 
-Check that our environment has been configured correctly
+Then check that our environment has been configured correctly
 ```{r check installation}
 check_python_dependencies()
 ```
 
-Now we can import bertopic through BertopicR via reticulate 
+Now we can import the python BERTopic library through BertopicR via reticulate 
 ```{r import bertopic, message = FALSE}
 BertopicR:::import_bertopic()
 ```
 
-Now we can look at what's been loaded in. The "py$" symbol tells us what is loaded into our python environment. We should see a vector containing: backend; BERTopic; cluster; plotting; representation; vectorizers
+Now we can look at what's been loaded in. The "py" prefix tells r that we want to look within the python environment. We should see a vector containing: backend; BERTopic; cluster; plotting; representation; vectorizers
 ```{r check modules}
 names(py$bertopic)
 ```
@@ -45,10 +48,10 @@ names(py$bertopic)
     
 ```
 
-Other than spam and duplicate post removal, there is no data preprocessing strictly required for topic analysis using BERT. That said, I have found better results by removing hashtags and it can be useful to remove mentions, urls and emojis at this stage as it will not affect the results and will be helpful when looking at the data later.
+Other than spam and duplicate post removal, there is no data preprocessing strictly required for topic analysis using BERT. That said, I have found better results by removing hashtags and it can be useful to remove mentions, urls and emojis at this stage as it will not affect the results and will be helpful when looking at the data later. We can use the ParseR clean_text function to do this (*note that this function removes urls*).
 
 Load and preprocess the data:
-```{r load data}
+```{r load data, eval = FALSE, echo = FALSE}
 data <- bert_example_data %>%
   janitor::clean_names() %>% # clean column titles
   mutate(text_clean = message, .before = message) %>% # add column for clean text
@@ -62,114 +65,42 @@ data <- bert_example_data %>%
   distinct(text_clean, .keep_all = TRUE) # remove duplicates
 ```
 
-Next we use the BERTopic() function to initiate the model and the fit_transform() function to fit our data. As before, we use the "\$" symbol to access functions stored in the python environment. Here we use py\$bertopic$BERTopic to access the BERTopic function within the bertopic library within the py environment. Having created the model object, we can use the "\$" symbol to call the fit_transform() function.
-
-NOTE: fit_transform() should only be used when first training and fitting the model. Once a model has been trained, transform() cam be used to predict topics for new data.
-
-*add something about setting random state for umap*
-
-```{python, echo = FALSE}
-
-# Create a BERTopic model
-# model = BERTopic()
-# 
-# # Move the BERTopic model to the GPU
-# # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# # model.transformer_model.to(device)
-# 
-# model_py = bertopic.BERTopic()
-# topics, probs = model_py.fit_transform(r.data["text_clean"])
-# model_py.get_topic_info()
+```{r clean data}
+data <- bert_example_data %>%
+  janitor::clean_names() %>%
+  mutate(text_clean = message, .before = message) %>%
+  ParseR::clean_text(text_var = text_clean,
+                     tolower = TRUE,
+                     hashtags = FALSE,
+                     mentions = FALSE,
+                     emojis = FALSE,
+                     punctuation = TRUE,
+                     digits = TRUE,
+                     in_parallel = TRUE) %>%
+  distinct(text_clean, .keep_all = TRUE)
 ```
+
+Next we use the fit_transform_model() function to fit the model to our data. 
 
 ```{r embedings and model}
-# import sentence transformer and umap library from python
-sentence_transformers <- reticulate::py_run_string("from sentence_transformers import SentenceTransformer")
-umap <- reticulate::import("from umap import UMAP")
 
-# choose sentence transformer to use and specify "mps" accelerator
-sentence_model_gpu <- sentence_transformers$SentenceTransformer("all-MiniLM-L6-v2", device = "mps")
+model <- fit_transform_model(cleaned_text = data$text_clean,
+                             min_topic_size = NULL,
+                             ngram_range = c(1, 2),
+                             embedding_model = "all-MiniLM-L6-v2",
+                             accelerator = "mps",
+                             diversity = 0.3,
+                             stopwords = TRUE,
+                             random_state = 42)
 
-# embed text using sentence transformer
-embeddings <- sentence_model_gpu$encode(data$text_clean)
-
-# define umap with random_state set
-# umap_model <- umap$UMAP(n_neighbors=15, 
-#                         n_components=10, 
-#                         metric='cosine',
-#                        random_state = 50)
-
-# initiate the model
-model <- py$bertopic$BERTopic()
-
-# fit the model
-model_output <- model$fit_transform(documents = data$text_clean,
-                                    embeddings = embeddings)
-```
-
-```{r, echo = FALSE}
-
-# install.packages("devtools")
-# devtools::install_github("farach/huggingfaceR")
-
-# reticulate::py_run_string("import torch")
-# library(huggingfaceR)
-# device <- huggingfaceR::hf_set_device()
-
-# model_id <- "all-MiniLM-L6-v2"
-# 
-# minilm <- huggingfaceR::hf_load_sentence_model(model_id)
-# minilm_gpu <- minilm$to(device = device)
-
-# bing_data <- readr::read_rds("~/Google Drive/My Drive/625 Peaks and Pits/Data/3Apr23/bing_original_data.Rds")
-# 
-# data200 <- bing_data %>% slice_sample(n = 200000) %>%
-#   mutate(text_clean = message,
-#         message = tolower(message))
-# data100 <- bing_data %>% slice_sample(n = 100000)%>%
-#   mutate(text_clean = message,
-#         message = tolower(message))
-# data50 <- data %>% slice_sample(n = 50000) %>%
-#   mutate(text_clean = message,
-#         message = tolower(message))
-
-# 
-# torch <- reticulate::import("torch")
-# torch$cuda$is_available()
-# torch$has_mps
-# device_mps <- torch$device(device = "mps")
-# 
-# library(profvis)
-# 
-# profvis({
-#   # embeddings <- sentence_model$encode(data5$text_clean)
-#   embeddings_gpu5 <- sentence_model_gpu$encode(data5$text_clean)
-#   embeddings_gpu50 <- sentence_model_gpu$encode(data50$text_clean)
-#   model_gpu5 <- py$bertopic$BERTopic()
-#   model_gpu50 <- py$bertopic$BERTopic()
-#   fitted_data_gpu5 <- model_gpu5$fit_transform(data5$message, embeddings = embeddings_gpu5)
-#   fitted_data_gpu50 <- model_gpu50$fit_transform(data50$message, embeddings = embeddings_gpu50)
-# })
-# 
-# profvis({
-#   embeddings_gpu100 <- sentence_model_gpu$encode(data100$text_clean)
-#   embeddings_gpu200 <- sentence_model_gpu$encode(data200$text_clean)
-#   model_gpu100 <- py$bertopic$BERTopic()
-#   model_gpu200 <- py$bertopic$BERTopic()
-#   fitted_data_gpu100 <- model_gpu100$fit_transform(data100$text_clean, embeddings = embeddings_gpu100)
-#   fitted_data_gpu200 <- model_gpu200$fit_transform(data200$text_clean, embeddings = embeddings_gpu200)
-# })
-# 
-# 
-# profvis({
-#   embeddings_st <- minilm$encode(data5$text_clean)
-#   embeddings_gpu_st <- minilm_gpu$encode(data5$text_clean)
-#   model_st <- py$bertopic$BERTopic()
-#   model_gpu_st <- py$bertopic$BERTopic()
-#   fitted_data_st <- model_st$fit_transform(data5$message, embeddings = embeddings)
-#   fitted_data_gpu_st <- model_gpu_st$fit_transform(data5$message, embeddings = embeddings_gpu)
-# })
-
+model <- fit_transform_model(cleaned_text = data$text_clean,
+                                     min_topic_size = 20,
+                                     ngram_range = c(1, 2),
+                                     embedding_model = "all-MiniLM-L6-v2",
+                                     accelerator = NULL,
+                                     diversity = NULL,
+                                     stopwords = TRUE,
+                                     random_state = 42)
 ```
 
 Now that we have fit the model we can look at the topics it has predicted for our data. The -1 category here represents outlier posts that do not fit as well into the identified topics.

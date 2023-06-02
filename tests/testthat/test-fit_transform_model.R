@@ -45,7 +45,7 @@ model_eval1 <- py$bertopic$BERTopic(min_topic_size = 20L,
 output <- model_eval1$fit_transform(data$text_clean,
                                     embeddings = embeddings)
 time_model_test1 <- system.time({
-  model_test1 <- fit_model(cleaned_text = data$text_clean,
+  model_test1 <- fit_transform_model(cleaned_text = data$text_clean,
                   min_topic_size = 20,
                   ngram_range = c(1, 2),
                   embedding_model = "all-MiniLM-L6-v2",
@@ -56,7 +56,7 @@ time_model_test1 <- system.time({
 })["elapsed"]
 
 time_model_test2 <- system.time({
-  model_test2 <- fit_model(cleaned_text = data$text_clean,
+  model_test2 <- fit_transform_model(cleaned_text = data$text_clean,
                            min_topic_size = 20,
                            ngram_range = c(1, 2),
                            embedding_model = "all-MiniLM-L6-v2",
