@@ -25,20 +25,32 @@
 #' 
 fit_model <- function(cleaned_text,
                       min_topic_size = NULL,
-                      ngram_range = tuple(1L, 2L),
+                      ngram_range = c(1, 2),
                       embedding_model = "all-MiniLM-L6-v2",
                       accelerator = "mps",
                       diversity = 0.3,
                       stopwords = TRUE,
-                      random_state = 42L){
+                      random_state = 42){
   
-  # create umap model
+ # create tuple for ngram_range
+ngram_tuple <- reticulate::tuple(as.integer(ngram_range[1]), as.integer(ngram_range[2]))
+
+# create integer for random_state
+random_state_integer <- as.integer(random_state)
+
+# create min_topic_size integer
+if (is.null(min_topic_size)) {
+  min_topic_int <- NULL
+} else {
+  min_topic_int <- as.integer(min_topic_size)
+}
+# create umap model
   umap <- reticulate::import("umap")
-  umap_model <- umap$UMAP(n_neighbors=15, 
-                          n_components=5, 
+  umap_model <- umap$UMAP(n_neighbors=15L, 
+                          n_components=5L, 
                           min_dist=0.0, 
                           metric='cosine', 
-                          random_state = 42L)
+                          random_state = random_state_integer)
   
   # create representation model
   representation <- reticulate::import("bertopic.representation")
@@ -47,12 +59,12 @@ fit_model <- function(cleaned_text,
   # create vectoriser model
   if (stopwords){
     stopword = "english"
-  }
-  else {
+  } else {
     stopword = NULL
   }
+  
   vectorizer <- reticulate::import("sklearn.feature_extraction.text")
-  vecrtorizer_model <- vectorizer$CountVectorizer(ngram_range = ngram_range,
+  vectorizer_model <- vectorizer$CountVectorizer(ngram_range = ngram_tuple,
                                                   stop_words = stopword)
   
   # embeddings
@@ -61,12 +73,12 @@ fit_model <- function(cleaned_text,
   embeddings <- sentence_model$encode(cleaned_text, device = accelerator)
   
   # initiate model
-  model <- py$bertopic$BERTopic(min_topic_size = min_topic_size,
+  model <- py$bertopic$BERTopic(min_topic_size = min_topic_int,
                                 umap_model = umap_model,
                                 representation_model = representation_model,
-                                vectorizer_model = vecrtorizer_model)
+                                vectorizer_model = vectorizer_model)
   
-  output <- model$fit_transform(data$text_clean,
+  output <- model$fit_transform(cleaned_text,
                                 embeddings = embeddings)
   
   return(model)

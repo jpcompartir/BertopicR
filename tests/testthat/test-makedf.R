@@ -19,11 +19,12 @@ sentence_model_gpu <- sentence_transformers$SentenceTransformer("all-MiniLM-L6-v
 # embed text using sentence transformer
 embeddings <- sentence_model_gpu$encode(data$text_clean)
 
+# intiate model
+model <- py$bertopic$BERTopic()
 
 # fit the model
 model_output <- model$fit_transform(documents = data$text_clean,
                                     embeddings = embeddings)
-model$get_topic_info()
 # run function
 df <- makedf(model = model, 
              embeddings = embeddings, 

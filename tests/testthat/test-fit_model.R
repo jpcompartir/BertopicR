@@ -16,8 +16,8 @@ data <- bert_example_data %>%
 
 # create umap model
 umap <- reticulate::import("umap")
-umap_model <- umap$UMAP(n_neighbors=15, 
-                        n_components=5, 
+umap_model <- umap$UMAP(n_neighbors=15L, 
+                        n_components=5L, 
                         min_dist=0.0, 
                         metric='cosine', 
                         random_state = 42L)
@@ -28,7 +28,7 @@ representation_model <- representation$MaximalMarginalRelevance(diversity = NULL
 
 
 vectorizer <- reticulate::import("sklearn.feature_extraction.text")
-vectorizer_model <- vectorizer$CountVectorizer(ngram_range = tuple(1,2),
+vectorizer_model <- vectorizer$CountVectorizer(ngram_range = tuple(1L,2L),
                                                 stop_words = "english")
 
 # embeddings
@@ -44,31 +44,33 @@ model_eval1 <- py$bertopic$BERTopic(min_topic_size = 20L,
 
 output <- model_eval1$fit_transform(data$text_clean,
                                     embeddings = embeddings)
-# run function
 time_model_test1 <- system.time({
   model_test1 <- fit_model(cleaned_text = data$text_clean,
-                  min_topic_size = 20L,
-                  ngram_range = tuple(1L,2L),
+                  min_topic_size = 20,
+                  ngram_range = c(1, 2),
                   embedding_model = "all-MiniLM-L6-v2",
                   accelerator = "mps",
                   diversity = NULL,
                   stopwords = TRUE,
-                  random_state = 42L)
+                  random_state = 42)
 })["elapsed"]
 
 time_model_test2 <- system.time({
   model_test2 <- fit_model(cleaned_text = data$text_clean,
-                           min_topic_size = 20L,
-                           ngram_range = tuple(1L,2L),
+                           min_topic_size = 20,
+                           ngram_range = c(1, 2),
                            embedding_model = "all-MiniLM-L6-v2",
                            accelerator = NULL,
                            diversity = NULL,
                            stopwords = TRUE,
-                           random_state = 42L)
+                           random_state = 42)
   })["elapsed"]
 
 test_that("random state works", {
-  expect_identical(model_eval1$get_topic_info(), model_test1$get_topic_info())
+  # test titles the same
+  expect_equal(model_eval1$get_topic_info()$Topic, model_test1$get_topic_info()$Topic)
+  # test docs assigned to same topics
+  expect_equal(model_eval1$get_document_info(data$text_clean)$Count, model_test1$get_document_info(data$text_clean)$Count)
 })
 
 test_that("min_topic_size works", {
