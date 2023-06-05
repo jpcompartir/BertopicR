@@ -6,11 +6,11 @@
 \usage{
 fit_model(
 cleaned_text,
-min_topic_size = NULL,
+min_topic_size = 10,
 ngram_range = tuple(1,1),
 embedding_model = "all-MiniLM-L6-v2",
 accelerator = "mps",
-diversity = 0.3,
+diversity = 0.1,
 stopwords = TRUE,
 random_state = 42)
 }
@@ -24,13 +24,13 @@ tuple: use the reticulate function reticulate::tuple()}
 
 \item{embedding_model}{which embedding model to use}
 
+\item{accelerator}{accelerator to use - default is mps, use NULL if none}
+
 \item{diversity}{diversity of topic representation (1 = diverse, 0 = not diverse)}
 
 \item{stopwords}{whether or not to remove stopwords in topic representations}
 
 \item{random_state}{random state to pass to umap}
-
-\item{use_mps}{accelerator to use - default is mps, use NULL if none}
 }
 \description{
 fit a bertopic model to cleaned data

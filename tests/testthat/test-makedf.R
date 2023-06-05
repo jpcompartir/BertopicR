@@ -1,14 +1,27 @@
+# data <- bert_example_data %>%
+#   janitor::clean_names() %>% # clean column titles
+#   dplyr::mutate(text_clean = message, .before = message) %>% # add column for clean text
+#   dplyr::mutate(text_clean = tolower(text_clean)) %>% # all posts lower case
+#   LimpiaR::limpiar_tags(text_var = text_clean, hashtag = F) %>%  # remove mentions
+#   dplyr::mutate(text_clean = stringr::str_remove_all(text_clean, "@user"), # remove mentions
+#          text_clean = stringr::str_remove_all(text_clean, "#\\S+")) %>% # remove hashtags
+#   LimpiaR::limpiar_url(text_var = text_clean) %>% # remove urls
+#   LimpiaR::limpiar_emojis(text_var = text_clean) %>% # remove emojis
+#   LimpiaR::limpiar_spaces(text_var = text_clean) %>% # remove unnecessary spaces
+#   dplyr::distinct(text_clean, .keep_all = TRUE)  # remove duplicates
+
 data <- bert_example_data %>%
-  janitor::clean_names() %>% # clean column titles
-  mutate(text_clean = message, .before = message) %>% # add column for clean text
-  mutate(text_clean = tolower(text_clean)) %>% # all posts lower case
-  limpiar_tags(text_var = text_clean, hashtag = F) %>%  # remove mentions
-  mutate(text_clean = str_remove_all(text_clean, "@user"), # remove mentions
-         text_clean = str_remove_all(text_clean, "#\\S+")) %>% # remove hashtags
-  limpiar_url(text_var = text_clean) %>% # remove urls
-  limpiar_emojis(text_var = text_clean) %>% # remove emojis
-  limpiar_spaces(text_var = text_clean) %>% # remove unnecessary spaces
-  distinct(text_clean, .keep_all = TRUE)  # remove duplicates
+  janitor::clean_names() %>%
+  dplyr::mutate(text_clean = message, .before = message) %>%
+  ParseR::clean_text(text_var = text_clean,
+                     tolower = TRUE,
+                     hashtags = FALSE,
+                     mentions = FALSE,
+                     emojis = FALSE,
+                     punctuation = TRUE,
+                     digits = TRUE,
+                     in_parallel = TRUE) %>%
+  dplyr::distinct(text_clean, .keep_all = TRUE)
 
 # import sentence transformer 
 sentence_transformers <- reticulate::import("sentence_transformers")

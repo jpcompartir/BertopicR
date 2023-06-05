@@ -1,17 +1,19 @@
-# dataframe
+# library
+library(reticulate)
+BertopicR:::import_bertopic() # should I be running this here?
 
 data <- bert_example_data %>%
-  janitor::clean_names() %>% # clean column titles
-  mutate(text_clean = message, .before = message) %>% # add column for clean text
-  mutate(text_clean = tolower(text_clean)) %>% # all posts lower case
-  limpiar_tags(text_var = text_clean, hashtag = F) %>%  # remove mentions
-  mutate(text_clean = str_remove_all(text_clean, "@user"), # remove mentions
-         text_clean = str_remove_all(text_clean, "#\\S+")) %>% # remove hashtags
-  limpiar_url(text_var = text_clean) %>% # remove urls
-  limpiar_emojis(text_var = text_clean, with_emoji_tag = TRUE) %>% # remove emojis
-  mutate(text_clean = str_remove_all(text_clean, "\\S+[a-z]+_emoji")) %>%
-  limpiar_spaces(text_var = text_clean) %>% # remove unnecessary spaces
-  distinct(text_clean, .keep_all = TRUE)  # remove duplicates
+  janitor::clean_names() %>%
+  dplyr::mutate(text_clean = message, .before = message) %>%
+  ParseR::clean_text(text_var = text_clean,
+                     tolower = TRUE,
+                     hashtags = FALSE,
+                     mentions = FALSE,
+                     emojis = FALSE,
+                     punctuation = TRUE,
+                     digits = TRUE,
+                     in_parallel = TRUE) %>%
+  dplyr::distinct(text_clean, .keep_all = TRUE)
 
 
 # create umap model
@@ -24,7 +26,7 @@ umap_model <- umap$UMAP(n_neighbors=15L,
 
 # create representation model
 representation <- reticulate::import("bertopic.representation")
-representation_model <- representation$MaximalMarginalRelevance(diversity = NULL)
+representation_model <- representation$MaximalMarginalRelevance(diversity = 0.1)
 
 
 vectorizer <- reticulate::import("sklearn.feature_extraction.text")
@@ -44,27 +46,34 @@ model_eval1 <- py$bertopic$BERTopic(min_topic_size = 20L,
 
 output <- model_eval1$fit_transform(data$text_clean,
                                     embeddings = embeddings)
+
+# for test that random_state, min_topic_size, and accelerator work
 time_model_test1 <- system.time({
   model_test1 <- fit_transform_model(cleaned_text = data$text_clean,
-                  min_topic_size = 20,
-                  ngram_range = c(1, 2),
-                  embedding_model = "all-MiniLM-L6-v2",
-                  accelerator = "mps",
-                  diversity = NULL,
-                  stopwords = TRUE,
-                  random_state = 42)
+                                     min_topic_size = 20,
+                                     ngram_range = c(1, 2),
+                                     embedding_model = "all-MiniLM-L6-v2",
+                                     accelerator = "mps",
+                                     diversity = 0.1,
+                                     stopwords = TRUE,
+                                     random_state = 42)
 })["elapsed"]
 
+# for test that accelerator work
 time_model_test2 <- system.time({
   model_test2 <- fit_transform_model(cleaned_text = data$text_clean,
-                           min_topic_size = 20,
-                           ngram_range = c(1, 2),
-                           embedding_model = "all-MiniLM-L6-v2",
-                           accelerator = NULL,
-                           diversity = NULL,
-                           stopwords = TRUE,
-                           random_state = 42)
+                                     min_topic_size = 20,
+                                     ngram_range = c(1, 2),
+                                     embedding_model = "all-MiniLM-L6-v2",
+                                     accelerator = NULL,
+                                     diversity = 0.1,
+                                     stopwords = TRUE,
+                                     random_state = 42)
   })["elapsed"]
+
+# for test that nr_topics work
+model_test3 <- fit_transform_model(cleaned_text = data$text_clean,
+                                   nr_topics = 10)
 
 test_that("random state works", {
   # test titles the same
@@ -81,6 +90,7 @@ test_that("accelerator working", {
   expect_true(time_model_test2 > time_model_test1)
 })
 
-# test_that("ngram_range works", {
-#   expect_true(any(model_test1$get_topic_info()$Count>20))
-# })
+test_that("nr_topics working", {
+  expect_true(model_test3$get_topic_info() %>% nrow() == 10)
+})
+

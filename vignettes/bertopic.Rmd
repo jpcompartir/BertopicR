@@ -65,7 +65,7 @@ data <- bert_example_data %>%
   distinct(text_clean, .keep_all = TRUE) # remove duplicates
 ```
 
-```{r clean data}
+```{r clean data, message = FALSE}
 data <- bert_example_data %>%
   janitor::clean_names() %>%
   mutate(text_clean = message, .before = message) %>%
@@ -77,59 +77,65 @@ data <- bert_example_data %>%
                      punctuation = TRUE,
                      digits = TRUE,
                      in_parallel = TRUE) %>%
-  distinct(text_clean, .keep_all = TRUE)
+  dplyr::distinct(text_clean, .keep_all = TRUE)
 ```
 
-Next we use the fit_transform_model() function to fit the model to our data. 
+Next we use the fit_transform_model() function to fit the model to our data. This function returns a list containing both the fitted model and the embeddings used to generate the model. 
 
-```{r embedings and model}
+```{r embedings and model, eval = FALSE}
+output <- fit_transform_model(cleaned_text = data$text_clean)
 
-model <- fit_transform_model(cleaned_text = data$text_clean,
-                             min_topic_size = NULL,
-                             ngram_range = c(1, 2),
-                             embedding_model = "all-MiniLM-L6-v2",
-                             accelerator = "mps",
-                             diversity = 0.3,
-                             stopwords = TRUE,
-                             random_state = 42)
+model <- output[[1]]
+embeddings1 <- output[[2]]
+```
 
-model <- fit_transform_model(cleaned_text = data$text_clean,
-                                     min_topic_size = 20,
-                                     ngram_range = c(1, 2),
-                                     embedding_model = "all-MiniLM-L6-v2",
-                                     accelerator = NULL,
-                                     diversity = NULL,
-                                     stopwords = TRUE,
-                                     random_state = 42)
+```{r embedings and model, echo = FALSE}
+output <- fit_transform_model(cleaned_text = data$text_clean,
+                              random_state = 42)
+
+model <- output[[1]]
+embeddings <- output[[2]]
 ```
 
 Now that we have fit the model we can look at the topics it has predicted for our data. The -1 category here represents outlier posts that do not fit as well into the identified topics.
+
 ```{r get topics 1}
 model$get_topic_info()
 ```
 
-Bert has identified x number of topics, this is probably too many for us to process and perform meaningful analysis on, we can adjust the model parameters so that a more manageable number of topics are identified. It can be helpful to glance through all of these topics in order to get a more granular understanding of the data and to identify topics which might be irrelevant to the analysis and could be removed.
+Bert has identified 84 topics, excluding outliers, this is probably too many for us to process and perform meaningful analysis on, we can adjust the model parameters so that a more manageable number of topics are identified. It can be helpful to glance through all of these topics in order to get a more granular understanding of the data and to identify topics which might be irrelevant to the analysis and could be removed.
 
 # Adjusting Model Parameters
 
-When creating the model, we can alter the min_topic_size arguments to control the size number of posts required per topic. It is also possible to use the nr_topics argument to specify the exact number of topics we would like the model to output however this should not be done without careful examination of the data. One thing to note is that we are using R to code in python and sometimes r objects do not translate well to python. For example, the min_topic_size argument for the BERTopic() function requires an integer as an input. In Python, 50 is defined as an integer type, in R, it is a double type and so we will need to specify it as an integer here.
+When creating the model, we can alter the min_topic_size arguments to control the number of posts required per topic. We can also specify the ngram_range and diversity parameters to control the size and diversity of the ngrams used to represent the topics and set stopwords to TRUE to prevent stopwords appearing in the representative ngrams (Note that this does not remove them from the text being analysed, only from the ngrams used to describe the topics). It is also possible to use the nr_topics argument to specify the exact number of topics we would like the model to output however this should not be done without careful examination of the data. 
 
-what else can we do here..
+If you have run the fit_transform_model() function yourself at all you might have noticed that you can get very different results each time you run it, this is due to the stochastic nature of umap, to avoid this we can specify a random state which prevents any stochastic behaviour and gives reproducible results. Reproducing your results can also be achieved by saving your model and reusing it, it is completely fine to run the model a number of times to see what topics are output and save the model which you feel best fits your research.
+
+As we have already run this fit_transform_model() on the same data, we do not need to resave the embeddings, they will be the same.
 
 Note: More information on hyperparameter tuning can be found on the BERTopic website
 
 ```{r regenerate model}
-model <- py$bertopic$BERTopic(min_topic_size = as.integer(50))
-
-
-model_output <- model$fit_transform(documents = data$text_clean, 
-                                    embeddings = embeddings)
+model <- fit_transform_model(cleaned_text = data$text_clean,
+                             min_topic_size = 43,
+                             ngram_range = c(1, 3),
+                             diversity = 0.5,
+                             stopwords = TRUE,
+                             random_state = 42)[[1]]
 ```
 
 Lets look at the output topics this time:
 
 ```{r get topics 2}
 model$get_topic_info()
+```
+
+This time we get 5 topics output which is much more manageable for analysis. Now we might need to take a closer look at them to understand better what they are about. To do this we use the makedf() function to merge the bert results with the Sprinklr export. We can then look at topics using ParseR to create bigrams, the bertopic function vizualize_term_rank() to create a top terms plot or look at exemplars by filtering the df to the topic we're interested in.
+
+```{r}
+merged_df <- data %>% makedf(model = model, 
+                             embeddings = embeddings,
+                             text_var = text_clean)
 ```
 
 Maybe now we would like to manually merge some topics that we think might be similar and reduce the size of the large outlier category (-1). **Merging topics should be performed before outlier reduction**. Before merging topics we should take a closer look at the data to make sure we understand what each topic is and its semantic similarity to another topic.
