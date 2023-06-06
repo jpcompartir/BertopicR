@@ -33,7 +33,7 @@ with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("jpcompartir/BertopicR")
+devtools::install_github("AoifeRyan-sc/BertopicR")
 
 library(BertopicR)
 
