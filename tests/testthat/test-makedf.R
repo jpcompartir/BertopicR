@@ -1,15 +1,3 @@
-# data <- bert_example_data %>%
-#   janitor::clean_names() %>% # clean column titles
-#   dplyr::mutate(text_clean = message, .before = message) %>% # add column for clean text
-#   dplyr::mutate(text_clean = tolower(text_clean)) %>% # all posts lower case
-#   LimpiaR::limpiar_tags(text_var = text_clean, hashtag = F) %>%  # remove mentions
-#   dplyr::mutate(text_clean = stringr::str_remove_all(text_clean, "@user"), # remove mentions
-#          text_clean = stringr::str_remove_all(text_clean, "#\\S+")) %>% # remove hashtags
-#   LimpiaR::limpiar_url(text_var = text_clean) %>% # remove urls
-#   LimpiaR::limpiar_emojis(text_var = text_clean) %>% # remove emojis
-#   LimpiaR::limpiar_spaces(text_var = text_clean) %>% # remove unnecessary spaces
-#   dplyr::distinct(text_clean, .keep_all = TRUE)  # remove duplicates
-
 data <- bert_example_data %>%
   janitor::clean_names() %>%
   dplyr::mutate(text_clean = message, .before = message) %>%
@@ -39,23 +27,18 @@ model <- py$bertopic$BERTopic()
 model_output <- model$fit_transform(documents = data$text_clean,
                                     embeddings = embeddings)
 # run function
-df <- makedf(model = model, 
-             embeddings = embeddings, 
-             original_text = data$message, 
-             cleaned_text = data$text_clean, 
-             date = data$created_time, 
-             sentiment = data$sentiment, 
-             permalink = data$permalink)
+df <- makedf(df = data,
+             model = model, 
+             embeddings = embeddings,
+             text_var = text_clean,
+             date_var = created_time)
 
 test_that("expected columns are present", {
   expect_true("text_clean" %in% colnames(df))
-  expect_true("topic" %in% colnames(df)) # only checking 2 cols from get_document_info()
-  expect_true("name" %in% colnames(df))
+  expect_true("topic" %in% colnames(df))
   expect_true("V1" %in% colnames(df))
   expect_true("V2" %in% colnames(df))
   expect_true("document" %in% colnames(df))
-  expect_true("text_og" %in% colnames(df))
-  expect_true("date" %in% colnames(df))
-  expect_true("sentiment" %in% colnames(df))
+  expect_true("topic_title" %in% colnames(df))
   expect_true("permalink" %in% colnames(df))
 })

@@ -24,12 +24,7 @@ makedf <- function(df,
                    embeddings = embeddings,
                    text_var = message,
                    date_var = created_time){ 
-                   # original_text = df$message, 
-                   # cleaned_text = df$text_clean, 
-                   # date = df$created_time, 
-                   # sentiment = df$sentiment, 
-                   # permalink = df$permalink){
-  
+                 
   text_sym <- rlang::ensym(text_var)
   date_sym <- rlang::ensym(date_var)
   # date_quo <- rlang::enquo(date_var)
