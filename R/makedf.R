@@ -22,7 +22,8 @@
 makedf <- function(df,
                    model = model, 
                    embeddings = embeddings,
-                   text_var = message){ 
+                   text_var = message,
+                   date_var = created_time){ 
                    # original_text = df$message, 
                    # cleaned_text = df$text_clean, 
                    # date = df$created_time, 
@@ -30,6 +31,9 @@ makedf <- function(df,
                    # permalink = df$permalink){
   
   text_sym <- rlang::ensym(text_var)
+  date_sym <- rlang::ensym(date_var)
+  # date_quo <- rlang::enquo(date_var)
+  
   # text_quo <- rlang::enquo(text_var)
 
   docs <- df %>% dplyr::pull(!!text_sym)
@@ -63,7 +67,8 @@ makedf <- function(df,
                   V2 = reduced_embeddings[,2],
                   document = dplyr::row_number(), 
                   topic = doc_info$Topic,
-                  topic_title = doc_info$Name) %>%
+                  topic_title = doc_info$Name,
+                  !!date_sym := as.Date(!!date_sym)) %>%
     dplyr::relocate(document)
 
   

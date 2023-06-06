@@ -12,7 +12,7 @@ embedding_model = "all-MiniLM-L6-v2",
 accelerator = "mps",
 diversity = 0.1,
 stopwords = TRUE,
-random_state = 42)
+random_state = NULL)
 }
 \arguments{
 \item{cleaned_text}{cleaned text column that the model should be fit with}
@@ -31,6 +31,9 @@ tuple: use the reticulate function reticulate::tuple()}
 \item{stopwords}{whether or not to remove stopwords in topic representations}
 
 \item{random_state}{random state to pass to umap}
+}
+\value{
+list containing fitted bertopic model and embeddings used to fit the model
 }
 \description{
 fit a bertopic model to cleaned data
