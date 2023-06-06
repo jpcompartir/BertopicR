@@ -183,10 +183,9 @@ merged_df %>%
 
 If we want to look at exemplars we can simply filter the dataframe:
 
-```{r exemplars}
+```{r exemplars, eval = FALSE}
 merged_df %>% 
-  filter(topic == 0) %>%
-  DT::datatable()
+  filter(topic == 0)
 ```
 
 We can also look at a umap that shows us the topic distribution. This can be helpful in showing us how closely different topics relate to one another and we should continue to check this diagram as we merge topics or reduce outliers. We can use LandscapeR or the bertopic umap viz to achieve this.
@@ -295,12 +294,7 @@ model$update_topics(docs = data$text_clean,
 
 ```
 
-At this point you should look at the topic umap again to make sure that 
-
-```{r umap 2}
-# model$visualize_documents(docs = data$text_clean, # data
-#                           embeddings = embeddings) # embeddings
-```
+At this point you should look at the topic umap, exemplars, and bigrams again to make sure that posts haven't been reassigned to topics that look like they are not very semantically similar.
 
 
 

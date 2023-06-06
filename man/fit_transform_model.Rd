@@ -6,6 +6,7 @@
 \usage{
 fit_model(
 cleaned_text,
+calculated_embeddings,
 min_topic_size = 10,
 ngram_range = tuple(1,1),
 embedding_model = "all-MiniLM-L6-v2",
@@ -17,12 +18,14 @@ random_state = NULL)
 \arguments{
 \item{cleaned_text}{cleaned text column that the model should be fit with}
 
+\item{calculated_embeddings}{if embeddings are already calculated input embeddings as matrix}
+
 \item{min_topic_size}{minimum topic size}
 
 \item{ngram_range}{ngram range for topic representation - input must be of type
 tuple: use the reticulate function reticulate::tuple()}
 
-\item{embedding_model}{which embedding model to use}
+\item{embedding_model}{which embedding model to use or was used to produce embeddings}
 
 \item{accelerator}{accelerator to use - default is mps, use NULL if none}
 
