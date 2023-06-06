@@ -51,4 +51,4 @@ BertopicR::install_python_dependencies()
 ## Example
 
 A typical workflow can be found at:
-<https://aoiferyan-sc.github.io/BertopicR/>
+<https://aoiferyan-sc.github.io/BertopicR/articles/bertopic.html>
