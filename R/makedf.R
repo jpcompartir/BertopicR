@@ -19,6 +19,7 @@
 #' date = df$created_time,
 #' sentiment = df$sentiment,
 #' permalink = df$permalink)
+#' 
 makedf <- function(df,
                    model = model, 
                    embeddings = embeddings,
