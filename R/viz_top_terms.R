@@ -27,6 +27,7 @@
 #' min_freq = 25,
 #' include_outliers = FALSE,
 #' type = "lollipops")
+#' 
 viz_top_terms <- function(merged_df,
                           text_var = text_clean,
                           topic_var = topic,

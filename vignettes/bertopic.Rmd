@@ -145,7 +145,13 @@ This time we get 6 topics output which is much more manageable for analysis.
 Now we might need to take a closer look at each topic to understand better what they are about. To do this we use the makedf() function to merge the bert results with the Sprinklr export. We can then look at topics using ParseR to create bigrams, the BertopicR function viz_top_terms() to create a top terms plot or look at exemplars by filtering the df to the topic we're interested in.
 
 ```{r makedf 1}
-merged_df <- data %>% makedf(model = model, 
+
+merged_df <- data %>% makedf(model = model[[1]],
+                             embeddings = model[[2]],
+                             text_var = text_clean)
+
+
+merged_df <- data %>% makedf(model = model,
                              embeddings = embeddings,
                              text_var = text_clean)
 
@@ -181,12 +187,13 @@ merged_df %>%
   purrr::pluck("max_only")
 ```
 
-We can also look at diff_terms as we would using SegmentR:
+We can also look at diff_terms as we would have done when using SegmentR:
 
-```{r top terms 1}
+```{r diff terms 1}
 merged_df %>% 
-  viz_top_terms(min_freq = 5,
-                type = "lollipop") 
+  viz_diff_terms(min_freq = 5,
+                 type = "lollipop") %>%
+  purrr:pluck("topic0_vs_topic1")
 ```
 
 If we want to look at exemplars we can simply filter the dataframe:
