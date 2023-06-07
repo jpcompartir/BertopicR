@@ -181,6 +181,14 @@ merged_df %>%
   purrr::pluck("max_only")
 ```
 
+We can also look at diff_terms as we would using SegmentR:
+
+```{r top terms 1}
+merged_df %>% 
+  viz_top_terms(min_freq = 5,
+                type = "lollipop") 
+```
+
 If we want to look at exemplars we can simply filter the dataframe:
 
 ```{r exemplars, eval = FALSE}
@@ -239,7 +247,7 @@ model$visualize_heatmap()$show()
 r.model.visualize_heatmap().show()
 ```
 
-#Refine Topics
+# Refine Topics
 
 Now that we have a better idea of what each topic is about, maybe now we would like to manually merge some topics that we think might be similar and reduce the size of the outlier category (-1). **Merging topics should be performed before outlier reduction**. 
 
