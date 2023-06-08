@@ -10,6 +10,8 @@
 #' @param min_freq minimum number of times a term should appear for it to be considered
 #' @param include_outliers include outlier (-1) bertopic category?
 #' @param type lollipop or bar chart
+#' @param plots specific plots to output. Should be input as c(x, y) or if you want more than 1 
+#' chart list(c(x, y), c(u, v)) where x, y, u and v are topic numbers.
 #'
 #' @return a ggplot object of top different terms between each pair of topics
 #' @export
@@ -25,6 +27,7 @@
 #' min_freq = 25,
 #' include_outliers = FALSE,
 #' type = "lollipops")
+#' plots = list(c(1,2), c(4,5))
 #' 
 viz_diff_terms <- function(merged_df,
                           text_var = text_clean,
@@ -35,12 +38,17 @@ viz_diff_terms <- function(merged_df,
                           top_n = 15,
                           min_freq = 25,
                           include_outliers = FALSE,
-                          type = c("lollipips", "bars")){
+                          type = c("lollipops", "bars"),
+                          plots = NULL){
   
   text_sym <- rlang::ensym(text_var)
   topic_sym <- rlang::ensym(topic_var)
   
   clean_df <- merged_df
+  
+  if (-1 %in% unlist(plots)){
+    include_outliers <- TRUE
+  }
   
   # remove stopwords
   if (stopwords){
@@ -72,52 +80,77 @@ viz_diff_terms <- function(merged_df,
     tidytext::unnest_tokens(word, text_clean) %>%
     dplyr::count(topic, word, sort = TRUE)
   
+  # count words per topic
   total_words <- words %>% 
     dplyr::group_by(topic) %>% 
-    dplyr::summarize(total = sum(n))
+    dplyr::summarize(total = sum(n)) %>%
+    filter(total > min_freq) # remove words that don't meet the min freq
   
-  topic_words <- dplyr::left_join(words, total_words, by = join_by(topic))
-  
-  topic_tf_idf <- topic_words %>%
+  # calculate tf_idf
+  topic_tf_idf <- dplyr::left_join(words, total_words, by = join_by(topic)) %>%
     tidytext::bind_tf_idf(word, topic, n)
   
+  # pivot wider
   tf_idf_wide <- topic_tf_idf %>%
     select(c(topic, word, tf_idf)) %>%
     dplyr::mutate(topic = paste0("topic", topic)) %>%
     tidyr::pivot_wider(names_from = topic, values_from = tf_idf)
   
-  # number of topics
-  n_topics <- clean_df %>% 
-    dplyr::pull(topic) %>% 
-    unique() %>% 
-    length()
+  if (is.null(plots)){
+    
+    # number of topics
+    n_topics <- clean_df %>% 
+      dplyr::pull(topic) %>% 
+      unique() %>% 
+      length()
+    
+    # number of plots
+    n_plots <- choose(n = n_topics, k = 2) 
+    spread_list <- vector("list", length = n_plots)
+    
+    # What plots will there be? 
+    if (include_outliers){
+      plot_combos <- combn(x = -1:(n_topics-2), m = 2) # Each column is a combo
+    } else{
+      plot_combos <- combn(x = 0:(n_topics-1), m = 2) # Each column is a combo
+    }
+    
+    combo_names <- paste0("topic", plot_combos) # Each pair is a combo
+    
+    # Assign colour for each topic
+    my_colours <- viridis::viridis(n_topics)
+    
+    if (include_outliers){
+      combo_colours <- my_colours[c(plot_combos + 2)]
+    } else{
+      combo_colours <- my_colours[c(plot_combos + 1)]
+    }
+    
+    # Empty vector for names
+    plot_names <- vector("character", length = n_plots)
   
-  # number of plots
-  n_plots <- choose(n = n_topics, k = 2) 
-  spread_list <- vector("list", length = n_plots)
-  
-  # What plots will there be? 
-  if (include_outliers){
-    plot_combos <- combn(x = -1:(n_topics-2), m = 2) # Each column is a combo
   } else{
-    plot_combos <- combn(x = 0:(n_topics-1), m = 2) # Each column is a combo
+    plot_combos <- data.frame()
+    
+    for (i in 1:length(plots)){
+      plot_combos[1,i] <- plots[[i]][1]
+      plot_combos[2,i] <- plots[[i]][2]
+    }
+    
+    n_topics <- plots %>% unlist() %>% unique() %>% length()
+    spread_list <- vector("list", length = length(plots))
+    combo_names <- paste0("topic", unlist(plot_combos)) # Each pair is a combo
+    my_colours <- viridis::viridis(n_topics) # viridis colour palette
+    
+    # Create a mapping between numbers and color codes
+    colour_mapping <- setNames(my_colours, unique(as.vector(unlist(plot_combos))))
+    
+    # Assign color codes to each number
+    combo_colours <- colour_mapping[as.character(as.vector(unlist(plot_combos)))]
+    
+    # Empty vector for names
+    plot_names <- vector("character", length = length(plots))
   }
-  
-  combo_names <- paste0("topic", plot_combos) # Each pair is a combo
-  
-  # Assign colour for each topic
-  my_colours <- viridis::viridis(n_topics)
-  
-  if (include_outliers){
-    combo_colours <- my_colours[c(plot_combos + 2)]
-  } else{
-    combo_colours <- my_colours[c(plot_combos + 1)]
-  }
-  
-  
-  
-  # Empty vector for names
-  plot_names <- vector("character", length = n_plots)
   
   for (i in seq(1, length(combo_names), 2)) {
     
@@ -158,11 +191,11 @@ viz_diff_terms <- function(merged_df,
                                          " tf_idf/",
                                          combo_names[i + 1],
                                          " tf_idf)")) +
-      ggplot2::scale_color_manual(values = c("TRUE" = combo_colours[i],
-                                             "FALSE" = combo_colours[i + 1]),
+      ggplot2::scale_color_manual(values = c("TRUE" = as.vector(combo_colours[i]),
+                                             "FALSE" = as.vector(combo_colours[i + 1])),
                                   guide = "none") +
-      ggplot2::scale_fill_manual(values = c("TRUE" = combo_colours[i],
-                                            "FALSE" = combo_colours[i + 1]),
+      ggplot2::scale_fill_manual(values = c("TRUE" = as.vector(combo_colours[i]),
+                                            "FALSE" = as.vector(combo_colours[i + 1])),
                                  labels = c("TRUE" = combo_names[i],
                                             "FALSE" = combo_names[i + 1])) +
       ggplot2::coord_flip() +
@@ -181,6 +214,8 @@ viz_diff_terms <- function(merged_df,
   
   # Add names
   names(spread_list) <- plot_names
+  
+ 
   
   # Output
   return(spread_list)

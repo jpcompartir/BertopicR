@@ -4,18 +4,18 @@
 \alias{viz_diff_terms}
 \title{Function to find terms with the greatest difference between topics}
 \usage{
-viz_diff_terms(
-  merged_df,
-  text_var = text_clean,
-  topic_var = topic,
-  stopwords = TRUE,
-  hashtags = TRUE,
-  mentions = TRUE,
-  top_n = 15,
-  min_freq = 25,
-  include_outliers = FALSE,
-  type = c("lollipips", "bars")
-)
+viz_top_terms(
+merged_df,
+text_var = text_clean,
+topic_var = topic,
+stopwords = TRUE,
+hashtags = TRUE,
+mentions = TRUE,
+top_n = 15,
+min_freq = 25,
+include_outliers = FALSE,
+type = "lollipops")
+plots = list(c(1,2), c(4,5))
 }
 \arguments{
 \item{merged_df}{output from makedf function.Can be any df that includes a topic column}
@@ -36,7 +36,13 @@ viz_diff_terms(
 
 \item{include_outliers}{include outlier (-1) bertopic category?}
 
-\item{type}{}
+\item{type}{lollipop or bar chart}
+
+\item{plots}{specific plots to output. Should be input as c(x, y) or if you want more than 1
+chart list(c(x, y), c(u, v)) where x, y, u and v are topic numbers.}
+}
+\value{
+a ggplot object of top different terms between each pair of topics
 }
 \description{
 Function to find terms with the greatest difference between topics

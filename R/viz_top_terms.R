@@ -38,48 +38,54 @@ viz_top_terms <- function(merged_df,
                           n_row = 2,
                           min_freq = 25,
                           include_outliers = FALSE,
-                          type = c("lollipips", "bars")){
+                          type = c("lollipops", "bars"),
+                          plots = NULL){
   
   text_sym <- rlang::ensym(text_var)
   topic_sym <- rlang::ensym(topic_var)
   
-  clean_df <- merged_df
+  clean_df  <- merged_df
   
+  # remove stopwords
   if (stopwords){
     clean_df <- merged_df %>%
       dplyr::mutate(!!text_sym := tm::removeWords(!!text_sym, SegmentR::stopwords$stopwords))
   }
   
+  # remove hashtags
   if (hashtags){
     clean_df <- clean_df %>%
-      dplyr::mutate(!!text_sym := stringr::str_remove_all(!!text_sym, "#\\S+")) # remove hashtags
+      dplyr::mutate(!!text_sym := stringr::str_remove_all(!!text_sym, "#\\S+")) 
   }
   
+  # remove mentions
   if (mentions){
     clean_df <- clean_df %>%
-      LimpiaR::limpiar_tags(text_var = !!text_sym, hashtag = T, user = F) %>%  # remove mention
-      dplyr::mutate(!!text_sym := stringr::str_remove_all(!!text_sym, "@user")) # remove mentions
+      LimpiaR::limpiar_tags(text_var = !!text_sym, hashtag = T, user = F) %>%  
+      dplyr::mutate(!!text_sym := stringr::str_remove_all(!!text_sym, "@user")) 
   }
   
+  # include outliers
   if (include_outliers == FALSE){
     clean_df <- clean_df %>%
       filter(!(!!topic_sym == -1))
   }
   
+  # count words
   words <- clean_df %>%
     tidytext::unnest_tokens(word, !!text_sym) %>%
     dplyr::count(!!topic_sym, word, sort = TRUE)
   
+  # count words per topic
   total_words <- words %>% 
     dplyr::group_by(!!topic_sym) %>% 
     dplyr::summarize(total = sum(n))
   
-  topic_words <- dplyr::left_join(words, total_words, by = join_by(!!topic_sym))
-  
-  topic_tf_idf <- topic_words %>%
+  # Calculate tf_idf score
+  topic_tf_idf <- dplyr::left_join(words, total_words, by = join_by(!!topic_sym)) %>%
     tidytext::bind_tf_idf(word, !!topic_sym, n)
   
-  # Which terms have highest beta within each topic?
+  # Which terms have highest tf-idf within each topic?
   top_terms <- topic_tf_idf %>%
     filter(n > min_freq) %>% # remove words that don't meet the min freq
     dplyr::group_by(topic) %>%
