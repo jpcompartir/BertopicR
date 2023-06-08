@@ -5,6 +5,7 @@
 #' @param min_topic_size minimum topic size 
 #' @param ngram_range ngram range for topic representation - input must be of type 
 #' tuple: use the reticulate function reticulate::tuple()
+#' @param nr_topics the number of topics to find within the dataset
 #' @param embedding_model which embedding model to use or was used to produce embeddings
 #' @param accelerator accelerator to use - default is mps, use NULL if none
 #' @param diversity diversity of topic representation (1 = diverse, 0 = not diverse)
@@ -14,10 +15,11 @@
 #' @return list containing fitted bertopic model and embeddings used to fit the model
 #' @export
 #'
-#' @usage fit_model(
+#' @usage fit_transform_model(
 #' cleaned_text,
-#' calculated_embeddings,
+#' calculated_embeddings = NULL,
 #' min_topic_size = 10,
+#' nr_topics = NULL,
 #' ngram_range = tuple(1,1),
 #' embedding_model = "all-MiniLM-L6-v2",
 #' accelerator = "mps",
@@ -29,7 +31,7 @@ fit_transform_model <- function(cleaned_text,
                                 calculated_embeddings = NULL,
                                 min_topic_size = 10,
                                 nr_topics = NULL,
-                                ngram_range = c(1, 2),
+                                ngram_range = c(1, 1),
                                 embedding_model = "all-MiniLM-L6-v2",
                                 accelerator = "mps",
                                 diversity = 0.1,

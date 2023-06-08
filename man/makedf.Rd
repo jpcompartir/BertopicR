@@ -5,28 +5,22 @@
 \title{make a df combining bertopic output with columns in original data export}
 \usage{
 makedf(
-model
-embeddings
-original_text = df$message
-cleaned_text = df$text_clean,
-date = df$created_time,
-sentiment = df$sentiment,
-permalink = df$permalink)
+df,
+model,
+embeddings,
+text_var = message,
+date_var = created_time)
 }
 \arguments{
+\item{df}{original Sprinklr export topic modelling was performed on to merge with bertopic output}
+
 \item{model}{bertopic model}
 
 \item{embeddings}{embeddings used to generate the model}
 
-\item{original_text}{uncleaned text column}
+\item{text_var}{original, uncleaned text column, of text used to fit model}
 
-\item{cleaned_text}{cleaned text column which model was fitted on}
-
-\item{date}{date column}
-
-\item{sentiment}{sentiment column}
-
-\item{permalink}{permalink column}
+\item{date_var}{date column in df corresponding to text used to fit model}
 }
 \value{
 df with bertopic output merged with input columns from the sprinkr export

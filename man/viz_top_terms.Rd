@@ -15,7 +15,7 @@ top_n = 15,
 n_row = 2,
 min_freq = 25,
 include_outliers = FALSE,
-type = "lollipops")
+type = c("lollipops", "bars"))
 }
 \arguments{
 \item{merged_df}{df output from makedf function.Can be any df that includes a topic column}

@@ -4,10 +4,11 @@
 \alias{fit_transform_model}
 \title{fit a bertopic model to cleaned data}
 \usage{
-fit_model(
+fit_transform_model(
 cleaned_text,
-calculated_embeddings,
+calculated_embeddings = NULL,
 min_topic_size = 10,
+nr_topics = NULL,
 ngram_range = tuple(1,1),
 embedding_model = "all-MiniLM-L6-v2",
 accelerator = "mps",
@@ -21,6 +22,8 @@ random_state = NULL)
 \item{calculated_embeddings}{if embeddings are already calculated input embeddings as matrix}
 
 \item{min_topic_size}{minimum topic size}
+
+\item{nr_topics}{the number of topics to find within the dataset}
 
 \item{ngram_range}{ngram range for topic representation - input must be of type
 tuple: use the reticulate function reticulate::tuple()}

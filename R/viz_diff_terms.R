@@ -16,7 +16,7 @@
 #' @return a ggplot object of top different terms between each pair of topics
 #' @export
 #'
-#' @usage viz_top_terms(
+#' @usage viz_diff_terms(
 #' merged_df,
 #' text_var = text_clean,
 #' topic_var = topic,
@@ -26,8 +26,8 @@
 #' top_n = 15,
 #' min_freq = 25,
 #' include_outliers = FALSE,
-#' type = "lollipops")
-#' plots = list(c(1,2), c(4,5))
+#' type = c("lollipops", "bars")
+#' plots = list(c(1,2), c(4,5)))
 #' 
 viz_diff_terms <- function(merged_df,
                           text_var = text_clean,
@@ -53,47 +53,47 @@ viz_diff_terms <- function(merged_df,
   # remove stopwords
   if (stopwords){
     clean_df <- merged_df %>%
-      dplyr::mutate(text_clean := tm::removeWords(text_clean, SegmentR::stopwords$stopwords))
+      dplyr::mutate(!!text_sym := tm::removeWords(!!text_sym, SegmentR::stopwords$stopwords))
   }
   
   # remove hashtags
   if (hashtags){
     clean_df <- clean_df %>%
-      dplyr::mutate(text_clean := stringr::str_remove_all(text_clean, "#\\S+")) # remove hashtags
+      dplyr::mutate(!!text_sym := stringr::str_remove_all(!!text_sym, "#\\S+")) # remove hashtags
   }
   
   # remove mentions
   if (mentions){
     clean_df <- clean_df %>%
-      LimpiaR::limpiar_tags(text_var = text_clean, hashtag = T, user = F) %>%  # remove mention
-      dplyr::mutate(text_clean := stringr::str_remove_all(text_clean, "@user")) # remove mentions
+      LimpiaR::limpiar_tags(text_var = !!text_sym, hashtag = T, user = F) %>%  # remove mention
+      dplyr::mutate(!!text_sym := stringr::str_remove_all(!!text_sym, "@user")) # remove mentions
   }
   
   # remove outlier category
   if (include_outliers == FALSE){
     clean_df <- clean_df %>%
-      filter(!(topic == -1))
+      dplyr::filter(!(topic == -1))
   }
   
   # count words
   words <- clean_df %>%
-    tidytext::unnest_tokens(word, text_clean) %>%
-    dplyr::count(topic, word, sort = TRUE)
+    tidytext::unnest_tokens(word, !!text_sym) %>%
+    dplyr::count(!!topic_sym, word, sort = TRUE)
   
   # count words per topic
   total_words <- words %>% 
-    dplyr::group_by(topic) %>% 
+    dplyr::group_by(!!topic_sym) %>% 
     dplyr::summarize(total = sum(n)) %>%
-    filter(total > min_freq) # remove words that don't meet the min freq
+    dplyr::filter(total > min_freq) # remove words that don't meet the min freq
   
   # calculate tf_idf
-  topic_tf_idf <- dplyr::left_join(words, total_words, by = join_by(topic)) %>%
-    tidytext::bind_tf_idf(word, topic, n)
+  topic_tf_idf <- dplyr::left_join(words, total_words, by = dplyr::join_by(!!topic_sym)) %>%
+    tidytext::bind_tf_idf(word, !!topic_sym, n)
   
   # pivot wider
   tf_idf_wide <- topic_tf_idf %>%
-    select(c(topic, word, tf_idf)) %>%
-    dplyr::mutate(topic = paste0("topic", topic)) %>%
+    dplyr::select(c(!!topic_sym, word, tf_idf)) %>%
+    dplyr::mutate(topic = paste0("topic", !!topic_sym)) %>%
     tidyr::pivot_wider(names_from = topic, values_from = tf_idf)
   
   if (is.null(plots)){
@@ -110,9 +110,9 @@ viz_diff_terms <- function(merged_df,
     
     # What plots will there be? 
     if (include_outliers){
-      plot_combos <- combn(x = -1:(n_topics-2), m = 2) # Each column is a combo
+      plot_combos <- utils::combn(x = -1:(n_topics-2), m = 2) # Each column is a combo
     } else{
-      plot_combos <- combn(x = 0:(n_topics-1), m = 2) # Each column is a combo
+      plot_combos <- utils::combn(x = 0:(n_topics-1), m = 2) # Each column is a combo
     }
     
     combo_names <- paste0("topic", plot_combos) # Each pair is a combo
@@ -143,7 +143,7 @@ viz_diff_terms <- function(merged_df,
     my_colours <- viridis::viridis(n_topics) # viridis colour palette
     
     # Create a mapping between numbers and color codes
-    colour_mapping <- setNames(my_colours, unique(as.vector(unlist(plot_combos))))
+    colour_mapping <- stats::setNames(my_colours, unique(as.vector(unlist(plot_combos))))
     
     # Assign color codes to each number
     combo_colours <- colour_mapping[as.character(as.vector(unlist(plot_combos)))]

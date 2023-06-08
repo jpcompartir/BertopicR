@@ -15,10 +15,23 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports: 
     dplyr (>= 1.1.2),
+    ggplot2,
+    janitor,
     LimpiaR,
     magrittr (>= 2.0.3),
+    ParseR,
+    plotly,
+    purrr,
     reticulate (>= 1.26),
-    stringr (>= 1.5.0)
+    rlang,
+    scales,
+    SegmentR,
+    stringr (>= 1.5.0),
+    tidyr,
+    tidyselect,
+    tidytext,
+    tm,
+    viridis
 VignetteBuilder: knitr
 Depends: 
     R (>= 2.10)

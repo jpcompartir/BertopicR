@@ -11,7 +11,6 @@
 #' @param min_freq minimum number of times a term should appear for it to be considered
 #' @param include_outliers include the -1 (outlier) bertopic category
 #' @param type lollipop or bar chart?
-#'
 #' @return list of all_terms and max_only top term bar charts
 #' @export
 #'
@@ -26,7 +25,7 @@
 #' n_row = 2,
 #' min_freq = 25,
 #' include_outliers = FALSE,
-#' type = "lollipops")
+#' type = c("lollipops", "bars"))
 #' 
 viz_top_terms <- function(merged_df,
                           text_var = text_clean,
@@ -38,8 +37,7 @@ viz_top_terms <- function(merged_df,
                           n_row = 2,
                           min_freq = 25,
                           include_outliers = FALSE,
-                          type = c("lollipops", "bars"),
-                          plots = NULL){
+                          type = c("lollipops", "bars")){
   
   text_sym <- rlang::ensym(text_var)
   topic_sym <- rlang::ensym(topic_var)
@@ -68,7 +66,7 @@ viz_top_terms <- function(merged_df,
   # include outliers
   if (include_outliers == FALSE){
     clean_df <- clean_df %>%
-      filter(!(!!topic_sym == -1))
+      dplyr::filter(!(!!topic_sym == -1))
   }
   
   # count words
@@ -82,12 +80,12 @@ viz_top_terms <- function(merged_df,
     dplyr::summarize(total = sum(n))
   
   # Calculate tf_idf score
-  topic_tf_idf <- dplyr::left_join(words, total_words, by = join_by(!!topic_sym)) %>%
+  topic_tf_idf <- dplyr::left_join(words, total_words, by = dplyr::join_by(!!topic_sym)) %>%
     tidytext::bind_tf_idf(word, !!topic_sym, n)
   
   # Which terms have highest tf-idf within each topic?
   top_terms <- topic_tf_idf %>%
-    filter(n > min_freq) %>% # remove words that don't meet the min freq
+    dplyr::filter(n > min_freq) %>% # remove words that don't meet the min freq
     dplyr::group_by(topic) %>%
     dplyr::slice_max(n = top_n, order_by = tf_idf, with_ties = FALSE) %>%
     dplyr::arrange(topic, -tf_idf)
@@ -137,7 +135,7 @@ viz_top_terms <- function(merged_df,
     "max_only" = most_likely_topics)
   
   #Add the ggplot boilerplate code to both plot types
-  viridis_cols <- clean_df %>% select(!!topic_sym) %>% unique() %>% count()
+  viridis_cols <- clean_df %>% dplyr::select(!!topic_sym) %>% unique() %>% dplyr::count()
   plot_list <- purrr::map(plot_list, ~ .x +
                             ggplot2::facet_wrap(ggplot2::vars(!!topic_sym),
                                                 scales = "free",
