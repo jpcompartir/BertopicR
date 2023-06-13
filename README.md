@@ -33,7 +33,7 @@ with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("AoifeRyan-sc/BertopicR")
+devtools::install_github("jpcompartir/BertopicR")
 
 library(BertopicR)
 
@@ -50,5 +50,6 @@ BertopicR::install_python_dependencies()
 
 ## Example
 
-A typical workflow can be found at:
-<https://aoiferyan-sc.github.io/BertopicR/articles/bertopic.html>
+``` r
+#TODO
+```
