@@ -11,7 +11,7 @@ data <- bert_example_data %>%
                      in_parallel = TRUE) %>%
   dplyr::distinct(text_clean, .keep_all = TRUE)
 
-# import sentence transformer 
+# import sentence transformer
 sentence_transformers <- reticulate::import("sentence_transformers")
 
 # choose sentence transformer to use and specify "mps" accelerator
@@ -27,8 +27,8 @@ model <- py$bertopic$BERTopic()
 model_output <- model$fit_transform(documents = data$text_clean,
                                     embeddings = embeddings)
 # run function
-df <- makedf(df = data,
-             model = model, 
+df <- bt_make_df(df = data,
+             model = model,
              embeddings = embeddings,
              text_var = text_clean,
              date_var = created_time)
