@@ -2,7 +2,7 @@
 title: "Topic Modelling with Bertopic"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{bertopic}
+  %\VignetteIndexEntry{`Topic Modelling with Bertopic`}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 editor_options: 
@@ -294,7 +294,6 @@ model$save(path = "BERTopic_example.bt")
 ```{r update model with reduced outliers}
 model$update_topics(docs = data$text_clean, 
                     topics = new_topics) 
-
 ```
 
 
