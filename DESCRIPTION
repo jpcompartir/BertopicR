@@ -2,12 +2,19 @@ Package: BertopicR
 Title: Wraps bertopic through reticulate
 Version: 0.0.0.9000
 Authors@R: 
-    person("Jack", "Penzer", , "jack.penzer@sharecreative.com", role = c("cre"))
+    person("Jack", "Penzer", "jack.penzer@sharecreative.com", role = c("cre", "aut")),
+    person("Aoife", "Ryan", "aoife.ryan@sharecreative.com", role = c("aut"))
 Description: Convenience wrapper for extracting bertopic topic models in R, using reticulate to interactive with Python libraries and objects from the comfort of RStudio.
 License: MIT + file LICENSE
 Suggests: 
-    knitr,
-    rmarkdown,
+    janitor (>= 2.1.0),
+    knitr (>= 1.42),
+    rmarkdown (>= 2.21),
+    SegmentR (>= 0.0.1),
+    LimpiaR (>= 0.0.0.9000),
+    ParseR (>= 1.2.0),
+    tm (>= 0.7.10),
+    viridis (>= 0.6.2),
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Encoding: UTF-8
@@ -15,25 +22,19 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports: 
     dplyr (>= 1.1.2),
-    ggplot2,
-    janitor,
-    LimpiaR,
+    ggplot2 (>= 3.4.2),
     magrittr (>= 2.0.3),
-    ParseR,
-    plotly,
-    purrr,
+    plotly (>= 4.10.1),
+    purrr (>= 1.0.1),
     reticulate (>= 1.26),
-    rlang,
-    scales,
-    SegmentR,
+    rlang (>= 1.1.1),
+    scales (>= 1.2.1),
     stringr (>= 1.5.0),
-    tidyr,
-    tidyselect,
-    tidytext,
-    tm,
-    viridis
+    tidyr (>= 1.3.0),
+    tidyselect (>= 1.2.0),
+    tidytext (>= 0.4.1)
 VignetteBuilder: knitr
 Depends: 
-    R (>= 2.10)
+    R (>= 4.10)
 LazyData: true
-URL: https://aoiferyan-sc.github.io/BertopicR/
+URL: https://jpcompartir.github.io/BertopicR/
