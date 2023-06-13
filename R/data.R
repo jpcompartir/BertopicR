@@ -31,7 +31,7 @@
 #' \item{ReceiverScreenName}{placeholder}
 #' \item{ReceiverId}{placeholder}
 #' \item{AssignedBy}{placeholder}
-#' \item{AssignedTo}{placeholder} 
+#' \item{AssignedTo}{placeholder}
 #' \item{Spam}{placeholder}
 #' \item{Status}{placeholder}
 #' \item{Intel Location}{placeholder}
@@ -42,11 +42,11 @@
 #' \item{Experience Score - Message level}{placeholder}
 #' \item{Sentiment}{placeholder}
 #' \item{ClientQueues}{placeholder}
-#' \item{PartnerQueues}{placeholder} 
+#' \item{PartnerQueues}{placeholder}
 #' \item{ClientCustomProps}{placeholder}
 #' \item{PartnerCustomProps}{placeholder}
 #' \item{Custom Tags}{placeholder}
-#' \item{Geo Target}{placeholder}    
+#' \item{Geo Target}{placeholder}
 #' \item{Action Time}{placeholder}
 #' \item{Post Id}{placeholder}
 #' \item{Associated Cases}{placeholder}
@@ -57,13 +57,7 @@
 #' \item{Longitude}{placeholder}
 #' \item{Latitude}{placeholder}
 #' \item{Message Type}{placeholder}
-#' \item{Sender Email}{placeholder}                     
+#' \item{Sender Email}{placeholder}
 #' }
 #' @keywords internal
 "bert_example_data"
-
-global_vars <- c( "py", "created_time", "document", "text_clean", "topic", "word",
-                  "n", "total", "tf_idf", "topic_x", "topic_y", "log2_ratio", "direction",
-                  "topic")
-
-utils::globalVariables(unique(global_vars))

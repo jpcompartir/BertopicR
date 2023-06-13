@@ -1,6 +1,6 @@
-# library
+# # library
 library(reticulate)
-BertopicR:::import_bertopic() # should I be running this here?
+# BertopicR:::import_bertopic() # should I be running this here?
 
 # prep data for benchmark
 data <- bert_example_data %>%
@@ -19,10 +19,10 @@ data <- bert_example_data %>%
 
 # create umap model
 umap <- reticulate::import("umap")
-umap_model <- umap$UMAP(n_neighbors=15L, 
-                        n_components=5L, 
-                        min_dist=0.0, 
-                        metric='cosine', 
+umap_model <- umap$UMAP(n_neighbors=15L,
+                        n_components=5L,
+                        min_dist=0.0,
+                        metric='cosine',
                         random_state = 42L)
 
 # create representation model
@@ -50,7 +50,7 @@ output <- model_eval1$fit_transform(data$text_clean,
 
 # for test that random_state, min_topic_size, and accelerator work
 time_model_test1 <- system.time({
-  model_test1 <- fit_transform_model(cleaned_text = data$text_clean,
+  model_test1 <- bt_fit_transform_model(cleaned_text = data$text_clean,
                                      min_topic_size = 20,
                                      ngram_range = c(1, 2),
                                      embedding_model = "all-MiniLM-L6-v2",
@@ -62,7 +62,7 @@ time_model_test1 <- system.time({
 
 # for test that accelerator work
 time_model_test2 <- system.time({
-  model_test2 <- fit_transform_model(cleaned_text = data$text_clean,
+  model_test2 <- bt_fit_transform_model(cleaned_text = data$text_clean,
                                      min_topic_size = 20,
                                      ngram_range = c(1, 2),
                                      embedding_model = "all-MiniLM-L6-v2",
@@ -73,7 +73,7 @@ time_model_test2 <- system.time({
   })["elapsed"]
 
 # for test that nr_topics work
-model_test3 <- fit_transform_model(cleaned_text = data$text_clean,
+model_test3 <- bt_fit_transform_model(cleaned_text = data$text_clean,
                                    nr_topics = 10)
 
 test_that("random state works", {
