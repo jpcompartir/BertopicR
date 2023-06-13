@@ -18,7 +18,8 @@ knitr::opts_chunk$set(
 options(max.print = 15)
 ```
 
-BertopicR is a package that allows us to use the Python BERTopic package in r. To do this we need to leverage the reticulate library which allows us to embed a python session within our r session. Firstly, we load our libraries:
+BertopicR is a package that allows us to use the Python BERTopic package in r. To do this we need to leverage the reticulate library which allows us to embed a python session within our r session. Firstly, we load our libraries.
+**Note:** Always load BertopicR before loading reticulate, if you get an error about python version discrepencies, restart your r session.
 ```{r load libraries, message = FALSE}
 library(BertopicR)
 library(reticulate)
@@ -52,27 +53,14 @@ names(py$bertopic)
     
 ```
 
-Other than spam and duplicate post removal, there is no data preprocessing strictly required for topic analysis using BERT. That said, I have found better results by removing hashtags and it can be useful to remove mentions, urls and emojis at this stage as it will not affect the results and will be helpful when looking at the data later. We can use the ParseR clean_text function to do this (*note that this function removes urls*).
+Other than spam and duplicate post removal, there is no data preprocessing strictly required for topic analysis using BERT. That said, I have found better results by removing hashtags and it can be useful to remove mentions, urls and emojis at this stage as, assuming these are not important parts of your analysis, it should not affect the results and will be helpful when looking at the data later. We can use the ParseR clean_text function to do this (*note that this function removes urls*).
 
 Load and preprocess the data:
-```{r load data, eval = FALSE, echo = FALSE}
-data <- bert_example_data %>%
-  janitor::clean_names() %>% # clean column titles
-  mutate(text_clean = message, .before = message) %>% # add column for clean text
-  mutate(text_clean = tolower(text_clean)) %>% # all posts lower case
-  limpiar_tags(text_var = text_clean, hashtag = F) %>%  # remove mentions
-  mutate(text_clean = str_remove_all(text_clean, "@user"), # remove mentions
-         text_clean = str_remove_all(text_clean, "#\\S+")) %>% # remove hashtags
-  limpiar_url(text_var = text_clean) %>% # remove urls
-  limpiar_emojis(text_var = text_clean) %>% # remove emojis
-  limpiar_spaces(text_var = text_clean) %>% # remove unnecessary spaces
-  distinct(text_clean, .keep_all = TRUE) # remove duplicates
-```
 
 ```{r clean data, message = FALSE}
 data <- bert_example_data %>%
   janitor::clean_names() %>%
-  mutate(text_clean = message, .before = message) %>%
+  dplyr::mutate(text_clean = message, .before = message) %>%
   ParseR::clean_text(text_var = text_clean,
                      tolower = TRUE,
                      hashtags = FALSE,
@@ -82,8 +70,8 @@ data <- bert_example_data %>%
                      digits = TRUE,
                      in_parallel = TRUE) %>%
   dplyr::distinct(permalink, .keep_all = TRUE) %>%
-  mutate(char_length =  str_length(text_clean)) %>% 
-  filter(char_length >= 10)
+  dplyr::mutate(char_length =  stringr::str_length(text_clean)) %>% 
+  dplyr::filter(char_length >= 10)
 
 ```
 
@@ -144,13 +132,13 @@ This time we get 6 topics output which is much more manageable for analysis.
 
 Now we might need to take a closer look at each topic to understand better what they are about. To do this we use the makedf() function to merge the bert results with the Sprinklr export. We can then look at topics using ParseR to create bigrams, the BertopicR function viz_top_terms() to create a top terms plot or look at exemplars by filtering the df to the topic we're interested in.
 
+```{r, echo = FALSE, eval = FALSE}
+merged_df <- data %>% makedf(model = model[[1]],
+                             embeddings = model[[2]],
+                             text_var = text_clean)
+```
+
 ```{r makedf 1}
-
-# merged_df <- data %>% makedf(model = model[[1]],
-#                              embeddings = model[[2]],
-#                              text_var = text_clean)
-
-
 merged_df <- data %>% makedf(model = model,
                              embeddings = embeddings,
                              text_var = text_clean)
@@ -311,17 +299,18 @@ model$update_topics(docs = data$text_clean,
 
 At this point you should look at the topic umap, exemplars, and bigrams again to make sure that posts haven't been reassigned to topics that look like they are not very semantically similar.
 
-```{r}
+```{r, echo = FALSE, eval = FALSE}
 BertopicR:::import_bertopic() 
 
 bert_represent <- reticulate::import("bertopic.representation")
 
-bert
+pipeline <- reticulate::import("sklearn.pipeline")
 ```
 
-```{python}
+```{python, echo = FALSE, eval = FALSE}
 
 from bertopic.representation import TextGeneration
+from sklearn import pipeline
 # from bertopic import BERTopic
 
 import bertopic.representation as br
@@ -340,8 +329,22 @@ generator = pipeline('text-generation', model='gpt2')
 representation_model = TextGeneration(generator)
 
 # Use the representation model in BERTopic on top of the default pipeline
-topic_model = BERTo pic(representation_model=representation_model)
+topic_model = BERTopic(representation_model=representation_model)
 
 ```
 
+```{python, echo = FALSE, eval = FALSE}
+!pip uninstall openai
+import openai
+from bertopic import BERTopic
+from bertopic.representation import OpenAI
 
+openai.api_key = "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"
+representation_openai = OpenAI("gpt-3.5-turbo", chat = True, nr_docs = 5)
+
+model = BERTopic(min_topic_size = 30, umap_model = r.umap_model, embedding_model = r.sentence_model, representation_model = representation_openai)
+
+topics, probs = model.fit_transform(r.data.text_clean, embeddings = r.embeddings)
+
+
+```

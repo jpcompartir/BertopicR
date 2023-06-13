@@ -36,10 +36,10 @@ makedf <- function(df,
   umap <- reticulate::import("umap", convert = TRUE)
   
   # get umap co-ords
-  reduced_embeddings <- umap$UMAP(n_neighbors=10, 
-                               n_components=2, 
-                               min_dist=0.0, 
-                               metric='cosine')$fit_transform(embeddings)
+  reduced_embeddings <- umap$UMAP(n_neighbors=10L, 
+                                  n_components=2L, 
+                                  min_dist=0.0, 
+                                  metric='cosine')$fit_transform(embeddings)
 
   # create df
   merged_df <- df %>%
