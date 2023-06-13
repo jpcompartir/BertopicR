@@ -1,53 +1,350 @@
 ---
-title: "bertopic"
+title: "Topic Modelling with Bertopic"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{bertopic}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.align = "center"
 )
+options(max.print = 15)
 ```
 
-
-```{r}
+BertopicR is a package that allows us to use the Python BERTopic package in r. To do this we need to leverage the reticulate library which allows us to embed a python session within our r session. Firstly, we load our libraries.
+**Note:** Always load BertopicR before loading reticulate, if you get an error about python version discrepencies, restart your r session.
+```{r load libraries, message = FALSE}
 library(BertopicR)
 library(reticulate)
-library(dplyr)
-library(stringr)
 ```
 
-Check that our environment has been configurec correctly
-```{r}
+```{r, echo = FALSE, message = FALSE}
+library(dplyr)
+library(stringr)
+library(LimpiaR)
+library(plotly)
+```
+
+Then check that our environment has been configured correctly
+```{r check installation}
 check_python_dependencies()
 ```
 
-Now we can import bertopic through BertopicR via reticulate
-```{r}
+Now we can import the python BERTopic library through BertopicR via reticulate 
+```{r import bertopic, message = FALSE}
 BertopicR:::import_bertopic()
-
-"bertopic" %in% names(py) #quick test
 ```
 
-Now we can look at what's been loaded in. We should see a vector containing: backend; BERTopic; cluster; plotting; representation; vectorizers
-```{r}
+Now we can look at what's been loaded in. The "py" prefix tells r that we want to look within the python environment. We should see a vector containing: backend; BERTopic; cluster; plotting; representation; vectorizers
+```{r check modules}
 names(py$bertopic)
 ```
 
-An informal test which should return TRUE
-```{r}
-all(names(py$bertopic) == c("backend", "BERTopic", "cluster", "plotting", "representation", "vectorizers"))
+
+```{r, echo = FALSE}
+# all(names(py$bertopic) == c("backend", "BERTopic", "cluster", "plotting", "representation", "vectorizers"))
+    
 ```
 
+Other than spam and duplicate post removal, there is no data preprocessing strictly required for topic analysis using BERT. That said, I have found better results by removing hashtags and it can be useful to remove mentions, urls and emojis at this stage as, assuming these are not important parts of your analysis, it should not affect the results and will be helpful when looking at the data later. We can use the ParseR clean_text function to do this (*note that this function removes urls*).
 
-Load in some data:
-```{r}
-data <- readr::read_csv("~/Google Drive/My Drive/data_science_project_work/microsoft/project_work/642_644_search_engine_ai_chatbot/642_phase_1/data/642_ai_search_landscape_data_v2.csv")
-data <- data %>%
-  select(-1, -2) 
+Load and preprocess the data:
+
+```{r clean data, message = FALSE}
+data <- bert_example_data %>%
+  janitor::clean_names() %>%
+  dplyr::mutate(text_clean = message, .before = message) %>%
+  ParseR::clean_text(text_var = text_clean,
+                     tolower = TRUE,
+                     hashtags = FALSE,
+                     mentions = FALSE,
+                     emojis = FALSE,
+                     punctuation = TRUE,
+                     digits = TRUE,
+                     in_parallel = TRUE) %>%
+  dplyr::distinct(permalink, .keep_all = TRUE) %>%
+  dplyr::mutate(char_length =  stringr::str_length(text_clean)) %>% 
+  dplyr::filter(char_length >= 10)
+
+```
+
+Next we use the fit_transform_model() function to fit the model to our data. This function returns a list containing both the fitted model and the embeddings used to generate the model. 
+
+```{r embeddings and model, eval = FALSE}
+output <- fit_transform_model(cleaned_text = data$text_clean)
+
+model <- output[[1]]
+embeddings <- output[[2]]
+```
+
+```{r embeddings and model hidden, echo = FALSE}
+output <- fit_transform_model(cleaned_text = data$text_clean,
+                              random_state = 42)
+
+model <- output[[1]]
+embeddings <- output[[2]]
+```
+
+Now that we have fit the model we can look at the topics it has predicted for our data. The -1 category here represents outlier posts that do not fit as well into the identified topics.
+
+```{r get topics 1}
+model$get_topic_info()
+```
+
+Bert has identified 95 topics, excluding outliers, this is probably too many for us to process and perform meaningful analysis on, we can adjust the model parameters so that a more manageable number of topics are identified. It can be helpful to glance through all of these topics in order to get a more granular understanding of the data and to identify topics which might be irrelevant to the analysis and could be removed.
+
+# Adjusting Model Parameters
+
+When creating the model, we can alter the min_topic_size arguments to control the number of posts required per topic. We can also specify the ngram_range and diversity parameters to control the size and diversity of the ngrams used to represent the topics and set stopwords to TRUE to prevent stopwords appearing in the representative ngrams (Note that this does not remove them from the text being analysed, only from the ngrams used to describe the topics). It is also possible to use the nr_topics argument to specify the exact number of topics we would like the model to output however this should not be done without careful examination of the data. 
+
+If you have run the fit_transform_model() function yourself at all you might have noticed that you can get very different results each time you run it, this is due to the stochastic nature of umap, to avoid this we can specify a random state which prevents any stochastic behaviour and gives reproducible results. Reproducing your results can also be achieved by saving your model and reusing it, it is completely fine to run the model a number of times to see what topics are output and save the model which you feel best fits your research.
+
+As we have already run this fit_transform_model() on the same data, we can simply feed the already saved embedding to the model, this time the fit_transform_model function will only output a bertopic model, not the embeddings.
+
+Note: More information on hyperparameter tuning can be found on the BERTopic website
+
+```{r regenerate model}
+model <- fit_transform_model(cleaned_text = data$text_clean,
+                             calculated_embeddings = embeddings,
+                             min_topic_size = 30,
+                             ngram_range = c(1, 3),
+                             diversity = 0.5,
+                             stopwords = TRUE,
+                             random_state = 42)
+```
+
+Lets look at the output topics this time:
+
+```{r get topics 2}
+model$get_topic_info()
+```
+
+This time we get 6 topics output which is much more manageable for analysis. 
+
+# Exploring Topics
+
+Now we might need to take a closer look at each topic to understand better what they are about. To do this we use the makedf() function to merge the bert results with the Sprinklr export. We can then look at topics using ParseR to create bigrams, the BertopicR function viz_top_terms() to create a top terms plot or look at exemplars by filtering the df to the topic we're interested in.
+
+```{r, echo = FALSE, eval = FALSE}
+merged_df <- data %>% makedf(model = model[[1]],
+                             embeddings = model[[2]],
+                             text_var = text_clean)
+```
+
+```{r makedf 1}
+merged_df <- data %>% makedf(model = model,
+                             embeddings = embeddings,
+                             text_var = text_clean)
+
+merged_df
+```
+
+Make bigrams:
+
+```{r bigrams}
+merged_df %>% filter(topic == 4) %>%
+  ParseR::count_ngram(text_var = text_clean,
+                      remove_stops = TRUE,
+                      min_freq = 5,
+                      top_n = 25) %>%
+  purrr::pluck("viz") %>%
+  ParseR::viz_ngram(emphasis = TRUE)
+```
+
+Look at top terms:
+
+```{r top terms 1}
+merged_df %>% 
+  viz_top_terms(min_freq = 5,
+                type = "lollipop") 
+```
+
+As with SegmentR, both all_terms and max_only plots are returned and we can choose to display these charts with a bar or lollipop viz and pluck either all_terms or max_only if we wish.
+
+```{r top terms 2}
+merged_df %>% 
+  viz_top_terms(min_freq = 5,
+                type = "bars") %>%
+  purrr::pluck("max_only")
+```
+
+We can also look at diff_terms as we would have done when using SegmentR:
+
+```{r diff terms 1}
+merged_df %>% 
+  viz_diff_terms(min_freq = 5,
+                 type = "lollipop") %>%
+  purrr::pluck("topic0_vs_topic1")
+```
+
+If we want to look at exemplars we can simply filter the dataframe:
+
+```{r exemplars, eval = FALSE}
+merged_df %>% 
+  filter(topic == 0)
+```
+
+We can also look at a umap that shows us the topic distribution. This can be helpful in showing us how closely different topics relate to one another and we should continue to check this diagram as we merge topics or reduce outliers. We can use LandscapeR or the bertopic umap viz to achieve this.
+
+LandscapeR:
+
+```{r, eval = FALSE}
+merged_df %>% 
+  mutate(created_time = as.Date(created_time)) %>%
+  LandscapeR::conversation_landscape(id = document,
+                                     text_var = message,
+                                     colour_var = topic,
+                                     cleaned_text_var = text_clean,
+                                     date_var = created_time,
+                                     url_var = permalink,
+                                     sentiment_var = sentiment,
+                                     x_var = V1,
+                                     y_var = V2)
+
+```
+
+BertopicR:
+
+```{r umap bert, eval = FALSE}
+model$visualize_documents(docs = data$text_clean, 
+                          embeddings = embeddings)$show()
+
+```
+
+```{python, echo = FALSE}
+r.model.visualize_documents(docs = r.data.text_clean, embeddings = r.embeddings).show()
+```
+
+A key difference between Bert and LDA is the use of hierarchical clustering, this means we can visualise how each cluster was formed and what other clusters it might be similar to.
+
+```{r tree diagram 1, eval = FALSE}
+model$visualize_hierarchy()$show()
+```
+
+```{python tree diagram 1 python, echo = FALSE}
+r.model.visualize_hierarchy().show()
+```
+
+We can also look at a topic similarity heatmap to see how similar topics are.
+
+```{r heatmap 1, eval = FALSE}
+model$visualize_heatmap()$show()
+```
+
+```{python, echo = FALSE}
+r.model.visualize_heatmap().show()
+```
+
+# Refine Topics
+
+Now that we have a better idea of what each topic is about, maybe now we would like to manually merge some topics that we think might be similar and reduce the size of the outlier category (-1). **Merging topics should be performed before outlier reduction**. 
+
+We can see from the tree diagram where we visualise the topic hierarchy that topic 4 and topic 0 are branches from the same cluster, having looked at the individual documents and bigrams it is apparent that they both discuss hispanic heritage, it might make sense to merge these. Make sure to save your model before merging topics in case you are unhappy with the result and want to revert back.
+
+*Note:* the topics to merge must be given to the merge_topics function as a python list of integers. To do this we convert an r vector to a python list using the r_to_py() function and the "L" suffix to denote an integer. 
+```{r, eval = FALSE}
+model$save(path = "BertopicR_example.bt") 
+```
+
+```{r save and merge}
+topics_to_merge <- r_to_py(c(0L,4L))
+
+model$merge_topics(docs = data$text_clean,
+                   topics_to_merge = topics_to_merge)
+
+model$get_topic_info()
+```
+
+If we are unhappy with the new topics we can always go back to the original model. We need to use the "py$" suffix to access libraries in the python environment.
+
+```{r reload old model, eval = FALSE}
+model_og <- py$bertopic$BERTopic$load(path = "BertopicR_example.bt")
+```
+
+Now that we are happy with the merged topics we can look at reducing some of the "outliers". It is up to you how important this is for your project, perhaps it is more important to get really high quality topics at the expense of some of the data or maybe it is important to include as much of the data as possible at the expense of resolution. In this example we are going to use the "embeddings" strategy, but there are lots of different strategies which can be used for doing this that you can find here: https://maartengr.github.io/BERTopic/getting_started/outlier_reduction/outlier_reduction.html#exploration
+
+In order to correctly reassign topics from outliers we need to tell the function which document belongs to which topic, to do this we can use the df output from the makedf function, but remember that if you have merged topics since generating the df, you will need to run it again to update the topics in the table. You can play around with the threshold parameter to adjust the number of reassigned documents, it refers to the minimum similarity between a document and a topic for it to be reassigned to that topic and the correct value is entirely dependent on the dataset and your specifications for the project.
+
+```{r outlier reduction}
+merged_df <- data %>% makedf(model = model, 
+                             embeddings = embeddings,
+                             text_var = text_clean)
+
+# redistribute topics
+new_topics <- model$reduce_outliers(documents = data$text_clean, 
+                                    topics = merged_df$topic,
+                                    strategy="embeddings",
+                                    threshold = 0.3)
+
+```
+ 
+Once we have our new topics, we can update our model to reflect this, again, make sure to save your model before updating it in case we want to return to this.
+
+```{r save and update topics, eval = FALSE}
+model$save(path = "BERTopic_example.bt")
+```
+
+```{r update model with reduced outliers}
+model$update_topics(docs = data$text_clean, 
+                    topics = new_topics) 
+
+```
+
+At this point you should look at the topic umap, exemplars, and bigrams again to make sure that posts haven't been reassigned to topics that look like they are not very semantically similar.
+
+```{r, echo = FALSE, eval = FALSE}
+BertopicR:::import_bertopic() 
+
+bert_represent <- reticulate::import("bertopic.representation")
+
+pipeline <- reticulate::import("sklearn.pipeline")
+```
+
+```{python, echo = FALSE, eval = FALSE}
+
+from bertopic.representation import TextGeneration
+from sklearn import pipeline
+# from bertopic import BERTopic
+
+import bertopic.representation as br
+
+# Check the version using the __version__ attribute
+version = br.__version__
+print(version)
+
+
+representation_model = TextGeneration(model = 'gpt2', random_state = 42)
+
+bertopic.representation.__version__
+
+# Create your representation model
+generator = pipeline('text-generation', model='gpt2')
+representation_model = TextGeneration(generator)
+
+# Use the representation model in BERTopic on top of the default pipeline
+topic_model = BERTopic(representation_model=representation_model)
+
+```
+
+```{python, echo = FALSE, eval = FALSE}
+!pip uninstall openai
+import openai
+from bertopic import BERTopic
+from bertopic.representation import OpenAI
+
+openai.api_key = "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"
+representation_openai = OpenAI("gpt-3.5-turbo", chat = True, nr_docs = 5)
+
+model = BERTopic(min_topic_size = 30, umap_model = r.umap_model, embedding_model = r.sentence_model, representation_model = representation_openai)
+
+topics, probs = model.fit_transform(r.data.text_clean, embeddings = r.embeddings)
+
+
 ```

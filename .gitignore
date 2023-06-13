@@ -3,3 +3,5 @@ BertopicR.Rproj
 .DS_Store
 .Rhistory
 inst/doc
+/doc/
+/Meta/

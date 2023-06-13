@@ -2,5 +2,10 @@
 
 export("%>%")
 export(check_python_dependencies)
+export(fit_transform_model)
 export(install_python_dependencies)
+export(makedf)
+export(viz_diff_terms)
+export(viz_top_terms)
 importFrom(magrittr,"%>%")
+importFrom(rlang,":=")
