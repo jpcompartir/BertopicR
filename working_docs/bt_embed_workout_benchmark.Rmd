@@ -155,3 +155,43 @@ cpu_all_batch_16_end - cpu_all_end #2:06, no faster
 Use bench::mark and bench::press to benchmark the results
 
 ## bt_reducer
+```{r}
+docs <- data %>% head(10) %>% pull(message)
+embeddings <- docs %>%
+  bt_embed()
+
+reduced_embeddings <- embeddings %>%
+  bt_reducer(return_value = "reducer")
+
+reduced_embeddings$reducer
+reduced_embeddings$reduced_embeddings
+```
+
+```{r}
+embeddings_df <- embeddings %>% as.data.frame()
+reduced_embeddings <- bt_reducer(embeddings, verbose = FALSE)
+
+#Parameters
+n_neighbors = 15L;n_components = 5L; min_dist = 0.0; metric = "euclidean"; random_state = 42L; verbose = FALSE
+
+#Test outside of function
+reducer <- umap$UMAP(n_neighbors = n_neighbors,
+                     n_components = n_components,
+                     min_dist = min_dist,
+                     metric = metric,
+                     random_state = random_state,
+                     verbose = verbose)
+
+#Fit a model
+fitted_model <- reducer$fit(embeddings)
+
+#Get embeddings from fitted model
+fitted_model$embedding_
+
+not_transformed <- reducer$fit(embeddings)
+transformed <- reducer$fit_transform(embeddings)
+
+not_transformed$transform(embeddings)
+
+```
+
