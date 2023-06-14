@@ -4,6 +4,8 @@
 #'
 #' Initially this function is built upon the `sentence_transformers` Python library, but it may be expanded to accept other frameworks. You should feed in your documents as a list. You can use hardware accelerators e.g. GPUs, to speed up computation.
 #'
+#' The function currently returns an object with two additional attributes: embedding_model, n_documents, they have been appended to the embeddings for extraction at later steps in the pipeline, e.g. when merging data frames later on it's important to check how many documents we entered.
+#'
 #'
 #' @param documents A character vector of the documents to be embedded, e.g. your text variable
 #' @param ... Optional or additional parameters passed to SentenceTransformer's encode function, e.g. batch_size
@@ -42,7 +44,7 @@ bt_embed <- function(documents, ..., embedding_model = "all-MiniLM-L6-v2", accel
   #Leave a trace on the embeddings to extract which model they were from. Not 100% sure this is the right way to go, but seems like it should work. Can grab it later with attributes(embeddings)[["embeedding_model"]]
   attr(embeddings, "embedding_model") <- embedding_model
 
-  #Keep track of the number of documents that were fed into the bt_embed function, should be useful later when merging data frames.
+  #Keep track of the number of documents that were fed into the bt_embed function, should be useful later when merging data frames and documents aren't present any more. Should we just return a data frame with the documents, and nested embeddings?
   n_documents <- length(documents)
   attr(embeddings, "n_documents") <- n_documents
 

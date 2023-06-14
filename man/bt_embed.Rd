@@ -31,4 +31,6 @@ Takes a document, or list of documents, and returns a numerical embedding which 
 }
 \details{
 Initially this function is built upon the \code{sentence_transformers} Python library, but it may be expanded to accept other frameworks. You should feed in your documents as a list. You can use hardware accelerators e.g. GPUs, to speed up computation.
+
+The function currently returns an object with two additional attributes: embedding_model, n_documents, they have been appended to the embeddings for extraction at later steps in the pipeline, e.g. when merging data frames later on it's important to check how many documents we entered.
 }
