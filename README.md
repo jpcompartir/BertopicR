@@ -10,9 +10,12 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 <!-- badges: end -->
 
 The goal of BertopicR is to allow R users to access bertopic’s topic
-modelling suite in R.
+modelling suite in R. The package does not aim to implement every
+feature of bertopic, you may submit issues for feature requests;
+however,it may be faster to go direct to the original, Python library
+which has excellent documentation.
 
-The package currently installs an exact version of bertopic - 0.14.0,
+The package currently installs an exact version of bertopic - 0.15.0,
 this should make it easier to maintain the package over time and prevent
 new users from running into install errors.
 
