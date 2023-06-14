@@ -26,7 +26,7 @@ test_that("bt_embed function is raising errors when it should", {
 
 })
 
-test_that("bt_embed function returns an array when fed correct parameters", {
+test_that("bt_embed function returns an array when fed correct parameters and has appropriate attributes", {
 
   #Funcion takes one text
   test_embeddings <- bt_embed(documents = "text",
@@ -46,8 +46,15 @@ test_that("bt_embed function returns an array when fed correct parameters", {
 
   expect_equal(class(ellipsis), c('matrix', "array"))
 
-  ellipsis_model <- attributes(ellipsis)[["embedding_model"]]
-  #Check attributes have been assigned
+  #Check our ellipsis object has 3 attributes
+  expect_equal(length(attributes(ellipsis)), 3)
+
+  ellipsis_model <- attr(ellipsis, "embedding_model")
+  #Check embedding model attribute is as it should be
   expect_equal("all-MiniLM-L6-v2",ellipsis_model)
+
+  #Check n_documents attributes is as it should be (n_doc doesn't have to exact match)
+  ellipsis_docs <- attr(ellipsis, "n_doc")
+  expect_equal(ellipsis_docs, 2)
 })
 
