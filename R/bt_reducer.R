@@ -6,7 +6,7 @@
 #'
 #' @param embeddings A matrix or data frame to be reduced. Each row is considered a separate data point, and each column is a separate dimension.
 #' @param ... Additional parameters to pass to the UMAP function.
-#' @param return_value Whether to return the reduced embeddings, the model, or both
+#' @param return_value Whether to return the reduced embeddings and a base model or model with inputted parameters.
 #' @param n_neighbors The size of local neighborhood (in terms of number of neighboring data points) used
 #'        for manifold approximation (default: 15).
 #' @param n_components The number of dimensions to reduce to (default: 5).
@@ -17,16 +17,10 @@
 #'
 #' @return A matrix or data frame of the dimension-reduced data. The number of rows will be the same
 #'         as `embeddings`, and the number of columns will be `n_components`.
-#'         This object will also have attributes "original_dim", "n_neighbors", "metric", and "random_state"
-#'         that store corresponding inputs.
-#'
-#' @examples
-#' \dontrun{
-#' bt_reducer(your_data, n_neighbors = 10, n_components = 2, metric = "correlation")
-#' }
+#'         This object will also have attributes "original_dim", "n_neighbors", "metric", and "random_state" that store corresponding inputs.
 #'
 #' @export
-bt_reducer <- function(embeddings, ..., return_value = c("reduced_embeddings", "reducer", "both"), n_neighbors = 15L, n_components = 5L, min_dist = 0.0, metric = "euclidean", random_state = 42L, verbose = TRUE){
+bt_reducer <- function(embeddings, ..., return_value = c("reduced_embeddings", "reducer"), n_neighbors = 15L, n_components = 5L, min_dist = 0.0, metric = "euclidean", random_state = 42L, verbose = TRUE){
 
   return_value <- match.arg(return_value)
 
@@ -69,6 +63,22 @@ bt_reducer <- function(embeddings, ..., return_value = c("reduced_embeddings", "
     }
 
 
+  #Instantiate empty dim reduction model to skip the step in the pipeline
+  empty_reduction_model  <-
+    reticulate::PyClass("BaseDimensionalityReduction",
+                        defs = list(
+                          fit = function(self, X){
+                            return(self)
+                          },
+                          transform = function(self, X){
+                            return(X)
+                          }
+                        )
+    )
+
+
+
+
   #Add additional attributes which may be helpful to track later on ----
   attr(reduced_embeddings, "reduced") <- TRUE
   attr(reduced_embeddings, "original_dim") <- dim(embeddings)
@@ -76,14 +86,7 @@ bt_reducer <- function(embeddings, ..., return_value = c("reduced_embeddings", "
   attr(reduced_embeddings, "metric") <- metric
   attr(reduced_embeddings, "random_state") <- random_state
 
-  #Return either the reduced embeddings or both the embeddings and the model (if the return_value = reducer, the function will have already finished running.) ----
-  return_val <- switch(return_value,
-                       "reduced_embeddings" = reduced_embeddings,
-                       "both" = list(
-                         "reduced_embeddings" = reduced_embeddings,
-                         "reducer" = reducer
-                         ))
-
-return(return_val)
-
+  #Return the reduced embeddings and the base reducer model; this empty model should be fed into the BERTopic call before .fit_transofrm or .fit--
+  return(list("reduced_embeddings" = reduced_embeddings,
+                     "base_reducer" = empty_reduction_model))
 }
