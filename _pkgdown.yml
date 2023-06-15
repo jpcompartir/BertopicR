@@ -2,3 +2,17 @@ url: https://jpcompartir.github.io/BertopicR/
 template:
   bootstrap: 5
 
+navbar:
+  structure:
+    left:  [home, reference, articles]
+    right: [github]
+
+repo:
+  url:
+    home: https://github.com/jpcompartir/BertopicR
+    source: https://github.com/jpcompartir/BertopicR/tree/main
+
+home:
+  links:
+  - text: Report an issue
+    href: https://github.com/jpcompartir/BertopicR/issues

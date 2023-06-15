@@ -21,6 +21,8 @@ random_state = NULL)
 
 \item{calculated_embeddings}{if embeddings are already calculated input embeddings as matrix}
 
+\item{reducer}{the dimensionality reduction model to send to BERTopic()}
+
 \item{min_topic_size}{minimum topic size}
 
 \item{nr_topics}{the number of topics to find within the dataset}

@@ -11,9 +11,7 @@ Suggests:
     janitor (>= 2.1.0),
     knitr (>= 1.42),
     rmarkdown (>= 2.21),
-    SegmentR (>= 0.0.1),
     LimpiaR (>= 0.0.0.9000),
-    ParseR (>= 1.2.0),
     tm (>= 0.7.10),
     viridis (>= 0.6.2),
     testthat (>= 3.0.0)

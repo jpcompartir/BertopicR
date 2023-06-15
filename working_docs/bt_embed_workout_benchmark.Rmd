@@ -1,0 +1,197 @@
+---
+title: "Modularising the fit_transform_model function"
+author: "Jack Penzer"
+date: "2023-06-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+For working out + testing of individual features. Trying to squeeze everything into one function initially appears to make it easier for the user but quickly becomes too inflexible, and too much gets hidden from them (too many implict arguments). The package should be easy to get off the ground with, but also pleasant to use as the user continues/becomes more experienced, i.e. the right abstractions should be made which provide the user with good mental models.
+
+# Load libraries
+```{r}
+library(BertopicR)
+library(dplyr)
+library(tidyr)
+library(stringr)
+```
+
+## bt_embed
+
+```{r}
+data <- bert_example_data %>%
+  janitor::clean_names() %>%
+  filter(!is.na(message), !duplicated(message))
+
+docs <- data %>% head(10) %>% pull(message)
+
+embeddings <- docs %>%
+  bt_embed()
+
+embeddings %>%
+  bt_embed(accelerator = "mps")
+
+embeddings %>%
+  bt_embed(embedding_model = "minilm", accelerator = "mps")
+
+docs <- data %>% pull(message)
+```
+
+### Benchmarking CPU vs GPU
+
+```{r}
+docs_1k <- bert_example_data %>%
+  janitor::clean_names() %>%
+  head(1000) %>%
+  pull(message)
+```
+
+```{r}
+cpu_start <- Sys.time()
+cpu_embeddings <- docs_1k %>%
+  bt_embed(accelerator = "cpu")
+(cpu_end <- Sys.time() - cpu_start)
+```
+
+```{r}
+mps_start <- Sys.time()
+mps_embeddings <- docs_1k %>%
+  bt_embed(accelerator = "mps") 
+(mps_end <- Sys.time() - mps_start)
+```
+
+### All docs?
+
+### MPS all - bench
+
+```{r}
+library(bench)
+embed <- function(documents, batch_size){
+  bt_embed(documents = documents, batch_size = batch_size)
+}
+
+results <- bench::press(
+  batch_size = c(16L, 32L, 64L, 128L, 256L),
+  {
+    bench::mark(embed(documents = docs, batch_size = batch_size))
+  }
+)
+
+results %>%
+  readr::write_csv("~/Google Drive/My Drive/data_science_project_work/internal_projects/bertopic/experiment_results/mps_batchsize.csv")
+
+ggplot2::autoplot(results)
+```
+
+CPU vs MPS
+```{r}
+accel_embed <- function(documents, accelerator){
+  bt_embed(documents = documents, accelerator = accelerator)
+}
+results_accel <- bench::press(
+  bench::mark(accel_embed(documents = docs, accelerator = accelerator), iterations = 5),
+  accelerator = c("mps", "cpu", NULL)
+)
+
+
+results_accel %>%
+  readr::write_csv("~/Google Drive/My Drive/data_science_project_work/internal_projects/bertopic/experiment_results/accelerator_bt_embed.csv")
+ggplot2::autoplot(results_accel)
+```
+
+
+```{r}
+mps_all_start <- Sys.time()
+mps_all_embeddings <- docs %>%
+  bt_embed(accelerator = "mps")
+(mps_all_end <- Sys.time() - mps_all_start) #19.6 seconds, 182 batches, looks like it's batch_size = 32L as defualt?
+```
+
+```{r}
+mps_all_batch_start <- Sys.time()
+mps_all_batch_embeddings <- docs %>%
+  bt_embed(accelerator = "mps", batch_size = 128L)
+(mps_all_batch_end <- Sys.time() - mps_all_batch_start) #25.91 seconds
+#128L slower than default
+```
+
+```{r}
+mps_all_batch64_start <- Sys.time()
+mps_all_batch64_embeddings <- docs %>%
+  bt_embed(accelerator = "mps", batch_size = 64L)
+(mps_all_batch64_end <- Sys.time() - mps_all_batch64_start) #31.2 seconds
+```
+
+
+```{r}
+mps_all_batch268_start <- Sys.time()
+mps_all_batch268_embeddings <- docs %>%
+  bt_embed(accelerator = "mps", batch_size = 256L)
+(mps_all_batch268_end <- Sys.time() - mps_all_batch268_start) #25.03366 secs
+```
+
+
+### CPU All
+```{r}
+cpu_all_start <- Sys.time()
+cpu_all_embeddings <- docs %>%
+  bt_embed(accelerator = "cpu")
+(cpu_all_end <- Sys.time() - cpu_all_start) # 1:59 in fact*
+```
+
+### CPU ALL BATCH
+```{r}
+cpu_all_batch_16_start <- Sys.time()
+cpu_all_batch_16_embeddings <- docs %>%
+  bt_embed(accelerator = "cpu", batch_size = 16L)
+(cpu_all_batch_16_end <- Sys.time() - cpu_all_batch_16_start)
+
+cpu_all_batch_16_end - cpu_all_end #2:06, no faster
+```
+
+Use bench::mark and bench::press to benchmark the results
+
+## bt_reducer
+```{r}
+docs <- data %>% head(10) %>% pull(message)
+embeddings <- docs %>%
+  bt_embed()
+
+reduced_embeddings <- embeddings %>%
+  bt_reducer(return_value = "reducer")
+
+reduced_embeddings$reducer
+reduced_embeddings$reduced_embeddings
+```
+
+```{r}
+embeddings_df <- embeddings %>% as.data.frame()
+reduced_embeddings <- bt_reducer(embeddings, verbose = FALSE)
+
+#Parameters
+n_neighbors = 15L;n_components = 5L; min_dist = 0.0; metric = "euclidean"; random_state = 42L; verbose = FALSE
+
+#Test outside of function
+reducer <- umap$UMAP(n_neighbors = n_neighbors,
+                     n_components = n_components,
+                     min_dist = min_dist,
+                     metric = metric,
+                     random_state = random_state,
+                     verbose = verbose)
+
+#Fit a model
+fitted_model <- reducer$fit(embeddings)
+
+#Get embeddings from fitted model
+fitted_model$embedding_
+
+not_transformed <- reducer$fit(embeddings)
+transformed <- reducer$fit_transform(embeddings)
+
+not_transformed$transform(embeddings)
+
+```
+
