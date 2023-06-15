@@ -2,6 +2,7 @@
 #'
 #' @param cleaned_text cleaned text column that the model should be fit with
 #' @param calculated_embeddings if embeddings are already calculated input embeddings as matrix
+#' @param reducer the dimensionality reduction model to send to BERTopic()
 #' @param min_topic_size minimum topic size
 #' @param ngram_range ngram range for topic representation
 #' @param nr_topics the number of topics to find within the dataset
@@ -28,6 +29,7 @@
 #'
 bt_fit_transform_model <- function(cleaned_text,
                                 calculated_embeddings = NULL,
+                                reducer = NULL,
                                 min_topic_size = 10,
                                 nr_topics = NULL,
                                 ngram_range = c(1, 1),
@@ -68,13 +70,18 @@ bt_fit_transform_model <- function(cleaned_text,
     nr_topics_int <- as.integer(nr_topics)
   }
 
-  # create umap model
-  umap <- reticulate::import("umap")
-  umap_model <- umap$UMAP(n_neighbors=15L,
-                          n_components=5L,
-                          min_dist=0.0,
-                          metric='cosine',
-                          random_state = random_state_int)
+  if(is.null(reducer)){
+    # create umap model
+    umap <- reticulate::import("umap")
+    umap_model <- umap$UMAP(n_neighbors=15L,
+                            n_components=5L,
+                            min_dist=0.0,
+                            metric='cosine',
+                            random_state = random_state_int)
+  } else {
+    umap_model <- reducer
+  }
+
   # create representation model
   representation <- reticulate::import("bertopic.representation")
   representation_model <- representation$MaximalMarginalRelevance(diversity = diversity)
@@ -90,6 +97,7 @@ bt_fit_transform_model <- function(cleaned_text,
   vectorizer_model <- vectorizer$CountVectorizer(ngram_range = ngram_tuple,
                                                   stop_words = stopword)
 
+   # browser()
   # initiate model
   model <- py$bertopic$BERTopic(min_topic_size = min_topic_int,
                                 nr_topics = nr_topics_int,
@@ -106,6 +114,4 @@ bt_fit_transform_model <- function(cleaned_text,
   } else{
     return(list(model, embeddings)) # if embeddings not provided, return embeddings and model
   }
-
-
 }
