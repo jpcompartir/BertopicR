@@ -7,7 +7,7 @@
 bt_reducer(
   embeddings,
   ...,
-  return_value = c("reduced_embeddings", "reducer", "both"),
+  return_value = c("reduced_embeddings", "reducer"),
   n_neighbors = 15L,
   n_components = 5L,
   min_dist = 0,
@@ -21,7 +21,7 @@ bt_reducer(
 
 \item{...}{Additional parameters to pass to the UMAP function.}
 
-\item{return_value}{Whether to return the reduced embeddings, the model, or both}
+\item{return_value}{Whether to return the reduced embeddings and a base model or model with inputted parameters.}
 
 \item{n_neighbors}{The size of local neighborhood (in terms of number of neighboring data points) used
 for manifold approximation (default: 15).}
@@ -39,18 +39,11 @@ for manifold approximation (default: 15).}
 \value{
 A matrix or data frame of the dimension-reduced data. The number of rows will be the same
 as \code{embeddings}, and the number of columns will be \code{n_components}.
-This object will also have attributes "original_dim", "n_neighbors", "metric", and "random_state"
-that store corresponding inputs.
+This object will also have attributes "original_dim", "n_neighbors", "metric", and "random_state" that store corresponding inputs.
 }
 \description{
 This function wraps the UMAP functionality from Python's umap-learn package for use in R via reticulate. It allows users to perform dimension reduction on high-dimensional data, its intended use is in a BertopicR pipeline, you can choose to return reduced embeddings, the reducer (UMAP model) or both.
 }
 \details{
 If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, you should set \code{return_value = reduced_embeddings}, feed your reduced_embeddings into either a \code{BERTopic()} call or the \code{fit_transform()} function, and instantiate a base dimensionality reduction model (so that the calculation is effectively skipped.)
-}
-\examples{
-\dontrun{
-bt_reducer(your_data, n_neighbors = 10, n_components = 2, metric = "correlation")
-}
-
 }

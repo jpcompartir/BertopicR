@@ -62,22 +62,8 @@ bt_reducer <- function(embeddings, ..., return_value = c("reduced_embeddings", "
     stop("Error in UMAP call, are your inputs correctly formatted?")
     }
 
-
   #Instantiate empty dim reduction model to skip the step in the pipeline
-  empty_reduction_model  <-
-    reticulate::PyClass("BaseDimensionalityReduction",
-                        defs = list(
-                          fit = function(self, X){
-                            return(self)
-                          },
-                          transform = function(self, X){
-                            return(X)
-                          }
-                        )
-    )
-
-
-
+  empty_reduction_model  <- base_dimensionality_reduction()
 
   #Add additional attributes which may be helpful to track later on ----
   attr(reduced_embeddings, "reduced") <- TRUE
@@ -89,4 +75,20 @@ bt_reducer <- function(embeddings, ..., return_value = c("reduced_embeddings", "
   #Return the reduced embeddings and the base reducer model; this empty model should be fed into the BERTopic call before .fit_transofrm or .fit--
   return(list("reduced_embeddings" = reduced_embeddings,
                      "base_reducer" = empty_reduction_model))
+}
+
+#Doesn't need any documentation, just implements: https
+base_dimensionality_reduction <- function(){
+  base_dim_reduc <- reticulate::PyClass("BaseDimensionalityReduction",
+                      defs = list(
+                        fit = function(self, X){
+                          return(self)
+                        },
+                        transform = function(self, X){
+                          return(X)
+                        }
+                      )
+  )
+
+  return(base_dim_reduc)
 }
