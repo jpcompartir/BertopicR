@@ -62,8 +62,9 @@ bt_reducer <- function(embeddings, ..., return_value = c("reduced_embeddings", "
     stop("Error in UMAP call, are your inputs correctly formatted?")
     }
 
-  #Instantiate empty dim reduction model to skip the step in the pipeline
-  empty_reduction_model  <- base_dimensionality_reduction()
+  #Instantiate empty dim reduction model to skip the step in the pipeline:
+  btd <- reticulate::import("bertopic.dimensionality")
+  empty_reduction_model  <- btd$BaseDimensionalityReduction() #return as a funciton call, so user doesn't have to.
 
   #Add additional attributes which may be helpful to track later on ----
   attr(reduced_embeddings, "reduced") <- TRUE
@@ -77,11 +78,19 @@ bt_reducer <- function(embeddings, ..., return_value = c("reduced_embeddings", "
                      "base_reducer" = empty_reduction_model))
 }
 
-#Doesn't need any documentation, just implements: https
+#Doesn't need any documentation, just implements the logic from https://github.com/MaartenGr/BERTopic/blob/master/bertopic/dimensionality/_base.py , alhough method not working properly
 base_dimensionality_reduction <- function(){
-  base_dim_reduc <- reticulate::PyClass("BaseDimensionalityReduction",
+
+  base_dim_reduc <- reticulate::PyClass(
+
+    classname = "BaseDimensionalityReduction",
                       defs = list(
-                        fit = function(self, X){
+                        `__init__` = function(self, fit, transform){
+                          self$fit <- fit
+                          self$transform$transform
+                          NULL
+                        },
+                        fit = function(self, X = NULL){
                           return(self)
                         },
                         transform = function(self, X){

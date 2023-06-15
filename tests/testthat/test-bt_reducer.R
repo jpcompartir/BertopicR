@@ -49,7 +49,9 @@ test_that("bt_reducer's return_value argument is working as expected", {
   #Now check our base model has fit and transform
   expect_true(all(names(reduced$base_reducer) == c("fit", "transform")))
 
-  expect_equal("hello", reduced$base_reducer$fit("hello"))
+  x <- reduced$base_reducer$fit("xyz")
+  expect_true(grepl("^bertopic", class(x)[[1]]))
+
   #Check it doeosn't just match anything
   expect_false("xyz" == reduced$base_reducer$transform(X = "XYZ"))
   #Check it matches the input
@@ -74,3 +76,6 @@ test_that("bt_embed and bt_reducer work together",{
   expect_equal(attributes(reducer$reduced_embeddings)[["original_dim"]], c(10, 384))
 
   })
+
+
+
