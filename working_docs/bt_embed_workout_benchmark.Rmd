@@ -22,6 +22,7 @@ library(stringr)
 ## bt_embed
 
 ```{r}
+# BertopicR::import_bertopic()
 data <- bert_example_data %>%
   janitor::clean_names() %>%
   filter(!is.na(message), !duplicated(message))
@@ -31,11 +32,11 @@ docs <- data %>% head(10) %>% pull(message)
 embeddings <- docs %>%
   bt_embed()
 
-embeddings %>%
+docs %>%
   bt_embed(accelerator = "mps")
 
-embeddings %>%
-  bt_embed(embedding_model = "minilm", accelerator = "mps")
+docs %>%
+  bt_embed()
 
 docs <- data %>% pull(message)
 ```
@@ -161,19 +162,19 @@ embeddings <- docs %>%
   bt_embed()
 
 reduced_embeddings <- embeddings %>%
-  bt_reducer(return_value = "reducer")
-
-reduced_embeddings$reducer
+  bt_reducer(return_value = "reduced_embeddings")
 reduced_embeddings$reduced_embeddings
+reduced_embeddings$base_reducer
 ```
 
 ```{r}
 embeddings_df <- embeddings %>% as.data.frame()
-reduced_embeddings <- bt_reducer(embeddings, verbose = FALSE)
+reduced_embeddings <- bt_reducer(embeddings, verbose = FALSE, return_value = "reduced_embeddings")
 
 #Parameters
 n_neighbors = 15L;n_components = 5L; min_dist = 0.0; metric = "euclidean"; random_state = 42L; verbose = FALSE
 
+umap <- reticulate::import("umap")
 #Test outside of function
 reducer <- umap$UMAP(n_neighbors = n_neighbors,
                      n_components = n_components,
@@ -192,6 +193,163 @@ not_transformed <- reducer$fit(embeddings)
 transformed <- reducer$fit_transform(embeddings)
 
 not_transformed$transform(embeddings)
-
 ```
+
+
+# RStudio example for py classes
+```{r}
+library(reticulate)
+Hi <- PyClass("Hi", list(
+  name = NULL,
+  `__init__` = function(self, name) {
+    self$name <- name
+    NULL
+  },
+  say_hi = function(self) {
+    paste0("Hi ", self$name)
+  }
+))
+
+a <- Hi("World")
+a$name <- "Jack"
+a$say_hi()
+```
+
+
+## Creating the BaseDimensionalityReduction Class
+```{r}
+empty_reduction_model <- py$bertopic$dimensionality$BaseDimensionalityReduction()
+
+base_dim <- reticulate::PyClass("BaseDimensionalityReduction", 
+                    defs = list(
+                      fit = function(self, X){
+                        return(self)
+                      },
+                      transform = function(self, X){
+                        return(X)
+                        }
+                        )
+                    )
+base_dim$fit("x")
+base_dim$transform(X = "Hello")
+```
+
+# Testing bt_embed, bt_reducer and fit_transform on some real data
+```{r}
+library(BertopicR)
+library(dplyr)
+data <- bert_example_data %>%
+  janitor::clean_names() %>%
+  filter(!duplicated(message))
+
+embeddings <- bt_embed(data$message)
+
+reducer <- bt_reducer(
+  embeddings = embeddings, return_value = "reduced_embeddings", 
+  n_components = 10L,
+  n_neighbors = 10L,
+  min_dist = 0.0001,
+  metric = "euclidean", 
+  random_state = 18L
+)
+
+base_model <- reducer$base_reducer
+reduced_embeddings <- reducer$reduced_embeddings
+base_model
+base_model$fit(1)
+
+library(reticulate)
+BertopicR::import_bertopic()
+
+# Fit BERTopic without actually performing any dimensionality reduction
+empty_dimensionality_model = BaseDimensionalityReduction()
+topic_model = BERTopic(umap_model=empty_dimensionality_model)
+
+topics <- bt_fit_transform_model(cleaned_text = data$message, calculated_embeddings = reduced_embeddings, reducer = base_model, stopwords =  FALSE)
+
+topics_min_size <-  bt_fit_transform_model(cleaned_text = data$message[1:100], calculated_embeddings = reduced_embeddings[1:100, ], reducer = base_model, stopwords =  FALSE, min_topic_size = 5L)
+```
+
+It works with the BaseDimensionalityReduction object from Bertopic
+```{r}
+py_run_string("from bertopic.dimensionality import BaseDimensionalityReduction")
+bert_base_dim <- py$BaseDimensionalityReduction
+model <- bt_fit_transform_model(cleaned_text = data$message[1:10], calculated_embeddings = reduced_embeddings[1:10,], reducer = bert_base_dim, stopwords =  FALSE)
+
+model$approximate_distribution(data$message[1:10])
+```
+
+But not with my implementation
+```{r}
+reducer <- bt_reducer(
+  embeddings = embeddings[1:10, ], return_value = "reduced_embeddings", 
+  n_components = 5L,
+  n_neighbors = 5L,
+  min_dist = 0.0001,
+  metric = "euclidean", 
+  random_state = 18L
+)
+
+base_model <- reducer$base_reducer
+reduced_embeddings <- reducer$reduced_embeddings
+
+topics <- bt_fit_transform_model(cleaned_text = data$message[1:10], calculated_embeddings = reduced_embeddings[1:10,], reducer = base_model, stopwords =  FALSE)
+
+
+bert_base_dim$fit("hello")
+bert_base_dim$transform(self = bert_base_dim, X = "why?")
+
+base_model$transform(self = base_model, X = "why?")
+base_model$fit(self =base_model, X = "hello")
+
+
+bert_base_dim$transform(X = "why?")
+base_model$transform(X = 1)
+
+?bert_base_dim$fit
+```
+
+```{r}
+base_model_two <- base_dimensionality_reduction()
+base_dimensionality_reduction()
+
+bt_fit_transform_model(cleaned_text = data$message[1:10], calculated_embeddings = reduced_embeddings[1:10,], reducer = base_model_two, stopwords =  FALSE)
+```
+
+Quick benchmark: 
+Obvs totally unfair as you should include the calculating of the embeddings for the first modular approach, but that makes it pretty complicated (more complicated than it needs to be), the point is to test what happens when we make a change
+```{r}
+monolithic <- bench::mark(
+  bt_fit_transform_model(cleaned_text = data$message)
+)
+
+embeddings <- bt_embed(data$message)
+reduced <- bt_reducer(embeddings)
+reducer <- reduced$base_reducer
+reduced_embeddings <- reduced$reduced_embeddings
+
+modular <- bench::mark(
+  bt_fit_transform_model(cleaned_text = data$message, calculated_embeddings = reduced_embeddings, 
+                         reducer = reducer)
+)
+
+modular_change <- bench::mark(
+  bt_fit_transform_model(cleaned_text = data$message, calculated_embeddings = reduced_embeddings, 
+                         reducer = reducer, min_topic_size = 5L)
+)
+modular_change
+
+monolithic_five <- bench::mark(
+  bt_fit_transform_model(cleaned_text = data$message, min_topic_size = 5L)
+)
+monolithic_five
+
+results_df <- rbind(monolithic, modular, modular_change, monolithic_five) %>%
+  mutate(desc = c("monolith", "modular", "modular_5L", "monolith_5L"), .before = 1)
+
+results_df %>%
+  readr::write_csv("~/Google Drive/My Drive/data_science_project_work/internal_projects/bertopic/experiment_results/monolithic_vs_modular.csv")
+```
+
+
 

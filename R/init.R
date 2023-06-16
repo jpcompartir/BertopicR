@@ -119,3 +119,37 @@ import_bertopic <- function(){
   }
 }
 
+#' Detach bertopic from the python session
+#'
+#' Call this when you're finished with the topic modelling process. Although, safer may be to simply save your work and then restart your R session, as the Python session is still running (and as far as I know, there's no way to safely close)
+#'
+#' @return Nothing
+#' @export
+#'
+#' @usage
+#' bertopic_detach()
+bertopic_detach <- function(){
+
+  #Import sys
+  py_run_string("import sys")
+
+  #Check if bertopic is inside the Python session and delete it if it is (this follows what spacyr does, not 100% it's good practice.)
+  py_run_string('if "bertopic" in locals():\n  del bertopic')
+
+  x <- py_run_string("locals()")
+  py_info <- reticulate::py_to_r(x)
+  if(!"bertopic" %in% names(py_info)){
+    stop("bertopic was not found in the Python session")
+  }
+
+  py_run_string("del bertopic")
+
+  y <- py_run_string("locals()")
+  py_info_updated <- reticulate::py_to_r(y)
+
+  if(!"bertopic" %in% names(py_info)){
+    stop("bertopic was detached")
+  }
+
+}
+
