@@ -2,9 +2,10 @@
 
 export("%>%")
 export(bertopic_detach)
-export(bt_embed)
+export(bt_do_embedding)
 export(bt_fit_transform_model)
 export(bt_make_df)
+export(bt_make_embedder)
 export(bt_reducer)
 export(bt_viz_diff_terms)
 export(bt_viz_top_terms)
