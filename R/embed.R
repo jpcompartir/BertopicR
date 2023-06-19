@@ -50,14 +50,19 @@ bt_make_embedder <- function(model_name) {
 #' @export
 bt_do_embedding <- function(embedder, documents, ..., accelerator = "mps", progress_bar = TRUE) {
 
-
+  #If the embedder isn't a sentence transformers object, stop early.
   if(!grepl("^sentence_tran",class(embedder)[[1]])){
     stop("embedder should be a sentence transformers model")
   }
 
+  #Store the attributes associated with the embedder for adding the embedding_model later
+  embedder_attributes <- attributes(embedder)
+
+  #Stop early if conditions aren't met
   stopifnot(is.character(accelerator) | is.null(accelerator),
             is.logical(progress_bar))
 
+  #Create embeddings
   embeddings <-
     embedder$encode(
       documents,
@@ -72,6 +77,15 @@ bt_do_embedding <- function(embedder, documents, ..., accelerator = "mps", progr
   #Keep track of the number of documents that were fed into the bt_embed function, should be useful later when merging data frames and documents aren't present any more. Should we just return a data frame with the documents, and nested embeddings?
   n_documents <- length(documents)
   attr(embeddings, "n_documents") <- n_documents
+
+
+  #Add the embedding_model attribute if we can (this will help later on, or when debugging for other users.)
+  if("embedding_model" %in% names(embedder_attributes)){
+    attr(embeddings, "embedding_model") <- embedder_attributes$embedding_model
+    message(paste0(embedder_attributes$embedding_model, " added to embeddings attributes"))
+  } else{
+    message("No embedding_model attribute found on embedder, proceeding without adding")
+  }
 
   return(embeddings)
 
