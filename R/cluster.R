@@ -27,6 +27,7 @@ bt_make_clusterer <- function(..., clustering_method = c("hdbscan", "kmeans", "a
   clustering_model <- switch(clustering_method,
                              "kmeans" = bt_make_clusterer_kmeans(...),
                              "hdbscan" = bt_make_clusterer_hdbscan(...),
+                             "agglomerative" = bt_make_clusterer_agglomerative(...),
                              "base" = bt_base_clusterer())
 
   return(clustering_model)
@@ -50,6 +51,28 @@ bt_make_clusterer_kmeans <- function(n_clusters = 10L) {
 
   #Instantiate clustering model making sure n_clusters is an integer
   clustering_model <- skcluster$KMeans(n_clusters = as.integer(n_clusters))
+
+  return(clustering_model)
+}
+
+#' Create an Agglomerative Clustering clustering model
+#'
+#' @param n_clusters number of clusters to search for (enter as integer by typing L after the number)
+#'
+#' @return An Agglomerative Clustering clustering model (Python object)
+#' @export
+#'
+#' @examples
+#' clustering_model <- bt_make_clusterer_agglomerative(15L)
+#'
+#' agglomerative_model <- bt_make_clusterer_agglomerative(n_clusters = 10L)
+bt_make_clusterer_agglomerative <- function(n_clusters = 20L) {
+
+  #Import library to access AgglomerativeClustering inside function scope
+  skcluster <- reticulate::import("sklearn.cluster")
+
+  #Instantiate clustering model making sure n_clusters is an integer
+  clustering_model <- skcluster$AgglomerativeClustering(n_clusters = as.integer(n_clusters))
 
   return(clustering_model)
 }
@@ -104,3 +127,5 @@ bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, metric = "euc
 
   return(clustering_model)
 }
+
+
