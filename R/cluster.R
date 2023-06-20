@@ -104,7 +104,7 @@ bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, metric = "euc
   #Import the hdbscan library inside function scope
   hdbscan <- reticulate::import("hdbscan")
 
-  #Convert the dots to list for checking purposes
+  #Convert the `...` (dot-dot-dot or ellipsis) to list for checking purposes
   dots <- rlang::list2(...)
 
   #Instantiate empty model to get valid arguments
@@ -129,3 +129,39 @@ bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, metric = "euc
 }
 
 
+bt_do_clustering <- function(clustering_model, embeddings) {
+
+  #use fit method as agglomerative
+  fitted_model <- clustering_model$fit(embeddings)
+
+  labels <- clustering_output$labels_
+
+  return(labels)
+
+}
+hdbscan <- bt_make_clusterer(clustering_method = "hdbscan")
+agglomerative <- bt_make_clusterer(clustering_method = "agglomerative", n_clusters = 2L)
+kmeans <- bt_make_clusterer(clustering_method = "kmeans",n_clusters = 2L)
+
+sort(names(hdbscan))
+sort(names(agglomerative))
+sort(names(kmeans))
+
+
+models <- list(hdbscan = hdbscan,
+     agglomerative = agglomerative,
+     kmeans = kmeans)
+
+purrr::map(models, class)
+
+purrr::map(models, names)
+
+embeddings <- array(runif(2000), dim = c(10, 200))
+
+km_clusters <- bt_do_clustering(kmeans, embeddings)
+hd_clusters <- bt_do_clustering(hdbscan, embeddings)
+ag_clusters <- bt_do_clustering(agglomerative, embeddings)
+
+km_clusters$labels_
+hd_clusters$labels_
+ag_clusters$labels_

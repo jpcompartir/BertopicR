@@ -27,7 +27,7 @@ bt_base_reducer <- function() {
 #' @examples
 #' base_emebdder <- bt_base_embedder()
 #'
-#' embedder <- bt_base_emebdder()
+#' embedder <- bt_base_embedder()
 bt_base_embedder <- function()  {
 
   #Import appropriate library

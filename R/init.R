@@ -131,20 +131,20 @@ import_bertopic <- function(){
 bertopic_detach <- function(){
 
   #Import sys
-  py_run_string("import sys")
+  reticulate::py_run_string("import sys")
 
   #Check if bertopic is inside the Python session and delete it if it is (this follows what spacyr does, not 100% it's good practice.)
-  py_run_string('if "bertopic" in locals():\n  del bertopic')
+  reticulate::py_run_string('if "bertopic" in locals():\n  del bertopic')
 
-  x <- py_run_string("locals()")
+  x <- reticulate::py_run_string("locals()")
   py_info <- reticulate::py_to_r(x)
   if(!"bertopic" %in% names(py_info)){
     stop("bertopic was not found in the Python session")
   }
 
-  py_run_string("del bertopic")
+  reticulate::py_run_string("del bertopic")
 
-  y <- py_run_string("locals()")
+  y <- reticulate::py_run_string("locals()")
   py_info_updated <- reticulate::py_to_r(y)
 
   if(!"bertopic" %in% names(py_info)){

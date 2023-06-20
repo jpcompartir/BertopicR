@@ -15,5 +15,5 @@ Create a base embedder for skipping embedding step of bertopic pipeline
 \examples{
 base_emebdder <- bt_base_embedder()
 
-embedder <- bt_base_emebdder()
+embedder <- bt_base_embedder()
 }

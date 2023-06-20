@@ -13,6 +13,8 @@ bt_do_embedding(
 )
 }
 \arguments{
+\item{embedder}{An embedding model (output of bt_make_embedder)}
+
 \item{documents}{A character vector of the documents to be embedded, e.g. your text variable}
 
 \item{...}{Optional or additional parameters passed to SentenceTransformer's encode function, e.g. batch_size}
@@ -20,8 +22,6 @@ bt_do_embedding(
 \item{accelerator}{A string containing the name of a hardware accelerator, e.g. "mps", "cuda". If NULL no acceleartor is used.}
 
 \item{progress_bar}{A logical value indicating whether a progress bar is shown in the console}
-
-\item{embedding_model}{A string containing the name of the SentenceTransformers embedding model}
 }
 \value{
 An array of floating point numbers

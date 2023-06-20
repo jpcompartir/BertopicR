@@ -20,11 +20,14 @@ test_that("bt_base_clusterer returns the right object", {
   expect_true(grepl("BaseCluster", clusterer))
 })
 
+#Misread the docs, don't need this
 
-test_that("bt_base_ctfidf returns the right object", {
-  expect_silent(bt_base_ctfidf())
-  ctfidf <- bt_base_ctfidf()
-  expect_true(grepl("bertopic.*ClassTf", class(ctfidf)[[1]]))
+# test_that("bt_base_ctfidf returns the right object", {
+#   expect_silent(bt_base_ctfidf())
+#   ctfidf <- bt_base_ctfidf()
+#   expect_true(grepl("bertopic.*ClassTf", class(ctfidf)[[1]]))
+#
+#
+# })
 
 
-})
