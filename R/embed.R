@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @examples
-#' emebdder <- bt_make_embedder("all-mpnet-base-v2")
+#' embedder <- bt_make_embedder("all-mpnet-base-v2")
 #'
 #' embedder <- bt_make_embedder("aLL-minilm-l6-v2")
 bt_make_embedder <- function(model_name) {
@@ -39,10 +39,9 @@ bt_make_embedder <- function(model_name) {
 #'
 #' The function currently returns an object with two additional attributes: embedding_model, n_documents, they have been appended to the embeddings for extraction at later steps in the pipeline, e.g. when merging data frames later on it's important to check how many documents we entered.
 #'
-#'
+#' @param embedder An embedding model (output of bt_make_embedder)
 #' @param documents A character vector of the documents to be embedded, e.g. your text variable
 #' @param ... Optional or additional parameters passed to SentenceTransformer's encode function, e.g. batch_size
-#' @param embedding_model A string containing the name of the SentenceTransformers embedding model
 #' @param accelerator A string containing the name of a hardware accelerator, e.g. "mps", "cuda". If NULL no acceleartor is used.
 #' @param progress_bar A logical value indicating whether a progress bar is shown in the console
 #'
