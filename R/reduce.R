@@ -2,9 +2,9 @@
 #'
 #' This function wraps the UMAP functionality from Python's umap-learn package for use in R via reticulate. It allows you to perform dimension reduction on high-dimensional data, its intended use is in a BertopicR pipeline/
 #'
-#' If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, you should set `reducer_type = "base"`
+#' If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, you should call `reducer <- bt_base_reducer()`
 #'
-#' @param reducer_type Choose parametric for a model with parameters and base for an empty model
+#' @param ... Sent to umap$UMAP for adding additional arugments
 #' @param n_neighbors The size of local neighbourhood (in terms of number of neighboring data points) used
 #'        for manifold approximation (default: 15).
 #' @param n_components The number of dimensions to reduce to (default: 5).
@@ -15,13 +15,10 @@
 #'
 #' @return A matrix or data frame of the dimension-reduced data. The number of rows will be the same
 #'      as `embeddings`, and the number of columns will be `n_components`.
-#'      This object will also have attributes "original_dim", "n_neighbors", "metric", and "random_state" that store corresponding inputs.
 #'
 #' @export
-bt_make_reducer <- function(reducer_type = c("parametric", "base"), ..., n_neighbors = 15L, n_components = 5L, min_dist = 0.0, metric = "euclidean", random_state = 42L, verbose = TRUE
+bt_make_reducer <- function( ..., n_neighbors = 15L, n_components = 5L, min_dist = 0.0, metric = "euclidean", random_state = 42L, verbose = TRUE
 ) {
-
-  reducer_type <- match.arg(reducer_type)
 
   #Early stopping and input validation ----
   stopifnot(is.logical(verbose),
@@ -29,12 +26,6 @@ bt_make_reducer <- function(reducer_type = c("parametric", "base"), ..., n_neigh
             is.numeric(n_components), is.numeric(random_state),
             is.numeric(min_dist),
             is.character(metric))
-
-  if(reducer_type == "base"){
-    #Instantiate empty dim reduction model to skip the step in the pipeline:
-    btd <- reticulate::import("bertopic.dimensionality")
-    reducer  <- btd$BaseDimensionalityReduction() #return as a funciton call, so user doesn't have to.
-  } else {
 
     #Import umap library for reduction ----
     umap <- reticulate::import("umap")
@@ -48,7 +39,7 @@ bt_make_reducer <- function(reducer_type = c("parametric", "base"), ..., n_neigh
                          verbose = verbose,
                          ... #Allows user to give additional arguments to the umap$UMAP function.
     )
-  }
+
 
   return(reducer)
 }
@@ -82,10 +73,6 @@ bt_do_reducing <- function(reducer, embeddings) {
   if(any(class(reduced_embeddings) == "try-error")){
     stop("Error in UMAP call, are your inputs correctly formatted?")
   }
-
-  #Instantiate empty dim reduction model to skip the step in the pipeline:
-  btd <- reticulate::import("bertopic.dimensionality")
-  empty_reduction_model  <- btd$BaseDimensionalityReduction() #return as a funciton call, so user doesn't have to.
 
   #Add additional attributes which may be helpful to track later on ----
   attr(reduced_embeddings, "reduced") <- dim(reduced_embeddings)[[2]] < dim(embeddings)[[2]]
@@ -190,7 +177,7 @@ bt_do_reducing <- function(reducer, embeddings) {
 #                       defs = list(
 #                         `__init__` = function(self, fit, transform){
 #                           self$fit <- fit
-#                           self$transform$transform
+#                           self$transform <- transform
 #                           NULL
 #                         },
 #                         fit = function(self, X = NULL){

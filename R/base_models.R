@@ -60,29 +60,32 @@ bt_base_clusterer <- function() {
 
   return(base_clusterer)
 }
-#' Creare a base c-tf-idf model for skipping vectorisation step of bertopic pipeline
+
+# misread the docs, this isn't a base model so delete
 #'
-#' @return an empty c-tf-idf model (Python class)
-#' @export
-#'
-#' @examples
-#' base_ctf <- bt_base_ctfidf()
-#'
-#' base_ctfidf <- bt_base_ctfidf()
-#'
-#' ctfidfer <- bt_base_ctfidf()
-bt_base_ctfidf <- function() {
-
-  #Import appropriate library
-  btv <- reticulate::import("bertopic.vectorizers")
-
-  #Instantiate an empty c-tf-idf vectoriser
-  base_vectoriser <- btv$ClassTfidfTransformer()
-
-  return(base_vectoriser)
-
-}
-
-
+#' #' Create a base c-tf-idf model for skipping vectorisation step of bertopic pipeline
+# #'
+# #' @return an empty c-tf-idf model (Python class)
+# #' @export
+# #'
+# #' @examples
+# #' base_ctf <- bt_base_ctfidf()
+# #'
+# #' base_ctfidf <- bt_base_ctfidf()
+# #'
+# #' ctfidfer <- bt_base_ctfidf()
+# bt_base_ctfidf <- function() {
+#
+#   #Import appropriate library
+#   btv <- reticulate::import("bertopic.vectorizers")
+#
+#   #Instantiate an empty c-tf-idf vectoriser
+#   base_vectoriser <- btv$ClassTfidfTransformer()
+#
+#   return(base_vectoriser)
+#
+# }
+#
+#
 
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/embed.R
 \name{bt_make_embedder}
 \alias{bt_make_embedder}
-\title{Make an embedding model}
+\title{Create an embedding model}
 \usage{
 bt_make_embedder(model_name)
 }

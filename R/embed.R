@@ -1,4 +1,4 @@
-#' Make an embedding model
+#' Create an embedding model
 #'
 #' Initially this function is built upon the `sentence_transformers` Python library, but it may be expanded to accept other frameworks. You should feed in your documents as a list. You can use hardware accelerators e.g. GPUs, to speed up computation.
 #'
