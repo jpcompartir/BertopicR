@@ -2,6 +2,10 @@
 
 export("%>%")
 export(bertopic_detach)
+export(bt_base_clusterer)
+export(bt_base_ctfidf)
+export(bt_base_emebdder)
+export(bt_base_reducer)
 export(bt_do_embedding)
 export(bt_do_reducing)
 export(bt_fit_transform_model)
