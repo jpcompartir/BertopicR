@@ -6,6 +6,7 @@
 #' @examples
 #' base_reducer <- bt_base_reducer()
 #'
+#' reducer <- bt_base_reducer()
 bt_base_reducer <- function() {
 
   #Import appropriate library
@@ -25,7 +26,9 @@ bt_base_reducer <- function() {
 #'
 #' @examples
 #' base_emebdder <- bt_base_embedder()
-bt_base_emebdder <- function()  {
+#'
+#' embedder <- bt_base_emebdder()
+bt_base_embedder <- function()  {
 
   #Import appropriate library
   bte <- reticulate::import("bertopic.backend")
@@ -45,6 +48,8 @@ bt_base_emebdder <- function()  {
 #'
 #' @examples
 #' base_clusterer <- bt_base_clusterer()
+#'
+#' clusterer <- bt_base_clusterer()
 bt_base_clusterer <- function() {
 
   #Instantiate empty cluster model to skip the step in the pipeline:
@@ -64,6 +69,8 @@ bt_base_clusterer <- function() {
 #' base_ctf <- bt_base_ctfidf()
 #'
 #' base_ctfidf <- bt_base_ctfidf()
+#'
+#' ctfidfer <- bt_base_ctfidf()
 bt_base_ctfidf <- function() {
 
   #Import appropriate library
@@ -71,6 +78,8 @@ bt_base_ctfidf <- function() {
 
   #Instantiate an empty c-tf-idf vectoriser
   base_vectoriser <- btv$ClassTfidfTransformer()
+
+  return(base_vectoriser)
 
 }
 
