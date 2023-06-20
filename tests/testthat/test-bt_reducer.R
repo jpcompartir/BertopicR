@@ -2,16 +2,12 @@
 
 test_that("bt_make_reducer stops when it's given bad arguments",{
 
-  expect_error(bt_make_reducer(reducer_type = "beans"), "should be one of")
+  expect_error(bt_make_reducer(n_neighbors = "15"), "is.numeric.*n_neighb")
 
-  expect_silent(bt_make_reducer(reducer_type = "base"))
-
-  expect_error(bt_make_reducer(reducer = "parametric", n_neighbors = "15"), "is.numeric.*n_neighb")
-
-  expect_error(bt_make_reducer(reducer = "parametric", n_components = TRUE), "is.numeric.*n_components")
-  expect_error(bt_make_reducer(reducer = "parametric", min_dist = "12"))
-  expect_error(bt_make_reducer(reducer = "parametric", random_state = "42"), "is.numeric.*random_state")
-  expect_error(bt_make_reducer(reducer = "parametric", metric = 2), "is.character.*metric" )
+  expect_error(bt_make_reducer(n_components = TRUE), "is.numeric.*n_components")
+  expect_error(bt_make_reducer(min_dist = "12"))
+  expect_error(bt_make_reducer(random_state = "42"), "is.numeric.*random_state")
+  expect_error(bt_make_reducer(metric = 2), "is.character.*metric" )
 })
 
 test_that("bt_make_reducer's arguments are working as expected", {
@@ -32,19 +28,14 @@ test_that("bt_make_reducer's arguments are working as expected", {
 
 })
 
-test_that("bt_make_reducer's base argument is working as intended", {
+test_that("bt_base_reducer's is working as intended - returns a base model", {
 
-  reducer <- bt_make_reducer(reducer_type = "base")
+  reducer <- bt_base_reducer()
   #Now check our base model has fit and transform
   expect_true(all(names(reducer) == c("fit", "transform")))
 
   x <- reducer$fit("xyz")
   expect_true(grepl("^bertopic", class(x)[[1]]))
-
-  #Check it doeosn't just match anything
-  expect_false("xyz" == reducer$transform(X = "XYZ"))
-  #Check it matches the input
-  expect_equal("xyz", reducer$transform(X = "xyz"))
 })
 
 test_that("bt_do_reducing accepts an array or a data frame as embeddings", {
@@ -55,7 +46,7 @@ test_that("bt_do_reducing accepts an array or a data frame as embeddings", {
   my_array <- array(digits, dim = c(20, 368))
   my_df <- as.data.frame(my_array)
 
-  reducer <- bt_make_reducer("parametric", verbose = FALSE)
+  reducer <- bt_make_reducer(verbose = FALSE)
 
   expect_silent(bt_do_reducing(reducer, my_array))
   expect_silent(bt_do_reducing(reducer, my_df))
@@ -71,12 +62,11 @@ test_that("bt_embed and bt_reducer work together",{
 
   embedder <- bt_make_embedder("all-minilm-l6-v2")
   embeddings <- bt_do_embedding(embedder = embedder, documents = documents)
-  reducer <- bt_make_reducer(reducer_type = "parametric", n_neighbors = 2L, verbose = FALSE)
+  reducer <- bt_make_reducer( n_neighbors = 2L, verbose = FALSE)
   reduced <- bt_do_reducing(reducer = reducer, embeddings = embeddings )
 
   expect_true(attributes(reduced)[["reduced"]])
   expect_equal(attributes(reduced)[["original_dim"]], c(10, 384))
-
 })
 
 

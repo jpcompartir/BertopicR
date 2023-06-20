@@ -79,7 +79,7 @@ test_that("bt_do_embedding function returns an array when fed correct parameters
   expect_equal(class(ellipsis), c('matrix', "array"))
 
   #Check our ellipsis object has 3 attributes
-  expect_equal(length(attributes(ellipsis)), 2)
+  expect_equal(length(attributes(ellipsis)), 3)
 
   #Check n_documents attributes is as it should be (n_doc doesn't have to exact match)
   ellipsis_docs <- attr(ellipsis, "n_doc")
