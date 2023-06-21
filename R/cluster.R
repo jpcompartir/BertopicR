@@ -131,6 +131,9 @@ bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, metric = "euc
 
 bt_do_clustering <- function(clustering_model, embeddings) {
 
+  # Early stopping
+  stopifnot(is.array(embeddings) | is.data.frame(embeddings))
+
   #use fit method as agglomerative
   fitted_model <- clustering_model$fit(embeddings)
 

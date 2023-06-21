@@ -13,7 +13,8 @@ The goal of BertopicR is to allow R users to access bertopic’s topic
 modelling suite in R. The package does not aim to implement every
 feature of bertopic, you may submit issues for feature requests;
 however,it may be faster to go direct to the original, Python library
-which has excellent documentation.
+which has excellent documentation. \[[BERTopic
+documentation](https://maartengr.github.io/BERTopic/index.html)\]
 
 The package currently installs an exact version of bertopic - 0.15.0,
 this should make it easier to maintain the package over time and prevent
