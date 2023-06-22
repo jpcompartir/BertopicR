@@ -43,10 +43,13 @@ vectoriser <- bt_make_vectoriser(
 #args are having an effect
 expect_true(all(vectoriser$ngram_range[[1]] == 1, vectoriser$ngram_range[[2]] == 2))
 
+#The languae for stopwords has been changed
 expect_equal(vectoriser$stop_words, "french")
 
+#min_frequency argument is altering bertopic's min_df (changed name as confusing and we use min_frequency a lot)
 expect_equal(vectoriser$min_df, 5L)
 
+#Count vectorisers is in the vectoriser's classes
 expect_true(any(grepl( "CountVec", class(vectoriser))))
 
 })

@@ -134,7 +134,7 @@ bt_do_clustering <- function(clustering_model, embeddings) {
   # Early stopping
   stopifnot(is.array(embeddings) | is.data.frame(embeddings))
 
-  #use fit method as agglomerative
+  #use fit method as agglomerative doesn't have all the same methods(?) check this
   fitted_model <- clustering_model$fit(embeddings)
 
   labels <- fitted_model$labels_
