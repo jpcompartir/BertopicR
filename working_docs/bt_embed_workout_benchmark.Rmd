@@ -495,12 +495,137 @@ intersect(
 
 ```
 
+## Testing different clustering methods
+
+```{r}
+cleaner_text <- bert_example_data %>%
+  janitor::clean_names() %>%
+  dplyr::filter(!duplicated(message)) %>%
+  ParseR::clean_text(message) %>%
+  LimpiaR::limpiar_spaces(message) %>%
+  LimpiaR::limpiar_duplicates(message)
+
+embedder <- bt_make_embedder("all-mpnet-base-v2")
+reducer <- bt_make_reducer(n_neighbors = 10L, min_dist = 0, verbose = FALSE)
+py_kmeans <- bt_make_clusterer(clustering_method = "kmeans", n_clusters = 10L)
+hdbscan <- bt_make_clusterer_hdbscan(min_cluster_size = 10L, min_samples = 3L)
+hdbscan_leaf <- bt_make_clusterer_hdbscan(cluster_selection_method = "leaf", min_samples = 3L)
+
+cleaner_text <- cleaner_text %>%
+  dplyr::filter(!message == "")
+
+spam <-cleaner_text %>%
+  LimpiaR::limpiar_spam_grams(message, n_gram = 6L, min_freq = 3)
+
+df <- spam$data
+
+texts <- df$message
+
+embeddings <- embedder %>%
+  bt_do_embedding(texts)
+
+reduced_embeddings <- reducer %>%
+  bt_do_reducing(embeddings = embeddings)
+
+py_kmeans_clusters <- bt_do_clustering(clustering_model = py_kmeans,embeddings = reduced_embeddings)
+r_kmeans_clusters <- kmeans(reduced_embeddings, centers = 10L)
+
+r_kmeans_clusters$cluster
+py_kmeans_df <- py_kmeans_clusters %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  rename(py = 1)
+r_kmeans_df <- r_kmeans_clusters$cluster %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  rename(r = 1)
+
+kmeans_df <- bind_cols(py_kmeans_df, r_kmeans_df)
+
+kmeans_df %>%
+  count(py, r) %>%
+  arrange(desc(n)) %>% 
+  as.data.frame()
+
+hdbscan_clusters <- bt_do_clustering(hdbscan, reduced_embeddings)
+hdbscan_clusters %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  rename(clusters = 1) %>%
+  count(clusters, sort = TRUE)
+
+leaf_clusters <- bt_do_clustering(hdbscan_leaf, reduced_embeddings)
+
+results <- lapply(unique(leaf_clusters), function(x) sum(x == leaf_clusters))
+
+tibble(cluster = unique(leaf_clusters), results = unlist(results)) %>%
+  arrange(desc(results))
+
+  select(message) %>%
+  mutate(py_kmeans = py_kmeans_clusters, 
+         r_kmeans = r_kmeans_clusters$cluster,
+         hdbscan = hdbscan_clusters,
+         leafs = leaf_clusters)
+
+clusters_df %>%
+  count(leafs, sort = TRUE)
+
+clusters_df %>%
+  filter(leafs == 92) %>%
+  pull(message)
+```
+
 
 #bt_model
 ```{r}
+embedder <- bt_make_embedder("all-minilm-l6-v2")
+reducer <- bt_make_reducer(n_neighbors = 10L)
+clusterer <- bt_make_clusterer_hdbscan(min_cluster_size = 15L, min_samples = 10L)
+clusterer <- bt_make_clusterer_kmeans(n_clusters = 10L)
+
+S3Class(embedder)
+S3Class(reducer)
+S3Class(clusterer)
+S3Class(clusterer)
+
 model <- bt_compile_model(
-  embedding_model <- NULL,
-  umap_model <- NULL)
+  embedding_model <- embedder,
+  umap_model <- reducer,
+  clustering_model = clusterer)
+
+model$embedding_model
+model$umap_model
+model$hdbscan_model
 ```
 
 #bt_fit
+
+Developing the bt_fit_model function:
+```{r}
+library(dplyr)
+model <- bt_compile_model()
+
+df <- bert_example_data %>%
+  janitor::clean_names() %>%
+  ParseR::clean_text(message)
+
+df <- df %>%
+  LimpiaR::limpiar_duplicates(message) %>%
+  LimpiaR::limpiar_spaces(message) %>% 
+  filter(!duplicated(message))
+
+spam <-df %>% LimpiaR::limpiar_spam_grams(message, 5, 3)
+
+df <- spam$data
+
+embedder <- bt_make_embedder("all-minilm-l6-v2")
+
+embeddings <- bt_do_embedding(embedder, documents = df$message)
+
+model <- model$fit(documents = df$message, embeddings = embeddings)
+
+model$get_topic_info() %>%
+  as_tibble()
+
+```
+
