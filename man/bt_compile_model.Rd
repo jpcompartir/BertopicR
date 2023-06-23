@@ -8,7 +8,8 @@ bt_compile_model(
   embedding_model = NULL,
   reduction_model = NULL,
   clustering_model = NULL,
-  vectoriser_model = NULL
+  vectoriser_model = NULL,
+  ctfidf_model = NULL
 )
 }
 \arguments{
@@ -17,6 +18,10 @@ bt_compile_model(
 \item{reduction_model}{Model for reducing embeddings' dimensions (Python object)}
 
 \item{clustering_model}{Model for clustering (Python object)}
+
+\item{vectoriser_model}{Model for vectorising input for topic representations (Python object)}
+
+\item{ctfidf_model}{Model for performing class-based tf-idf (ctf-idf) (Python object)}
 }
 \value{
 a BERTopic model

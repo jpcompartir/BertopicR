@@ -8,6 +8,8 @@
 #' @param embedding_model Model for creating embeddings (Python object)
 #' @param reduction_model Model for reducing embeddings' dimensions (Python object)
 #' @param clustering_model Model for clustering (Python object)
+#' @param vectoriser_model Model for vectorising input for topic representations (Python object)
+#' @param ctfidf_model Model for performing class-based tf-idf (ctf-idf) (Python object)
 #'
 #' @return a BERTopic model
 # #' @export
@@ -64,15 +66,16 @@ bt_compile_model <- function(embedding_model = NULL, reduction_model = NULL, clu
   return(model)
 }
 
-#' Title
+#' Fit a topic model on your documents & embeddings
 #'
+#' @param model Output of bt_compile_model() or another bertopic topic model
 #' @param documents Your documents to topic model on
 #' @param reduced_embeddings Dimensionality reduced embeddings
 #'
 #' @return a fitted BERTopic model
 # #' @export
 #'
-bt_fit_model <- function(model, documents, embeddings){
+bt_fit_model <- function(model, documents, embeddings, topic_labels = NULL){
 
   stopifnot(
     grepl("^bertopic", methods::S3Class(model)[[1]]),
@@ -85,4 +88,8 @@ bt_fit_model <- function(model, documents, embeddings){
     stop(
       paste0("The dimensions of your documents and embeddings do not mach up.\nNumber of documents: ", length(documents),"\nNumber of embeddings: ",dim(embeddings)[[1]]))
   }
+
+  fitted_model <- model$fit(documents = documents, embeddings = embeddings, y = topic_labels)
+
+  return(fitted_model)
 }

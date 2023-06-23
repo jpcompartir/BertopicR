@@ -578,9 +578,54 @@ clusters_df %>%
 
 #bt_model
 ```{r}
+embedder <- bt_make_embedder("all-minilm-l6-v2")
+reducer <- bt_make_reducer(n_neighbors = 10L)
+clusterer <- bt_make_clusterer_hdbscan(min_cluster_size = 15L, min_samples = 10L)
+clusterer <- bt_make_clusterer_kmeans(n_clusters = 10L)
+
+S3Class(embedder)
+S3Class(reducer)
+S3Class(clusterer)
+S3Class(clusterer)
+
 model <- bt_compile_model(
-  embedding_model <- NULL,
-  umap_model <- NULL)
+  embedding_model <- embedder,
+  umap_model <- reducer,
+  clustering_model = clusterer)
+
+model$embedding_model
+model$umap_model
+model$hdbscan_model
 ```
 
 #bt_fit
+
+Developing the bt_fit_model function:
+```{r}
+library(dplyr)
+model <- bt_compile_model()
+
+df <- bert_example_data %>%
+  janitor::clean_names() %>%
+  ParseR::clean_text(message)
+
+df <- df %>%
+  LimpiaR::limpiar_duplicates(message) %>%
+  LimpiaR::limpiar_spaces(message) %>% 
+  filter(!duplicated(message))
+
+spam <-df %>% LimpiaR::limpiar_spam_grams(message, 5, 3)
+
+df <- spam$data
+
+embedder <- bt_make_embedder("all-minilm-l6-v2")
+
+embeddings <- bt_do_embedding(embedder, documents = df$message)
+
+model <- model$fit(documents = df$message, embeddings = embeddings)
+
+model$get_topic_info() %>%
+  as_tibble()
+
+```
+
