@@ -129,6 +129,14 @@ bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, metric = "euc
 }
 
 
+#' Cluster your data
+#'
+#' @param clustering_model Python object, output of bt_make_clusterer*
+#' @param embeddings Embeddings, output of bt_do_embedding or bt_do_reducing
+#'
+#' @return Cluster labels for each document
+#' @export
+#'
 bt_do_clustering <- function(clustering_model, embeddings) {
 
   # Early stopping
@@ -137,8 +145,7 @@ bt_do_clustering <- function(clustering_model, embeddings) {
   #use fit method as agglomerative doesn't have all the same methods(?) check this
   fitted_model <- clustering_model$fit(embeddings)
 
-  labels <- fitted_model$labels_
+  labels <- fitted_model$labels_ #Should we add attributes? Would need to be model specific, so have to extract the model type with class() and then use switch or separate functions or adding attributes for each model?
 
-  return(labels)
-
+  return(labels) #Should we return the model and the labels?
 }
