@@ -24,6 +24,7 @@ Imports:
     ellipsis,
     ggplot2 (>= 3.4.2),
     magrittr (>= 2.0.3),
+    methods,
     plotly (>= 4.10.1),
     purrr (>= 1.0.1),
     reticulate (>= 1.26),
