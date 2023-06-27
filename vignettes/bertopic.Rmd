@@ -340,7 +340,7 @@ TODO: flesh this out fully
 <!-- from bertopic import BERTopic -->
 <!-- from bertopic.representation import OpenAI -->
 
-<!-- openai.api_key = "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" -->
+<!-- openai.api_key = "" -->
 <!-- representation_openai = OpenAI("gpt-3.5-turbo", chat = True, nr_docs = 5) -->
 
 <!-- model = BERTopic(min_topic_size = 30, umap_model = r.umap_model, embedding_model = r.sentence_model, representation_model = representation_openai) -->
