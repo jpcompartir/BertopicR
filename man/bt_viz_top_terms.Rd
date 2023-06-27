@@ -5,17 +5,15 @@
 \title{create top terms charts for topic modelling completed using bertopic}
 \usage{
 bt_viz_top_terms(
-merged_df,
-text_var = text_clean,
- topic_var = topic,
-stopwords = TRUE,
-hashtags = TRUE,
-mentions = TRUE,
-top_n = 15,
-n_row = 2,
-min_freq = 25,
-include_outliers = FALSE,
-type = c("lollipops", "bars"))
+  merged_df,
+  text_var = text_clean,
+  topic_var = topic,
+  top_n = 15,
+  n_row = 2,
+  min_freq = 25,
+  include_outliers = FALSE,
+  type = c("lollipops", "bars")
+)
 }
 \arguments{
 \item{merged_df}{df output from makedf function.Can be any df that includes a topic column}
@@ -23,12 +21,6 @@ type = c("lollipops", "bars"))
 \item{text_var}{text top terms to be extracted from}
 
 \item{topic_var}{column containing topic variable}
-
-\item{stopwords}{remove (english) stopwords?}
-
-\item{hashtags}{remove hashtags?}
-
-\item{mentions}{remove mentions?}
 
 \item{top_n}{number of terms to extract}
 

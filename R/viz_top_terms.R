@@ -3,9 +3,6 @@
 #' @param merged_df df output from makedf function.Can be any df that includes a topic column
 #' @param text_var text top terms to be extracted from
 #' @param topic_var column containing topic variable
-#' @param stopwords remove (english) stopwords?
-#' @param hashtags remove hashtags?
-#' @param mentions remove mentions?
 #' @param top_n number of terms to extract
 #' @param n_row number of rows the plots should take up
 #' @param min_freq minimum number of times a term should appear for it to be considered
@@ -14,25 +11,9 @@
 #' @return list of all_terms and max_only top term bar charts
 #' @export
 #'
-#' @usage bt_viz_top_terms(
-#' merged_df,
-#' text_var = text_clean,
-#'  topic_var = topic,
-#' stopwords = TRUE,
-#' hashtags = TRUE,
-#' mentions = TRUE,
-#' top_n = 15,
-#' n_row = 2,
-#' min_freq = 25,
-#' include_outliers = FALSE,
-#' type = c("lollipops", "bars"))
-#'
 bt_viz_top_terms <- function(merged_df,
                           text_var = text_clean,
                           topic_var = topic,
-                          stopwords = TRUE,
-                          hashtags = TRUE,
-                          mentions = TRUE,
                           top_n = 15,
                           n_row = 2,
                           min_freq = 25,
@@ -43,25 +24,6 @@ bt_viz_top_terms <- function(merged_df,
   topic_sym <- rlang::ensym(topic_var)
 
   clean_df  <- merged_df
-
-  # remove stopwords
-  if (stopwords){
-    clean_df <- merged_df %>%
-      dplyr::mutate(!!text_sym := tm::removeWords(!!text_sym, SegmentR::stopwords$stopwords))
-  }
-
-  # remove hashtags
-  if (hashtags){
-    clean_df <- clean_df %>%
-      dplyr::mutate(!!text_sym := stringr::str_remove_all(!!text_sym, "#\\S+"))
-  }
-
-  # remove mentions
-  if (mentions){
-    clean_df <- clean_df %>%
-      LimpiaR::limpiar_tags(text_var = !!text_sym, hashtag = T, user = F) %>%
-      dplyr::mutate(!!text_sym := stringr::str_remove_all(!!text_sym, "@user"))
-  }
 
   # include outliers
   if (include_outliers == FALSE){

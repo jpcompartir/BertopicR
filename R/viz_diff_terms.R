@@ -3,9 +3,6 @@
 #' @param merged_df output from makedf function.Can be any df that includes a topic column
 #' @param text_var text diff_terms to be extracted from
 #' @param topic_var column containing topic variable
-#' @param stopwords remove stopwords?
-#' @param hashtags remove hashtags?
-#' @param mentions remove mentions?
 #' @param top_n number of terms to extract
 #' @param min_freq minimum number of times a term should appear for it to be considered
 #' @param include_outliers include outlier (-1) bertopic category?
@@ -16,25 +13,9 @@
 #' @return a ggplot object of top different terms between each pair of topics
 #' @export
 #'
-#' @usage bt_viz_diff_terms(
-#' merged_df,
-#' text_var = text_clean,
-#' topic_var = topic,
-#' stopwords = TRUE,
-#' hashtags = TRUE,
-#' mentions = TRUE,
-#' top_n = 15,
-#' min_freq = 25,
-#' include_outliers = FALSE,
-#' type = c("lollipops", "bars")
-#' plots = list(c(1,2), c(4,5)))
-#'
 bt_viz_diff_terms <- function(merged_df,
                           text_var = text_clean,
                           topic_var = topic,
-                          stopwords = TRUE,
-                          hashtags = TRUE,
-                          mentions = TRUE,
                           top_n = 15,
                           min_freq = 25,
                           include_outliers = FALSE,
@@ -48,25 +29,6 @@ bt_viz_diff_terms <- function(merged_df,
 
   if (-1 %in% unlist(plots)){
     include_outliers <- TRUE
-  }
-
-  # remove stopwords
-  if (stopwords){
-    clean_df <- merged_df %>%
-      dplyr::mutate(!!text_sym := tm::removeWords(!!text_sym, SegmentR::stopwords$stopwords))
-  }
-
-  # remove hashtags
-  if (hashtags){
-    clean_df <- clean_df %>%
-      dplyr::mutate(!!text_sym := stringr::str_remove_all(!!text_sym, "#\\S+")) # remove hashtags
-  }
-
-  # remove mentions
-  if (mentions){
-    clean_df <- clean_df %>%
-      LimpiaR::limpiar_tags(text_var = !!text_sym, hashtag = T, user = F) %>%  # remove mention
-      dplyr::mutate(!!text_sym := stringr::str_remove_all(!!text_sym, "@user")) # remove mentions
   }
 
   # remove outlier category
@@ -84,7 +46,7 @@ bt_viz_diff_terms <- function(merged_df,
   total_words <- words %>%
     dplyr::group_by(!!topic_sym) %>%
     dplyr::summarize(total = sum(n)) %>%
-    dplyr::filter(total > min_freq) # remove words that don't meet the min freq
+    dplyr::filter(total >= min_freq) # remove words that don't meet the min freq
 
   # calculate tf_idf
   topic_tf_idf <- dplyr::left_join(words, total_words, by = dplyr::join_by(!!topic_sym)) %>%
