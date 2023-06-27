@@ -1,6 +1,11 @@
 ---
-title: "modular_approach"
-output: rmarkdown::html_vignette
+title: "Interacting with individaul modules"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    highlight: tango
 vignette: >
   %\VignetteIndexEntry{modular_approach}
   %\VignetteEngine{knitr::rmarkdown}
@@ -14,7 +19,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, message = FALSE}
 library(BertopicR)
 library(dplyr)
 library(stringr)
@@ -102,7 +107,7 @@ TIP: Like with embeddings, it's a good idea to save your reduced embeddings, as 
 
 ### Make the reducer
 
-We'll use a low value for n_neighbours (we have a small dataset) and an output with 5 dimensions (n_components = 5L). We'll set the min_distance to 0, so that our dimensionality reduction model can place very similar documents *very* close together. We'll set the metric to "Euclidean" see [Embedding to non-Euclidean Spaces](https://umap-learn.readthedocs.io/en/latest/embedding_space.html) for alternatives.
+We'll use a low-ish value for n_neighbours (we have a small dataset) and an output with 5 dimensions (n_components = 5L). We'll set the min_distance to 0, so that our dimensionality reduction model can place very similar documents *very* close together. We'll set the metric to "Euclidean" see [Embedding to non-Euclidean Spaces](https://umap-learn.readthedocs.io/en/latest/embedding_space.html) for alternatives.
 
 ```{r}
 reducer <- bt_make_reducer(
@@ -194,7 +199,7 @@ data %>%
 ```{r}
 data %>%
   filter(cluster == -1) %>% 
-  slice(40:30) %>%
+  slice(30:40) %>%
   pull(sentence)
 ```
 
@@ -205,6 +210,7 @@ Our largest cluster, other than the noise cluster, is cluster 40.
 ```{r}
 data %>%
   filter(cluster == 40) %>%
+  head(10)
   pull(sentence)
 ```
 
@@ -215,6 +221,7 @@ Precious things, things that shine?
 ```{r}
 data %>%
   filter(cluster == 23) %>%
+  head(10) %>%
   pull(sentence)
 ```
 
@@ -223,6 +230,7 @@ Wind, air?
 ```{r}
 data %>%
   filter(cluster ==13) %>%
+  head(10) %>%
   pull(sentence)
 ```
 
