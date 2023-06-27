@@ -45,6 +45,7 @@ library(BertopicR)
 BertopicR::check_python_dependencies()
 ```
 
+
 If you receive the message:
 "bertopic not in installed packages of current environment..."
 run:
@@ -52,9 +53,35 @@ run:
 BertopicR::install_python_dependencies()
 ```
 
-## Example
+## Quickstart
 
-```{r}
-#TODO
+```{r, echo = FALSE}
+library(BertopicR)
 ```
+
+BertopicR ships with a dataset of unstructured text data `bert_example_data`
+```{r}
+data <- BertopicR::bert_example_data
+
+embedder <- bt_make_embedder("all-minilm-l6-v2")
+embeddings <- bt_do_embedding(embedder, documents = data$message,  batch_size = 16L)
+
+
+reducer <- bt_make_reducer(n_neighbors = 10L, n_components = 10L, metric = "cosine")
+clusterer <- bt_make_clusterer_hdbscan(min_cluster_size = 20L, metric = "euclidean", cluster_selection_method = "eom", min_samples = 10L)
+
+topic_model <- bt_compile_model(embedding_model = embedder,
+                                reduction_model = reducer,
+                                clustering_model = clusterer)
+
+#Fit the model
+fitted_model <- bt_fit_model(model = topic_model, 
+                             documents = data$message, 
+                             embeddings = embeddings)
+
+fitted_model$get_topic_info() %>%
+  dplyr::tibble()
+```
+
+
 
