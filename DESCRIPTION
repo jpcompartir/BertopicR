@@ -21,11 +21,10 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports: 
     dplyr (>= 1.1.2),
-    ellipsis,
+    ellipsis (>= 0.3.2),
     ggplot2 (>= 3.4.2),
     magrittr (>= 2.0.3),
     methods,
-    plotly (>= 4.10.1),
     purrr (>= 1.0.1),
     reticulate (>= 1.26),
     rlang (>= 1.1.1),

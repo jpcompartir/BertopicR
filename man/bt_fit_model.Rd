@@ -11,11 +11,13 @@ bt_fit_model(model, documents, embeddings, topic_labels = NULL)
 
 \item{documents}{Your documents to topic model on}
 
-\item{reduced_embeddings}{Dimensionality reduced embeddings}
+\item{embeddings}{Your embeddings, can be reduced dimensionality or not}
+
+\item{topic_labels}{Pre-existing labels, for supervised topic modelling}
 }
 \value{
 a fitted BERTopic model
 }
 \description{
-Fit a topic model on your documents & embeddings
+If you've already performed dimensionality reduction on your embeddings, you can feed in the reduced dimension embeddings to the embeddings argument, make sure to supply \code{bt_compile_model} with a base reducer (the output of \code{bt_base_reducer()})
 }
