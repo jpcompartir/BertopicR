@@ -80,26 +80,22 @@ bt_compile_model <- function(embedding_model = NULL, reduction_model = NULL, clu
 #'
 bt_fit_model <- function(model, documents, embeddings, topic_labels = NULL){
 
+  #Input validation
   stopifnot(
     grepl("^bertopic", methods::S3Class(model)[[1]]),
     is.array(embeddings)| is.data.frame(embeddings) |is.null(embeddings),
+    is.vector(topic_labels) | is.null(topic_labels ),
     is.character(documents)
   )
 
   if(!is.null(embeddings)){
     #Check the length of documents is equal to the number of embeddings, and if not, stop.
-    if(!length(documents) == dim(embeddings)[[1]]) {
-      stop(
-        paste0("The dimensions of your documents and embeddings do not mach up.\nNumber of documents: ", length(documents),"\nNumber of embeddings: ",dim(embeddings)[[1]]))
-    }
+    test_embeddings_dims(documents, embeddings)
   }
 
   if(!is.null(topic_labels)){
     #Check the length of documents is equal to the number of embeddings, and if not, stop.
-    if(!length(documents) == length(topic_labels)) {
-      stop(
-        paste0("The dimensions of your documents and topic_labels do not mach up.\nNumber of documents: ", length(documents),"\nNumber of topic labels: ",length(topic_labels)))
-    }
+    test_labels_lengths(documents, topic_labels)
   }
 
   fitted_model <- model$fit(documents = documents, embeddings = embeddings, y = topic_labels)
