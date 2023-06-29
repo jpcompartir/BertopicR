@@ -11,12 +11,15 @@ test_that("bt_fit accepts a bertopic model, raises an error if not",{
   expect_silent(bt_fit_model(empty_model,documents, embeddings))
 })
 
-test_that("bt_fit_model raises an error if the dimensions of embeddings and documents don't match up, and doesn't if they do", {
+test_that("bt_fit_model raises an error if the dimensions of documents and (embeddings or topic_labels)  don't match up, and doesn't if they do", {
   bertopic <- reticulate::import("bertopic")
   model <- bertopic$BERTopic()
 
   documents <- stringr::sentences[1:100]
   incorrect_embeddings <- array(runif(100), dim = c(50, 2))
+  null_labels <- NULL
+  topic_labels <- rep(1:10, each = 10)
+  topic_labels_bad_dims <- rep(1:9, each = 10)
 
   #Raise an error when they don't match up.
   expect_error(bt_fit_model(model = model, documents = documents, embeddings = incorrect_embeddings), regexp = "dimensions of your documents and embeddings do not")
@@ -34,6 +37,25 @@ test_that("bt_fit_model raises an error if the dimensions of embeddings and docu
     bt_fit_model(model = model, documents = 1, embeddings = array()),
     regexp = "is\\.character\\(documents"
   )
+
+  expect_error(
+    bt_fit_model(
+      model = model,
+      documents = documents,
+      embeddings = NULL,
+      topic_labels = topic_labels_bad_dims
+      )
+    )
+
+  expect_silent(
+    bt_fit_model(model,
+                 documents = documents,
+                 embeddings = NULL,
+                 topic_labels = topic_labels
+                 )
+    )
+
+
 })
 
 

@@ -82,15 +82,24 @@ bt_fit_model <- function(model, documents, embeddings, topic_labels = NULL){
 
   stopifnot(
     grepl("^bertopic", methods::S3Class(model)[[1]]),
-    is.array(embeddings)| is.data.frame(embeddings),
+    is.array(embeddings)| is.data.frame(embeddings) |is.null(embeddings),
     is.character(documents)
   )
 
+  if(!is.null(embeddings)){
+    #Check the length of documents is equal to the number of embeddings, and if not, stop.
+    if(!length(documents) == dim(embeddings)[[1]]) {
+      stop(
+        paste0("The dimensions of your documents and embeddings do not mach up.\nNumber of documents: ", length(documents),"\nNumber of embeddings: ",dim(embeddings)[[1]]))
+    }
+  }
 
-  #Check the length of documents is equal to the number of embeddings, and if not, stop.
-  if(!length(documents) == dim(embeddings)[[1]]) {
-    stop(
-      paste0("The dimensions of your documents and embeddings do not mach up.\nNumber of documents: ", length(documents),"\nNumber of embeddings: ",dim(embeddings)[[1]]))
+  if(!is.null(topic_labels)){
+    #Check the length of documents is equal to the number of embeddings, and if not, stop.
+    if(!length(documents) == length(topic_labels)) {
+      stop(
+        paste0("The dimensions of your documents and topic_labels do not mach up.\nNumber of documents: ", length(documents),"\nNumber of topic labels: ",length(topic_labels)))
+    }
   }
 
   fitted_model <- model$fit(documents = documents, embeddings = embeddings, y = topic_labels)
