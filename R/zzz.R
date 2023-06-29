@@ -15,3 +15,17 @@ test_labels_lengths <- function(documents, topic_labels){
       paste0("The dimensions of your documents and topic_labels do not mach up.\nNumber of documents: ", length(documents),"\nNumber of topic labels: ",length(topic_labels)))
   }
 }
+
+
+test_is_fitted_model <- function(model) {
+  if(!test_is_python_object(model)){
+    stop("model is not a python object")
+  }
+
+  if(is.null(model$topics_)){
+    stop("Model has not been fitted, topic labels are NULL")
+  }
+
+  return(TRUE)
+
+}
