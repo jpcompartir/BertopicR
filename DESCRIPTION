@@ -5,7 +5,7 @@ Authors@R: as.person(c(
   "Jack Penzer <jack.penzer@sharecreative.com> [cre]",
   "Aoife Ryan <aoife.ryanr@sharecreative.com> [aut]"
   ))
-Description: Convenience wrapper for extracting bertopic topic models in R, using reticulate to interactive with Python libraries and objects from the comfort of RStudio.
+Description: Convenience wrapper for extracting bertopic topic models in R, using reticulate to interact with Python libraries and objects from the comfort of RStudio.
 License: MIT + file LICENSE
 Suggests: 
     janitor (>= 2.1.0),

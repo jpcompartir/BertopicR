@@ -81,3 +81,29 @@ bt_fit_model(model,
                  topic_labels = topic_labels)
 ```
 
+Seems to, but what about clusters as labels Seems to be working just fine.
+
+```{r}
+data <- bert_example_data[1:100,]
+embedder <- bt_make_embedder("all-minilm-l6-v2")
+embeddings <- bt_do_embedding(embedder = embedder,documents = data$message)
+clusterer <- bt_make_clusterer_kmeans(n_clusters = 3L)
+clusters <- bt_do_clustering(clusterer,embeddings = embeddings)
+clusters_vec <-as.vector(clusters)
+```
+
+```{r}
+base_clusterer <- bt_base_clusterer()
+base_embedder <- bt_base_embedder()
+base_reducer <- bt_base_reducer()
+
+model <- bt_compile_model(embedding_model = base_embedder,
+                 reduction_model = base_reducer,
+                 clustering_model = base_clusterer,
+                 vectoriser_model = bt_make_vectoriser(min_frequency = 3L))
+
+fitted_model <- bt_fit_model(model, data$message, embeddings = NULL, topic_labels = clusters_vec)
+
+fitted_model$get_topic_info()
+```
+

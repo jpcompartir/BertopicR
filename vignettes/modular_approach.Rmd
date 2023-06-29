@@ -6,6 +6,7 @@ output:
     toc_float: true
     toc_depth: 3
     highlight: tango
+    code_folding: show
 vignette: >
   %\VignetteIndexEntry{modular_approach}
   %\VignetteEngine{knitr::rmarkdown}

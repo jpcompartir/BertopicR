@@ -9,7 +9,7 @@ test_embeddings_dims <- function(documents, embeddings){
   }
 }
 
-test_labels_lengths <- function(documents, lengths){
+test_labels_lengths <- function(documents, topic_labels){
   if(!length(documents) == length(topic_labels)) {
     stop(
       paste0("The dimensions of your documents and topic_labels do not mach up.\nNumber of documents: ", length(documents),"\nNumber of topic labels: ",length(topic_labels)))
