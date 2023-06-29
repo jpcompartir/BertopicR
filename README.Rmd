@@ -17,6 +17,8 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![R-CMD-check](https://github.com/jpcompartir/BertopicR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jpcompartir/BertopicR/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://github.com/jpcompartir/BertopicR/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/jpcompartir/BertopicR/actions/workflows/pkgdown.yaml)
 <!-- badges: end -->
 
 The goal of BertopicR is to allow R users to access bertopic's topic modelling suite in R. The package does not aim to implement every feature of bertopic, and is designed with specific end users in mind who may not be experienced programmers or developers. You may submit issues for feature requests; however, it may be faster to go direct to the original, Python library which has excellent documentation. [[BERTopic documentation](https://maartengr.github.io/BERTopic/index.html)]

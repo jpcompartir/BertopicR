@@ -49,13 +49,14 @@ This vignette will show you how to use {BertopicR} to tune each module when crea
 For demonstrative purposes, we'll use {stringr}'s 'sentences' data set, which comes fairly clean. For help on cleaning text data visit ParseR/LimpiaR documentation. Let's take a look at the first five posts for brevity.
 
 ```{r}
-stringr::sentences[1:5]
+sentences <- stringr::sentences
+sentences[1:5]
 ```
 
 Then we'll turn the sentences into a data frame:
 
 ```{r}
-df <- dplyr::tibble(sentences = tolower(stringr::sentences))
+df <- dplyr::tibble(sentences = tolower(sentences))
 ```
 
 ## Embeddings
@@ -210,7 +211,7 @@ Our largest cluster, other than the noise cluster, is cluster 40.
 ```{r}
 data %>%
   filter(cluster == 40) %>%
-  head(10)
+  head(10) %>% 
   pull(sentence)
 ```
 

@@ -2,10 +2,10 @@
 title: "Topic Modelling with Bertopic"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{`Topic Modelling with Bertopic`}
+  %\VignetteIndexEntry{Topic Modelling with Bertopic}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-editor_options: 
+editor_options:
   chunk_output_type: console
 ---
 
@@ -69,7 +69,6 @@ data <- bert_example_data %>%
                      punctuation = TRUE,
                      digits = TRUE,
                      in_parallel = TRUE) %>%
-  dplyr::distinct(permalink, .keep_all = TRUE) %>%
   dplyr::mutate(char_length =  stringr::str_length(text_clean)) %>% 
   dplyr::filter(char_length >= 10)
 
@@ -131,12 +130,6 @@ This time we get 6 topics output which is much more manageable for analysis.
 # Exploring Topics
 
 Now we might need to take a closer look at each topic to understand better what they are about. To do this we use the bt_make_df() function to merge the bert results with the Sprinklr export. We can then look at topics using ParseR to create bigrams, the BertopicR function bt_viz_top_terms() to create a top terms plot or look at exemplars by filtering the df to the topic we're interested in.
-
-```{r, echo = FALSE, eval = FALSE}
-merged_df <- data %>% bt_make_df(model = model[[1]],
-                             embeddings = model[[2]],
-                             text_var = text_clean)
-```
 
 ```{r bt_make_df 1}
 merged_df <- data %>% bt_make_df(model = model,

@@ -16,3 +16,6 @@ home:
   links:
   - text: Report an issue
     href: https://github.com/jpcompartir/BertopicR/issues
+
+vignettes:
+  - modular_appraoch
