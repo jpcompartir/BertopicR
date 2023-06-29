@@ -1,0 +1,83 @@
+---
+title: "Improving bt_fit_mode"
+author: "Jack Penzer"
+date: "2023-06-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(reticulate)
+library(BertopicR)
+library(dplyr)
+library(tidyr)
+```
+
+bt_fit_model() currently does some input validation which may not be optimum. It checks that documents and embeddings have the same length, but this will lead to errors if we want to feed in topic labels (for example, when we've already defined our clusters, or want to perform manual topic modelling).
+
+This should check that documents and (embeddings OR labels are the same length)?
+
+```{r}
+docs <- stringr::sentences[1:10]
+my_array <- array(runif(100),
+      dim = c(10, 10))
+
+my_df <- as.data.frame(my_array)
+
+all(dim(my_df) == dim(my_array))
+
+length(docs) == dim(my_df)[[1]] | dim(my_array)[[1]]
+
+labels <- NULL
+
+length(docs) == dim(my_df)[[1]] | length(labels)
+```
+
+
+The user should either input embeddings or labels.
+If the user inputs embeddings, labels will be generated.
+If the user inputs labels, embeddings will not be generated and labels will be used.
+
+How best to deal with this? 
+Probably a separate function, one for when embeddings are input and one for when labels are input. 
+
+The function doesn't work very well if the arguments aren't independent of one another. This makes the implementation tougher than it needs to be.
+
+Three fit functions?
+bt_fit()
+bt_fit_embeddings()
+bt_fit_labels()
+
+Perhaps just documentation, that if feeding in topic labels, feed in a base_embedder()?
+
+```{r}
+model <- bt_compile_model()
+model_base_embedder <- bt_compile_model(embedding_model = bt_base_embedder())
+
+class(model$embedding_model)
+class(model_base_embedder$embedding_model)
+```
+
+
+Does feeding in labels work?
+```{r}
+bertopic <- reticulate::import("bertopic")
+model <- bertopic$BERTopic()
+
+documents <- stringr::sentences[1:100]
+incorrect_embeddings <- array(runif(100), dim = c(50, 2))
+null_labels <- NULL
+topic_labels <- rep(1:10, each = 10)
+topic_labels_bad_dims <- rep(1:9, each = 10)
+correct_embeddings <- array(runif(200), dim = c(100, 2))
+
+
+bt_fit_model(model,
+                 documents = documents,
+                 embeddings = NULL,
+                 topic_labels = topic_labels)
+```
+

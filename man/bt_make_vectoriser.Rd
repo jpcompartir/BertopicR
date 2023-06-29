@@ -34,6 +34,6 @@ An sklearn CountVectorizer object configured with the provided parameters
 }
 \description{
 This function uses Python's sklearn for feature extraction and count vectorisation.
-It creates a CountVectorizer\link{sic} object with the specified parameters.
+It creates a CountVectorizer object with the specified parameters.
 CountVectorizer is a way to convert text data into vectors as model input. Used inside a BertopicR topc modelling pipeline.
 }

@@ -5,17 +5,15 @@
 \title{Function to find terms with the greatest difference between topics}
 \usage{
 bt_viz_diff_terms(
-merged_df,
-text_var = text_clean,
-topic_var = topic,
-stopwords = TRUE,
-hashtags = TRUE,
-mentions = TRUE,
-top_n = 15,
-min_freq = 25,
-include_outliers = FALSE,
-type = c("lollipops", "bars")
-plots = list(c(1,2), c(4,5)))
+  merged_df,
+  text_var = text_clean,
+  topic_var = topic,
+  top_n = 15,
+  min_freq = 25,
+  include_outliers = FALSE,
+  type = c("lollipops", "bars"),
+  plots = NULL
+)
 }
 \arguments{
 \item{merged_df}{output from makedf function.Can be any df that includes a topic column}
@@ -23,12 +21,6 @@ plots = list(c(1,2), c(4,5)))
 \item{text_var}{text diff_terms to be extracted from}
 
 \item{topic_var}{column containing topic variable}
-
-\item{stopwords}{remove stopwords?}
-
-\item{hashtags}{remove hashtags?}
-
-\item{mentions}{remove mentions?}
 
 \item{top_n}{number of terms to extract}
 

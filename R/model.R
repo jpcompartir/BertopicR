@@ -12,7 +12,7 @@
 #' @param ctfidf_model Model for performing class-based tf-idf (ctf-idf) (Python object)
 #'
 #' @return a BERTopic model
-# #' @export
+#' @export
 #'
 bt_compile_model <- function(embedding_model = NULL, reduction_model = NULL, clustering_model = NULL, vectoriser_model = NULL, ctfidf_model = NULL){
 
@@ -68,28 +68,38 @@ bt_compile_model <- function(embedding_model = NULL, reduction_model = NULL, clu
 
 #' Fit a topic model on your documents & embeddings
 #'
+#' If you've already performed dimensionality reduction on your embeddings, you can feed in the reduced dimension embeddings to the embeddings argument, make sure to supply `bt_compile_model` with a base reducer (the output of `bt_base_reducer()`)
+#'
 #' @param model Output of bt_compile_model() or another bertopic topic model
 #' @param documents Your documents to topic model on
-#' @param reduced_embeddings Dimensionality reduced embeddings
+#' @param embeddings Your embeddings, can be reduced dimensionality or not
+#' @param topic_labels Pre-existing labels, for supervised topic modelling
 #'
 #' @return a fitted BERTopic model
-# #' @export
+#' @export
 #'
 bt_fit_model <- function(model, documents, embeddings, topic_labels = NULL){
 
+  #Input validation
   stopifnot(
     grepl("^bertopic", methods::S3Class(model)[[1]]),
-    is.array(embeddings)| is.data.frame(embeddings),
+    is.array(embeddings)| is.data.frame(embeddings) |is.null(embeddings),
+    is.vector(topic_labels) | is.null(topic_labels ),
     is.character(documents)
   )
 
-  #Check the length of documents is equal to the number of embeddings, and if not, stop.
-  if(!length(documents) == dim(embeddings)[[1]]) {
-    stop(
-      paste0("The dimensions of your documents and embeddings do not mach up.\nNumber of documents: ", length(documents),"\nNumber of embeddings: ",dim(embeddings)[[1]]))
+  if(!is.null(embeddings)){
+    #Check the length of documents is equal to the number of embeddings, and if not, stop.
+    test_embeddings_dims(documents, embeddings)
+  }
+
+  if(!is.null(topic_labels)){
+    #Check the length of documents is equal to the number of embeddings, and if not, stop.
+    test_labels_lengths(documents, topic_labels)
   }
 
   fitted_model <- model$fit(documents = documents, embeddings = embeddings, y = topic_labels)
 
   return(fitted_model)
 }
+

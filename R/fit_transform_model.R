@@ -15,18 +15,6 @@
 #' @return list containing fitted bertopic model and embeddings used to fit the model
 #' @export
 #'
-#' @usage bt_fit_transform_model(
-#' cleaned_text,
-#' calculated_embeddings = NULL,
-#' min_topic_size = 10,
-#' nr_topics = NULL,
-#' ngram_range = tuple(1,1),
-#' embedding_model = "all-MiniLM-L6-v2",
-#' accelerator = "mps",
-#' diversity = 0.1,
-#' stopwords = TRUE,
-#' random_state = NULL)
-#'
 bt_fit_transform_model <- function(cleaned_text,
                                 calculated_embeddings = NULL,
                                 reducer = NULL,

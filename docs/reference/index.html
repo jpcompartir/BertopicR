@@ -24,13 +24,19 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/bertopic.html">Topic Modelling with Bertopic</a>
+    <a class="dropdown-item" href="../articles/modular_approach.html">Interacting with individaul modules</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
-      <ul class="navbar-nav"></ul></div>
+      <ul class="navbar-nav"><li class="nav-item">
+  <a class="external-link nav-link" href="https://github.com/jpcompartir/BertopicR" aria-label="github">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul></div>
 
     
   </div>
@@ -53,9 +59,79 @@
 
       <dl><dt>
           
+          <code><a href="bertopic_detach.html">bertopic_detach()</a></code> 
+        </dt>
+        <dd>Detach bertopic from the python session</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_base_clusterer.html">bt_base_clusterer()</a></code> 
+        </dt>
+        <dd>Create a base clusterer for skipping clustering step of bertopic pipeline</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_base_embedder.html">bt_base_embedder()</a></code> 
+        </dt>
+        <dd>Create a base embedder for skipping embedding step of bertopic pipeline</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_base_reducer.html">bt_base_reducer()</a></code> 
+        </dt>
+        <dd>Create a base reducer for skipping dimensionality reduction step of bertopic pipeline</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_compile_model.html">bt_compile_model()</a></code> 
+        </dt>
+        <dd>Build a BERTopic model</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_do_clustering.html">bt_do_clustering()</a></code> 
+        </dt>
+        <dd>Cluster your data</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_do_embedding.html">bt_do_embedding()</a></code> 
+        </dt>
+        <dd>Embed your documents</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_do_reducing.html">bt_do_reducing()</a></code> 
+        </dt>
+        <dd>Perform dimensionality reduction on your embeddings</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_fit_model.html">bt_fit_model()</a></code> 
+        </dt>
+        <dd>Fit a topic model on your documents &amp; embeddings</dd>
+      </dl><dl><dt>
+          
           <code><a href="bt_fit_transform_model.html">bt_fit_transform_model()</a></code> 
         </dt>
         <dd>fit a bertopic model to cleaned data</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_make_clusterer.html">bt_make_clusterer()</a></code> 
+        </dt>
+        <dd>Create a clustering model</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_make_clusterer_agglomerative.html">bt_make_clusterer_agglomerative()</a></code> 
+        </dt>
+        <dd>Create an Agglomerative Clustering clustering model</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_make_clusterer_hdbscan.html">bt_make_clusterer_hdbscan()</a></code> 
+        </dt>
+        <dd>Create an HDBSCAN clustering model</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_make_clusterer_kmeans.html">bt_make_clusterer_kmeans()</a></code> 
+        </dt>
+        <dd>Create a kmeans clustering model</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_make_ctfidf.html">bt_make_ctfidf()</a></code> 
+        </dt>
+        <dd>Create an instance of the ClassTfidfTransformer from the bertopic.vectorizers module</dd>
       </dl><dl><dt>
           
           <code><a href="bt_make_df.html">bt_make_df()</a></code> 
@@ -63,7 +139,22 @@
         <dd>make a df combining bertopic output with columns in original data export</dd>
       </dl><dl><dt>
           
-          <code><a href="bt_viz_diff_terms.html">bt_viz_diff_terms</a></code> 
+          <code><a href="bt_make_embedder.html">bt_make_embedder()</a></code> 
+        </dt>
+        <dd>Create an embedding model</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_make_reducer.html">bt_make_reducer()</a></code> 
+        </dt>
+        <dd>Create dimensionality reduction model</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_make_vectoriser.html">bt_make_vectoriser()</a></code> 
+        </dt>
+        <dd>Create a text vectoriser</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_viz_diff_terms.html">bt_viz_diff_terms()</a></code> 
         </dt>
         <dd>Function to find terms with the greatest difference between topics</dd>
       </dl><dl><dt>

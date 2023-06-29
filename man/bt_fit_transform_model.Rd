@@ -5,16 +5,18 @@
 \title{fit a bertopic model to cleaned data}
 \usage{
 bt_fit_transform_model(
-cleaned_text,
-calculated_embeddings = NULL,
-min_topic_size = 10,
-nr_topics = NULL,
-ngram_range = tuple(1,1),
-embedding_model = "all-MiniLM-L6-v2",
-accelerator = "mps",
-diversity = 0.1,
-stopwords = TRUE,
-random_state = NULL)
+  cleaned_text,
+  calculated_embeddings = NULL,
+  reducer = NULL,
+  min_topic_size = 10,
+  nr_topics = NULL,
+  ngram_range = c(1, 1),
+  embedding_model = "all-MiniLM-L6-v2",
+  accelerator = "mps",
+  diversity = 0.1,
+  stopwords = TRUE,
+  random_state = NULL
+)
 }
 \arguments{
 \item{cleaned_text}{cleaned text column that the model should be fit with}
