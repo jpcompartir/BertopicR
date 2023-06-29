@@ -41,7 +41,7 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="articles/bertopic.html">Topic Modelling with Bertopic</a>
+    <a class="dropdown-item" href="articles/modular_approach.html">Interacting with individaul modules</a>
   </div>
 </li>
       </ul>
@@ -49,7 +49,14 @@
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="search.json" id="search-input" placeholder="Search for" autocomplete="off">
 </form>
 
-      <ul class="navbar-nav"></ul>
+      <ul class="navbar-nav">
+<li class="nav-item">
+  <a class="external-link nav-link" href="https://github.com/jpcompartir/BertopicR" aria-label="github">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 
     
@@ -61,8 +68,8 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>The goal of BertopicR is to allow R users to access bertopic’s topic modelling suite in R.</p>
-<p>The package currently installs an exact version of bertopic - 0.14.0, this should make it easier to maintain the package over time and prevent new users from running into install errors.</p>
+<p>The goal of BertopicR is to allow R users to access bertopic’s topic modelling suite in R. The package does not aim to implement every feature of bertopic, and is designed with specific end users in mind who may not be experienced programmers or developers. You may submit issues for feature requests; however, it may be faster to go direct to the original, Python library which has excellent documentation. [<a href="https://maartengr.github.io/BERTopic/index.html" class="external-link">BERTopic documentation</a>]</p>
+<p>The package currently installs an exact version of bertopic - 0.15.0, features introduced after this version will take time to, or may never, reach this package.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -85,13 +92,64 @@
 <code class="sourceCode R"><span><span class="fu">BertopicR</span><span class="fu">::</span><span class="fu"><a href="reference/install_python_dependencies.html">install_python_dependencies</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+<h2 id="quickstart">Quickstart<a class="anchor" aria-label="anchor" href="#quickstart"></a>
 </h2>
+<p>BertopicR ships with a dataset of unstructured text data <code>bert_example_data</code></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#TODO</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">BertopicR</span><span class="fu">::</span><span class="va"><a href="reference/bert_example_data.html">bert_example_data</a></span></span>
+<span></span>
+<span><span class="va">embedder</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bt_make_embedder.html">bt_make_embedder</a></span><span class="op">(</span><span class="st">"all-minilm-l6-v2"</span><span class="op">)</span></span>
+<span><span class="va">embeddings</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bt_do_embedding.html">bt_do_embedding</a></span><span class="op">(</span><span class="va">embedder</span>, documents <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">message</span>,  batch_size <span class="op">=</span> <span class="fl">16L</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Embedding proccess finished</span></span>
+<span><span class="co">#&gt; all-minilm-l6-v2 added to embeddings attributes</span></span>
+<span></span>
+<span></span>
+<span><span class="va">reducer</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bt_make_reducer.html">bt_make_reducer</a></span><span class="op">(</span>n_neighbors <span class="op">=</span> <span class="fl">10L</span>, n_components <span class="op">=</span> <span class="fl">10L</span>, metric <span class="op">=</span> <span class="st">"cosine"</span><span class="op">)</span></span>
+<span><span class="va">clusterer</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bt_make_clusterer_hdbscan.html">bt_make_clusterer_hdbscan</a></span><span class="op">(</span>min_cluster_size <span class="op">=</span> <span class="fl">20L</span>, metric <span class="op">=</span> <span class="st">"euclidean"</span>, cluster_selection_method <span class="op">=</span> <span class="st">"eom"</span>, min_samples <span class="op">=</span> <span class="fl">10L</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">topic_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bt_compile_model.html">bt_compile_model</a></span><span class="op">(</span>embedding_model <span class="op">=</span> <span class="va">embedder</span>,</span>
+<span>                                reduction_model <span class="op">=</span> <span class="va">reducer</span>,</span>
+<span>                                clustering_model <span class="op">=</span> <span class="va">clusterer</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; No vectorising model provided, creating model with default parameters</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; No ctfidf model provided, creating model with default parameters</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model built</span></span>
+<span></span>
+<span><span class="co">#Fit the model</span></span>
+<span><span class="va">fitted_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bt_fit_model.html">bt_fit_model</a></span><span class="op">(</span>model <span class="op">=</span> <span class="va">topic_model</span>, </span>
+<span>                             documents <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">message</span>, </span>
+<span>                             embeddings <span class="op">=</span> <span class="va">embeddings</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fitted_model</span><span class="op">$</span><span class="fu">get_topic_info</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 34 × 3</span></span>
+<span><span class="co">#&gt;    Topic Count Name                                                 </span></span>
+<span><span class="co">#&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;                                                </span></span>
+<span><span class="co">#&gt;  1    -1  1760 -1_music_honor_amazing_spanish                       </span></span>
+<span><span class="co">#&gt;  2     0   197 0_celebrates_month celebration_october_heritage month</span></span>
+<span><span class="co">#&gt;  3     1   185 1_heritage night_festival_night_heritage celebration </span></span>
+<span><span class="co">#&gt;  4     2   177 2_teachers_grade_students_parents                    </span></span>
+<span><span class="co">#&gt;  5     3   170 3_white_black_like_really                            </span></span>
+<span><span class="co">#&gt;  6     4   130 4_world_going_latina_got                             </span></span>
+<span><span class="co">#&gt;  7     5   125 5_awesome_yes_love_cool                              </span></span>
+<span><span class="co">#&gt;  8     6   119 6_utsw_hispanics_hispanicheritage_news               </span></span>
+<span><span class="co">#&gt;  9     7   108 7_latinx_latina_ll_chance                            </span></span>
+<span><span class="co">#&gt; 10     8    96 8_honored_community_honor_hosting                    </span></span>
+<span><span class="co">#&gt; # ℹ 24 more rows</span></span></code></pre></div>
 </div>
 </div>
-  </main><aside class="col-md-3"><div class="license">
+  </main><aside class="col-md-3"><div class="links">
+<h2 data-toc-skip>Links</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/jpcompartir/BertopicR" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/jpcompartir/BertopicR/issues" class="external-link">Report an issue</a></li>
+</ul>
+</div>
+
+<div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>
@@ -110,7 +168,7 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Jack Penzer <br><small class="roles"> Maintainer, copyright holder </small>  </li>
+<li>Jack Penzer <br><small class="roles"> Maintainer </small>  </li>
 <li>Aoife Ryan <br><small class="roles"> Author </small>  </li>
 </ul>
 </div>
