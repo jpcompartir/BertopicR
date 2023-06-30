@@ -7,6 +7,7 @@
 bt_make_clusterer_hdbscan(
   ...,
   min_cluster_size = 10L,
+  min_samples = 10L,
   metric = "euclidean",
   cluster_selection_method = "eom",
   prediction_data = FALSE

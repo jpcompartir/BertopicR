@@ -99,7 +99,7 @@ bt_make_clusterer_agglomerative <- function(n_clusters = 20L) {
 #'
 #' @examples
 #' clustering_model <- bt_make_clusterer_hdbscan(metric = "minkowski")
-bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, metric = "euclidean", cluster_selection_method = "eom", prediction_data = FALSE) {
+bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, min_samples = 10L, metric = "euclidean", cluster_selection_method = "eom", prediction_data = FALSE) {
 
   #Import the hdbscan library inside function scope
   hdbscan <- reticulate::import("hdbscan")
@@ -123,6 +123,7 @@ bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, metric = "euc
     metric = metric,
     cluster_selection_method = cluster_selection_method,
     prediction_data = prediction_data,
+    min_samples = as.integer(min_samples),
     ...)
 
   return(clustering_model)
