@@ -58,5 +58,11 @@ test_that("bt_fit_model raises an error if the dimensions of documents and (embe
 
 })
 
+test_that("convert_to_numpy_array takes data frames or arrays as inputs", {
+  test_array <- array(runif(100), c(10, 10))
+  test_df <- as.data.frame(test_array)
 
+  expect_silent(convert_to_np_array(test_array))
+  expect_silent(convert_to_np_array(test_df))
+})
 

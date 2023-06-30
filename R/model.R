@@ -91,6 +91,8 @@ bt_fit_model <- function(model, documents, embeddings, topic_labels = NULL){
   if(!is.null(embeddings)){
     #Check the length of documents is equal to the number of embeddings, and if not, stop.
     test_embeddings_dims(documents, embeddings)
+
+    embeddings <- convert_to_np_array(embeddings)
   }
 
   if(!is.null(topic_labels)){
@@ -102,4 +104,3 @@ bt_fit_model <- function(model, documents, embeddings, topic_labels = NULL){
 
   return(fitted_model)
 }
-

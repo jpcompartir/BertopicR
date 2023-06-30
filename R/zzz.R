@@ -29,3 +29,15 @@ test_is_fitted_model <- function(model) {
   return(TRUE)
 
 }
+
+convert_to_np_array <- function(x, ...){
+
+  stopifnot(is.data.frame(x) | is.array(x))
+
+  #Reticulate's function doesn't seem to be as flexible as this approach
+  np <- reticulate::import("numpy")
+
+  x <- np$array(x, ...)
+
+  return(x)
+}
