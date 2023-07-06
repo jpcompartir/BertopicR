@@ -4,6 +4,8 @@
 #'
 #' If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, you should call `reducer <- bt_base_reducer()`
 #'
+#' low_memory = TRUE is currently inadvisable as trial and error suggests the results are not as robust in later clustering.
+#'
 #' @param ... Sent to umap$UMAP for adding additional arugments
 #' @param n_neighbors The size of local neighbourhood (in terms of number of neighboring data points) used
 #'        for manifold approximation (default: 15).
@@ -11,13 +13,14 @@
 #' @param min_dist The minimum distance between points in the low-dimensional representation (default: 0.0).
 #' @param metric The metric to use for distance computation (default: "euclidean").
 #' @param random_state The seed used by the random number generator (default: 42).
+#' @param low_memory Loogical, use a low memory version of UMAP (default: FALSE)
 #' @param verbose Logical flag indicating whether to report progress during the dimension reduction (default: TRUE).
 #'
 #' @return A matrix or data frame of the dimension-reduced data. The number of rows will be the same
 #'      as `embeddings`, and the number of columns will be `n_components`.
 #'
 #' @export
-bt_make_reducer <- function( ..., n_neighbors = 15L, n_components = 5L, min_dist = 0.0, metric = "euclidean", random_state = 42L, verbose = TRUE
+bt_make_reducer <- function( ..., n_neighbors = 15L, n_components = 5L, min_dist = 0.0, metric = "euclidean", random_state = 42L, low_memory = FALSE, verbose = TRUE
 ) {
 
   #Early stopping and input validation ----
@@ -37,6 +40,7 @@ bt_make_reducer <- function( ..., n_neighbors = 15L, n_components = 5L, min_dist
                          metric = metric,
                          random_state = as.integer(random_state),
                          verbose = verbose,
+                         low_memory = low_memory,
                          ... #Allows user to give additional arguments to the umap$UMAP function.
     )
 
