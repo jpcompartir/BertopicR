@@ -82,15 +82,17 @@ bt_fit_model <- function(model, documents, embeddings, topic_labels = NULL){
 
   #Input validation
   stopifnot(
-    grepl("^bertopic", methods::S3Class(model)[[1]]),
+    grepl("^bertopic", methods::S3Class(model)[[1]]), #should we flick to any()?
     is.array(embeddings)| is.data.frame(embeddings) |is.null(embeddings),
     is.vector(topic_labels) | is.null(topic_labels ),
     is.character(documents)
   )
 
-  if(!is.null(embeddings)){
+  if(!is.null(embeddings)) {
     #Check the length of documents is equal to the number of embeddings, and if not, stop.
     test_embeddings_dims(documents, embeddings)
+
+    embeddings <- convert_to_np_array(embeddings)
   }
 
   if(!is.null(topic_labels)){
@@ -102,4 +104,3 @@ bt_fit_model <- function(model, documents, embeddings, topic_labels = NULL){
 
   return(fitted_model)
 }
-

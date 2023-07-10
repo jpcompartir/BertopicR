@@ -7,6 +7,7 @@
 bt_make_clusterer_hdbscan(
   ...,
   min_cluster_size = 10L,
+  min_samples = 10L,
   metric = "euclidean",
   cluster_selection_method = "eom",
   prediction_data = FALSE
@@ -16,6 +17,8 @@ bt_make_clusterer_hdbscan(
 \item{...}{Additional arguments sent to hdbscan.HDBSCAN()}
 
 \item{min_cluster_size}{Minimum number of data points for each cluster, enter as integer by adding L to number}
+
+\item{min_samples}{Controls the number of outliers generated, lower value = fewer outliers. Defaults to min_cluster_size}
 
 \item{metric}{Distance metric to calculate clusters with}
 

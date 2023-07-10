@@ -12,12 +12,25 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 <!-- badges: end -->
 
 The goal of BertopicR is to allow R users to access bertopic’s topic
-modelling suite in R. The package does not aim to implement every
-feature of bertopic, and is designed with specific end users in mind who
-may not be experienced programmers or developers. You may submit issues
-for feature requests; however, it may be faster to go direct to the
-original, Python library which has excellent documentation. \[[BERTopic
+modelling suite in R via Reticulate. Bertopic was written and developed
+by Maarten Grootendorst (and other contributors!).
+
+The package does not aim to implement every feature of bertopic, and is
+designed with specific end users in mind who may not be experienced
+programmers or developers. You may submit issues for feature requests;
+however, it may be faster to go direct to the original, Python library
+which has excellent documentation. \[[BERTopic
 documentation](https://maartengr.github.io/BERTopic/index.html)\]
+
+We have tried to stay true to the Python library, whilst developing a
+package which has an ‘R feel’ i.e. uses functions more than OOP. In
+places we have changed the names of arguments, for example in the Python
+library BERTopic() takes `hdbscan_model = x`, but we have opted for
+`clustering_model = x`. The reason for this is that `hdbscan_model =` is
+an artifact from the early days of bertopic and the author wants to
+ensure code is backwards compatible, but if the package were being
+developed now it’s likely the author would opt for `clustering_model =`.
+There are other such changes to be aware of.
 
 The package currently installs an exact version of bertopic - 0.15.0,
 features introduced after this version will take time to, or may never,
@@ -105,3 +118,10 @@ fitted_model$get_topic_info() %>%
 #> 10     8    96 8_honored_community_honor_hosting                    
 #> # ℹ 24 more rows
 ```
+
+## Error Messages and causes
+
+““” Error in py_call_impl(callable, dots$args, dots$keywords) :
+ValueError: max_df corresponds to \< documents than
+min_df`""" This is usually caused by using relatively small data. Lower the min_frequency argument in`bt_make_vectoriser()\`
+or use more data to fix this.

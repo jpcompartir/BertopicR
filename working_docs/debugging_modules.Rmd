@@ -1,0 +1,213 @@
+---
+title: "Testing The Pipeline"
+author: "Jack Penzer"
+date: "2023-07-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+We've noticed some discrepancies between the output of the topic modelling process when run in Python vs when run in R.
+
+```{r}
+library(BertopicR)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(dplyr)
+```
+
+Read in the original data and embeddings:
+```{r}
+data <- read_csv("~/Google Drive/My Drive/data_science_project_work/microsoft/project_work/642_644_search_engine_ai_chatbot/644_phase_2/data/helper_data/644_for_colab.csv")
+data_umapped <- read_csv("~/Google Drive/My Drive/data_science_project_work/microsoft/project_work/642_644_search_engine_ai_chatbot/644_phase_2/data/helper_data/644_embeddings_umap_joined.csv")
+embeddings <- read_csv("~/Google Drive/My Drive/data_science_project_work/microsoft/project_work/642_644_search_engine_ai_chatbot/644_phase_2/data/helper_data/644_umap_embeddings.csv")
+```
+
+
+```{r}
+docs <- data$clean_text
+embeddings <- embeddings[,-1]
+```
+
+# Reducing
+
+```{r}
+reducer <- bt_make_reducer(min_dist = 0.1)
+reduced_embeddings <- bt_do_reducing(reducer, embeddings)
+reducer$get_params # Check the reducer params against colab
+
+reducer_high_mem <- bt_make_reducer(min_dist = 0.1, low_memory = FALSE)
+reducer_high_mem$get_params()
+high_mem_reduced_embeddings <- bt_do_reducing(reducer_high_mem, embeddings)
+```
+
+## Low memory reducing two
+```{r}
+reducer_low_mem_two <- bt_make_reducer(min_dist = 0.1)
+reducer_low_mem_two$low_memory == TRUE
+reduced_embeddings_low_mem_two <- bt_do_reducing(reducer_low_mem_two, embeddings)
+```
+Compare the reduced embeddings and reduced embeddings 2
+```{r}
+if(all(reduced_embeddings_low_mem_two == reduced_embeddings)){
+  print("This is TRUE and it should've been TRUE")
+} else{ 
+  print("***This is FALSE and it should've been TRUE***")}
+```
+The UMAPPing is not deterministic either, when the right params are set.
+
+# Clustering
+Dictionary of params from Colab for clusterer:
+{'algorithm': 'best',
+ 'allow_single_cluster': False,
+ 'alpha': 1.0,
+ 'approx_min_span_tree': True,
+ 'cluster_selection_epsilon': 0.0,
+ 'cluster_selection_method': 'eom',
+ 'core_dist_n_jobs': 4,
+ 'gen_min_span_tree': True,
+ 'leaf_size': 40,
+ 'match_reference_implementation': False,
+ 'max_cluster_size': 0,
+ 'memory': Memory(location=None),
+ 'metric': 'euclidean',
+ 'min_cluster_size': 400,
+ 'min_samples': 100,
+ 'p': None,
+ 'prediction_data': True}
+ 
+ $algorithm [1] "best"
+$allow_single_cluster [1] FALSE
+$alpha [1] 1
+$approx_min_span_tree [1] TRUE
+$cluster_selection_epsilon [1] 0
+$cluster_selection_method [1] "eom"
+$core_dist_n_jobs [1] 4
+$gen_min_span_tree [1] TRUE
+$leaf_size [1] 40
+$match_reference_implementation [1] FALSE
+$max_cluster_size [1] 0
+$memory Memory(location=None)
+$metric [1] "euclidean"
+$min_cluster_size [1] 400
+$min_samples [1] 100
+$p NULL
+$prediction_data [1] TRUE
+
+```{r}
+clusterer <- bt_make_clusterer_hdbscan(min_cluster_size = 400L, min_samples = 100L, metric = "euclidean", prediction_data = TRUE, gen_min_span_tree = TRUE)
+
+# clusterer$probabilities_ # should error
+```
+
+```{r}
+clusters_low_mem <- bt_do_clustering(clustering_model = clusterer, reduced_embeddings)
+
+clusters_low_mem_two <- bt_do_clustering(clustering_model = clusterer, reduced_embeddings)
+
+if(all(clusters_low_mem == clusters_low_mem_two)){
+  print("This is TRUE and it should've been TRUE")
+} else {
+  print("***This is FALSE and it should've been TRUE***")
+}
+```
+
+
+
+```{r}
+high_mem_clusters <- bt_do_clustering(clusterer, high_mem_reduced_embeddings)
+```
+
+```{r}
+high_mem_clusters_two <- bt_do_clustering(clusterer, high_mem_reduced_embeddings)
+```
+
+#Seems like hdbscan definitely is deterministic
+```{r}
+if(all(high_mem_clusters_two == high_mem_clusters)){
+  print("This is TRUE and it should've been TRUE")
+} else{
+  print("***This is FALSE and it should've been TRUE***")
+}
+```
+
+
+# Does the hdbscan clustering algorithm give the same output for both of the reduced embeddings?
+
+```{r}
+clusters_low_mem #made with 
+clusters_low_mem_reducer_two <- bt_do_clustering(clusterer, reduced_embeddings_low_mem_two)
+
+if(all(clusters_low_mem == clusters_low_mem_reducer_two)){
+  print("This is TRUE and it should've been TRUE")
+} else {
+  print("***This is FALSE and it should've been TRUE***")
+}
+```
+
+```{r}
+if(all(high_mem_reduced_embeddings == reduced_embeddings)){
+  print("***This is TRUE and it should've been FALSE***")
+} else{
+  print("This is FALSE and it should've been FALSE")
+}
+```
+
+# How different are the low memory and high memory embeddings?
+
+```{r}
+reduced_embeddings <- reduced_embeddings %>%
+  as_tibble()
+high_mem_reduced_embeddings <- high_mem_reduced_embeddings  %>%
+  as_tibble()
+
+names(high_mem_reduced_embeddings) <- stringr::str_replace(names(high_mem_reduced_embeddings), "V", "X")
+
+bind_cols(high_mem_reduced_embeddings, reduced_embeddings)
+
+differences <- purrr::map2_dfr(high_mem_reduced_embeddings, reduced_embeddings, ~ .x - .y)
+
+absolute_differences <- differences %>%
+  mutate(across( everything(), abs))
+
+absolute_differences <- absolute_differences %>%
+  mutate(row_total = rowSums(.)) %>%
+  mutate(document = row_number())
+
+
+absolute_differences %>%
+  mutate(group = document %/% 10000) %>%
+  summarise(mean_diff = mean(row_total), median_diff = median(row_total), max_diff = max(row_total), .by = group) #no notieceable difference in the order the reduced embeddings were calculated
+
+#Check if there's a difference if the groups are arrange differently?
+absolute_differences %>%
+  mutate(group = document %% 10) %>%
+  summarise(mean_diff = mean(row_total), median_diff = median(row_total), max_diff = max(row_total), .by = group)
+```
+
+Can't find a difference between groups meaningfully. Seems like it's just that the floating points are so different, but why does this have such a big effect on the clustering?
+
+
+```{r}
+clusterer_min_10 <- bt_make_clusterer_hdbscan(prediction_data = TRUE, gen_min_span_tree = TRUE)
+
+cluster10_reduced_low_mem <- bt_do_clustering(clusterer_min_10, reduced_embeddings)
+cluster10_reduced_high_mem <- bt_do_clustering(clusterer_min_10, high_mem_reduced_embeddings)
+```
+
+```{r}
+length(unique(cluster10_reduced_low_mem)) # 626 clusters
+length(unique(cluster10_reduced_high_mem)) #640 clusters
+length(unique(clusters_low_mem)) #4
+length(unique(high_mem_clusters)) #25
+
+clusterer_min_10$get_params()
+```
+
+```{r}
+
+```
+

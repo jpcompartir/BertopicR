@@ -11,6 +11,7 @@ bt_make_reducer(
   min_dist = 0,
   metric = "euclidean",
   random_state = 42L,
+  low_memory = FALSE,
   verbose = TRUE
 )
 }
@@ -28,6 +29,8 @@ for manifold approximation (default: 15).}
 
 \item{random_state}{The seed used by the random number generator (default: 42).}
 
+\item{low_memory}{Loogical, use a low memory version of UMAP (default: FALSE)}
+
 \item{verbose}{Logical flag indicating whether to report progress during the dimension reduction (default: TRUE).}
 }
 \value{
@@ -39,4 +42,6 @@ This function wraps the UMAP functionality from Python's umap-learn package for 
 }
 \details{
 If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, you should call \code{reducer <- bt_base_reducer()}
+
+low_memory = TRUE is currently inadvisable as trial and error suggests the results are not as robust in later clustering.
 }

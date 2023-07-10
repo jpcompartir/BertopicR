@@ -83,6 +83,7 @@ bt_make_clusterer_agglomerative <- function(n_clusters = 20L) {
 #'
 #' @param ... Additional arguments sent to hdbscan.HDBSCAN()
 #' @param min_cluster_size Minimum number of data points for each cluster, enter as integer by adding L to number
+#' @param min_samples Controls the number of outliers generated, lower value = fewer outliers. Defaults to min_cluster_size
 #' @param metric Distance metric to calculate clusters with
 #' @param cluster_selection_method The method used to select clusters. Default is "eom".
 #' @param prediction_data Logical
@@ -99,7 +100,7 @@ bt_make_clusterer_agglomerative <- function(n_clusters = 20L) {
 #'
 #' @examples
 #' clustering_model <- bt_make_clusterer_hdbscan(metric = "minkowski")
-bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, metric = "euclidean", cluster_selection_method = "eom", prediction_data = FALSE) {
+bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, min_samples = 10L, metric = "euclidean", cluster_selection_method = "eom", prediction_data = FALSE) {
 
   #Import the hdbscan library inside function scope
   hdbscan <- reticulate::import("hdbscan")
@@ -123,6 +124,7 @@ bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, metric = "euc
     metric = metric,
     cluster_selection_method = cluster_selection_method,
     prediction_data = prediction_data,
+    min_samples = as.integer(min_samples),
     ...)
 
   return(clustering_model)

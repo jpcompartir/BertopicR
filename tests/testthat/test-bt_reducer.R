@@ -25,6 +25,7 @@ test_that("bt_make_reducer's arguments are working as expected", {
   expect_equal(reducer$n_neighbors, 5L)
   expect_equal(reducer$n_components, 2L)
   expect_equal(reducer$random_state, 32L)
+  expect_equal(reducer$low_memory, FALSE)
 
 })
 
