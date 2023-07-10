@@ -27,7 +27,7 @@
       )
       packageStartupMessage(paste0("\nSuccessfully created environment ", bertopicr_env))
     }
-    if(!("bertopic" %in% reticulate::py_list_packages(unique(bertopicr_env$package)))){
+    if(!("bertopic" %in% reticulate::py_list_packages(envname = bertopicr_env)[["package"]])){
       warning("Missing Python dependencies. Run `bertopicr::install_python_dependencies()` to install.")
     }
   }
