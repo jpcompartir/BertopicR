@@ -83,6 +83,7 @@ bt_make_clusterer_agglomerative <- function(n_clusters = 20L) {
 #'
 #' @param ... Additional arguments sent to hdbscan.HDBSCAN()
 #' @param min_cluster_size Minimum number of data points for each cluster, enter as integer by adding L to number
+#' @param min_samples Controls the number of outliers generated, lower value = fewer outliers. Defaults to min_cluster_size
 #' @param metric Distance metric to calculate clusters with
 #' @param cluster_selection_method The method used to select clusters. Default is "eom".
 #' @param prediction_data Logical
