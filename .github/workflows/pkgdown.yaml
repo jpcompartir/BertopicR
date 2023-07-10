@@ -30,7 +30,7 @@ jobs:
         with:
           use-public-rspm: true
 
-       - name: Install non-CRAN package
+      - name: Install non-CRAN package
         run: |
           install.packages("remotes")
           remotes::install_github('jpcompartir/LimpiaR')
