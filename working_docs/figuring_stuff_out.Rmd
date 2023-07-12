@@ -1,0 +1,91 @@
+---
+title: "figuring_stuff_out"
+output: html_document
+date: "2023-07-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Aoife messing about:
+
+```{r}
+bt <- reticulate::import("bertopic") 
+  sentences <- stringr::sentences[1:200]
+  model <- bt$BERTopic()
+  model$fit(sentences)
+  model_unfitted <- bt$BERTopic()
+  
+  
+probsr <- model$get_document_info(sentences)$Probability
+topicsr <- model$get_document_info(sentences)$Topic
+
+new_topics <- model$reduce_outliers(documents = sentences, 
+                                    topics = topicsr,
+                                    strategy="embeddings",
+                                    threshold = 0.3)
+
+
+model_prob = bt$BERTopic(calculate_probabilities = TRUE)
+model_prob$fit(sentences)
+probsr <- model_prob$get_document_info(sentences)$Probability
+topicsr <- model_prob$get_document_info(sentences)$Topic
+model_prob$reduce_outliers(sentences, topics = topicsr, probabilities = probsr, strategy = "probabilities")
+
+
+# Train your BERTopic model and calculate the document-topic probabilities
+topic_model = BERTopic(calculate_probabilities=True)
+topics, probs = topic_model.fit_transform(r.sentences)
+
+# Reduce outliers using the `probabilities` strategy
+new_topics = topic_model.reduce_outliers(r.sentences, topics, probabilities=probs, strategy="probabilities")
+
+
+```
+
+```{python}
+
+probs = r.model.get_document_info(r.sentences).Probability
+topics = r.model.get_document_info(r.sentences).Topic
+# Reduce outliers using the `probabilities` strategy
+new_topics = r.model.reduce_outliers(r.sentences, list(topics), probabilities=list(probs), strategy="probabilities")
+
+new_tops = r.model.reduce_outliers(r.sentences, list(topics),  strategy="distribution")
+
+new_topics = r.model.reduce_outliers(documents = r.sentences, topics = topics, probabilities = list(probs), strategy="probabilities", threshold = 0.3)
+
+
+from bertopic import BERTopic
+
+# Train your BERTopic model and calculate the document-topic probabilities
+topic_model = BERTopic(calculate_probabilities=True)
+topics, probs = topic_model.fit_transform(r.sentences)
+
+# Reduce outliers using the `probabilities` strategy
+new_topics = topic_model.reduce_outliers(r.sentences, topics, probabilities=probs, strategy="probabilities")
+
+test = hdbscan.all_points_membership_vectors(topic_model.hdbscan_model)
+test = topic_model._map_probabilities(test, original_topics=True)
+
+
+topic_distr, _ = topic_model.approximate_distribution(r.sentences)
+topic_model.visualize_distribution(topic_model.probabilities_[3]).show()
+
+```
+
+Difference between probs matrix when simple list vs topic-doccument matrix
+
+```{r}
+model1 <- bt$BERTopic(calculate_probabilities = TRUE)
+output1 <- model1$fit_transform(sentences)
+probs1 <- output1[[2]]
+topics1 <- model1$get_document_info(sentences)$Topic
+
+model2 <- bt$BERTopic()
+output2 <- model2$fit_transform(sentences)
+probs2 <- output2[[2]]
+
+
+model1$reduce_outliers(sentences, topics = topics1, probabilities = list(probs1), strategy = "probabilities")
+
+```
