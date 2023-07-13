@@ -6,6 +6,8 @@
 Merge topics that have been generated with a BERTopic model}
 \usage{
 bt_merge_topics(model = model, documents, topics_to_merge = list())
+
+bt_merge_topics(model = model, documents, topics_to_merge = list())
 }
 \arguments{
 \item{model}{Output of bt_compile_model() or another bertopic topic model}
@@ -16,8 +18,13 @@ bt_merge_topics(model = model, documents, topics_to_merge = list())
 }
 \value{
 bertopic model with specified topics merged
+
+bertopic model with specified topics merged
 }
 \description{
+Merge topics
+Merge topics that have been generated with a BERTopic model
+
 Merge topics
 Merge topics that have been generated with a BERTopic model
 }
