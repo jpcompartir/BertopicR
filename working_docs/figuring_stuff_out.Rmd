@@ -58,14 +58,15 @@ new_topics = r.model.reduce_outliers(documents = r.sentences, topics = topics, p
 from bertopic import BERTopic
 
 # Train your BERTopic model and calculate the document-topic probabilities
-topic_model = BERTopic(calculate_probabilities=True)
+topic_model = BERTopic(calculate_probabilities= False)
 topics, probs = topic_model.fit_transform(r.sentences)
 
 # Reduce outliers using the `probabilities` strategy
 new_topics = topic_model.reduce_outliers(r.sentences, topics, probabilities=probs, strategy="probabilities")
 
+import hdbscan
 test = hdbscan.all_points_membership_vectors(topic_model.hdbscan_model)
-test = topic_model._map_probabilities(test, original_topics=True)
+test2 = topic_model._map_probabilities(test, original_topics=True)
 
 
 topic_distr, _ = topic_model.approximate_distribution(r.sentences)
@@ -73,7 +74,7 @@ topic_model.visualize_distribution(topic_model.probabilities_[3]).show()
 
 ```
 
-Difference between probs matrix when simple list vs topic-doccument matrix
+Difference between probs matrix when simple list vs topic-document matrix
 
 ```{r}
 model1 <- bt$BERTopic(calculate_probabilities = TRUE)

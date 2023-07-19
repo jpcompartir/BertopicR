@@ -6,18 +6,18 @@
 \usage{
 bt_outliers_tokenset_similarity(
   ...,
-  model = model,
+  fitted_model,
   documents,
   topics,
   window = 4,
   stride = 1,
-  threshold
+  threshold = 0.3
 )
 }
 \arguments{
 \item{...}{Optional or additional parameters passed to approximate_distribution function, e.g. batch_size}
 
-\item{model}{BERTopic model}
+\item{fitted_model}{Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.}
 
 \item{documents}{documents to which the model was fit}
 
@@ -34,10 +34,13 @@ skip when moving to next tokenset)}
 df with document, old topic, new topic
 }
 \description{
-Divides documents into tokensets and calculates their c-TF-IDF similarity to
-}
-\details{
-each topic. Similarities of each tokenset to each topic are summed to and the
-
-outlier is redistributed to the most similar topic.
+Divides documents into tokensets and calculates the c-TF-IDF
+similarity of each tokenset to each topic. For each outlier document, the similarity
+scores of each tokenset for each topic are summed together by topic and the outlier is
+redistributed to the topic with the highest similarity. Note that the purpose
+of this function is to obtain a new list of topics that can then be used to
+update the model, it does not make any changes to the model itself, the topic
+classification the model outputs does not change after running this function.
+The bt_update_model function needs to be used to make the change to the model
+itself.
 }

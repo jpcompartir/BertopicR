@@ -22,6 +22,7 @@ knitr::opts_chunk$set(
 
 ```{r setup, message = FALSE}
 library(BertopicR)
+
 library(dplyr)
 library(stringr)
 library(tidyr)

@@ -4,10 +4,16 @@
 \alias{bt_outliers_embeddings}
 \title{Redistributes outliers using embeddings}
 \usage{
-bt_outliers_embeddings(model = model, documents, topics, embeddings, threshold)
+bt_outliers_embeddings(
+  fitted_model,
+  documents,
+  topics,
+  embeddings,
+  threshold = 0.3
+)
 }
 \arguments{
-\item{model}{BERTopic model}
+\item{fitted_model}{Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.}
 
 \item{documents}{documents to which the model was fit}
 
@@ -21,8 +27,12 @@ bt_outliers_embeddings(model = model, documents, topics, embeddings, threshold)
 df with document, old topic, new topic
 }
 \description{
-Uses cosine similarity of embeddings to find the most appropriate topic for
-}
-\details{
-each outlier document.
+Uses the cosine similarity of the document embeddings to find the
+topic closest to each outlier document and reassigns these documents accordingly.
+Note that the purpose
+of this function is to obtain a new list of topics that can then be used to
+update the model, it does not make any changes to the model itself, the topic
+classification the model outputs does not change after running this function.
+The bt_update_model function needs to be used to make the change to the model
+itself.
 }

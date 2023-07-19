@@ -2,29 +2,36 @@
 % Please edit documentation in R/modify_topics.R
 \name{bt_merge_topics}
 \alias{bt_merge_topics}
-\title{Merge topics
-Merge topics that have been generated with a BERTopic model}
+\title{Merges list(s) of topics together}
 \usage{
-bt_merge_topics(model = model, documents, topics_to_merge = list())
-
-bt_merge_topics(model = model, documents, topics_to_merge = list())
+bt_merge_topics(fitted_model, documents, topics_to_merge)
 }
 \arguments{
-\item{model}{Output of bt_compile_model() or another bertopic topic model}
+\item{fitted_model}{Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.}
 
-\item{documents}{Your documents to topic model on}
+\item{documents}{documents which the model was fitted to}
 
-\item{topics_to_merge}{list of topics created by your bertopic model that you wish to merge}
+\item{topics_to_merge}{list (or list of lists/vectors) of topics created by your bertopic model that you wish to merge. Topics should be given in numeric form.}
 }
 \value{
 bertopic model with specified topics merged
-
-bertopic model with specified topics merged
 }
 \description{
-Merge topics
-Merge topics that have been generated with a BERTopic model
+Merge topics of an already-fitted BertopicR model.
+You can feed in a list, to merge topics together, or a list of lists to perform
+merges on multiple groups of topics.
+}
+\details{
+This function updates the model so that the topics in the topics_to_merge list
+become 1 topic. The grouped topics take the topic representation (Name) of the
+first topic in the list. Any number of topics can be merged together, if you would
+like to merge two separate groups of topics, you must pass a list of lists/vectors as
+topics_to_merge eg. list(c(1, 3), c(0, 6, 7)) or list(list(1, 3), list(0, 6, 7))
+}
+\examples{
+\dontrun{bt_merge_topics(
+fitted_model = model,
+documents = documents,
+topics_to_merge = list(c(1, 3), c(0, 6, 7)))}
 
-Merge topics
-Merge topics that have been generated with a BERTopic model
 }

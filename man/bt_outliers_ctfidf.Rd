@@ -4,10 +4,10 @@
 \alias{bt_outliers_ctfidf}
 \title{Redistributes outliers using c-TF-IDF scores}
 \usage{
-bt_outliers_ctfidf(model = model, documents, topics, threshold)
+bt_outliers_ctfidf(fitted_model, documents, topics, threshold = 0.3)
 }
 \arguments{
-\item{model}{BERTopic model}
+\item{fitted_model}{Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.}
 
 \item{documents}{documents to which the model was fit}
 
@@ -19,8 +19,12 @@ bt_outliers_ctfidf(model = model, documents, topics, threshold)
 df with document, old topic, new topic
 }
 \description{
-Uses cosine similarity of document and topic c-TF-IDF to find the most
-}
-\details{
-appropriate topic for each outlier document.
+Calculates the cosine similarity of c-TF-IDF between documents
+and topics and redistributes outliers based on the topic it has the highest
+similarity to. Note that the purpose
+of this function is to obtain a new list of topics that can then be used to
+update the model, it does not make any changes to the model itself, the topic
+classification the model outputs does not change after running this function.
+The bt_update_model function needs to be used to make the change to the model
+itself.
 }

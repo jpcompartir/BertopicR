@@ -2,24 +2,24 @@
 % Please edit documentation in R/modify_topics.R
 \name{bt_outliers_probs}
 \alias{bt_outliers_probs}
-\title{Redistributes outliers using probabilities}
+\title{Redistributes outliers based on document-topic probability}
 \usage{
 bt_outliers_probs(
-  model = model,
+  fitted_model,
   documents,
   topics,
   probability_matrix,
-  threshold
+  threshold = 0.3
 )
 }
 \arguments{
-\item{model}{BERTopic model}
+\item{fitted_model}{Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.}
 
 \item{documents}{documents to which the model was fit}
 
 \item{topics}{current topics associated with the documents}
 
-\item{probability_matrix}{topic-document probability matrix (probability of each document being a member of each topic)}
+\item{probability_matrix}{topic-document probability matrix (probability of each document being a member of each topic). This can be obtained using the bt_probability_matrix function}
 
 \item{threshold}{minimum probability for outlier to be reassigned}
 }
@@ -27,8 +27,19 @@ bt_outliers_probs(
 df with document, old topic, new topic
 }
 \description{
-Uses HDBSCAN calculated probabilities to find the most appropriate topic for
+Uses hdbscan soft clustering calculated probabilities to find
+the most appropriate topic for each outlier (topic -1) document. Returns a df containing
+the current and potential new topics for each document. Note that the purpose
+of this function is to obtain a new list of topics that can then be used to
+update the model, it does not make any changes to the model itself, the topic
+classification the model outputs does not change after running this function.
+The bt_update_model function needs to be used to make the change to the model
+itself.
 }
 \details{
-each outlier document.
+If clustering was performed using hdbscan, you will likely have a
+number of topics in the -1 outlier category. Soft clustering is a clustering
+method that assigns a probability of being in each cluster to each datum. We
+can use the hdbscan soft clustering capabilities to reassign the outlier documents
+to topics based on these probabilities.
 }
