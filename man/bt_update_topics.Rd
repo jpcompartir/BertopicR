@@ -7,9 +7,9 @@
 bt_update_topics(
   fitted_model,
   documents,
-  new_topics,
-  vecotizer_model = NULL,
-  cftidf_model = NULL
+  new_topics = NULL,
+  vectoriser_model = NULL,
+  ctfidf_model = NULL
 )
 }
 \arguments{
@@ -19,7 +19,7 @@ bt_update_topics(
 
 \item{new_topics}{Topics to update model with}
 
-\item{vectorizer_model}{Model for vectorizing input for topic representations (Python object)}
+\item{vectoriser_model}{Model for vectorising input for topic representations (Python object)}
 
 \item{ctfidf_model}{Model for performing class-based tf-idf (ctf-idf) (Python object)}
 }
@@ -27,10 +27,10 @@ bt_update_topics(
 the updated model
 }
 \description{
-updates topics and their representations to be based on the document-topic
+Updates topics and their representations to be based on the document-topic
 classification described in the list of new_topics. As when initiating the model
 with bt_compile_model, if you want to manipulate the topic representations you
-must use a vectorizer/ctfidf model, these can be the same as those used in
+must use a vectoriser/ctfidf model, these can be the same as those used in
 bt_compile_model.
 
 NOTE: The bertopic model you are working with is a pointer to a python object
@@ -39,4 +39,10 @@ differentiated between without explicitly saving the model before performing
 this operation. A model is returned out of convention, in reality, the function
 is applied to and changes the input model. The input model will be the same as
 the output model after the operation has been performed.
+}
+\details{
+NOTE: If using this function to update outlier topics, it may lead to errors
+if topic reduction or topic merging techniques are used afterwards. The reason
+for this is that when you assign a -1 document to topic 1 and another -1 document
+to topic 2, it is unclear how you map the -1 documents. Is it matched to topic 1 or 2.
 }

@@ -104,7 +104,7 @@ bt_probability_matrix <- function(fitted_model){
 #' of this function is to obtain a new list of topics that can then be used to 
 #' update the model, it does not make any changes to the model itself, the topic 
 #' classification the model outputs does not change after running this function. 
-#' The bt_update_model function needs to be used to make the change to the model 
+#' The bt_update_topics function needs to be used to make the change to the model 
 #' itself. 
 #' 
 #' @details If clustering was performed using hdbscan, you will likely have a 
@@ -178,7 +178,7 @@ bt_outliers_probs <- function(fitted_model,
 #' of this function is to obtain a new list of topics that can then be used to 
 #' update the model, it does not make any changes to the model itself, the topic 
 #' classification the model outputs does not change after running this function. 
-#' The bt_update_model function needs to be used to make the change to the model 
+#' The bt_update_topics function needs to be used to make the change to the model 
 #' itself. 
 #'
 #' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
@@ -243,7 +243,7 @@ bt_outliers_embeddings <- function(fitted_model,
 #' of this function is to obtain a new list of topics that can then be used to 
 #' update the model, it does not make any changes to the model itself, the topic 
 #' classification the model outputs does not change after running this function. 
-#' The bt_update_model function needs to be used to make the change to the model 
+#' The bt_update_topics function needs to be used to make the change to the model 
 #' itself. 
 #'
 #' @param ... Optional or additional parameters passed to approximate_distribution function, e.g. batch_size
@@ -327,7 +327,7 @@ bt_outliers_tokenset_similarity <- function(...,
 #' of this function is to obtain a new list of topics that can then be used to 
 #' update the model, it does not make any changes to the model itself, the topic 
 #' classification the model outputs does not change after running this function. 
-#' The bt_update_model function needs to be used to make the change to the model 
+#' The bt_update_topics function needs to be used to make the change to the model 
 #' itself. 
 #'
 #' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
@@ -379,7 +379,7 @@ bt_outliers_ctfidf <- function(fitted_model,
 #' classification described in the list of new_topics. As when initiating the model
 #' with bt_compile_model, if you want to manipulate the topic representations you
 #' must use a vectoriser/ctfidf model, these can be the same as those used in 
-#' bt_compile_model.
+#' bt_compile_model. 
 #' 
 #' NOTE: The bertopic model you are working with is a pointer to a python object 
 #' at a point in memory. This means that the input and the output model cannot be 
@@ -387,11 +387,18 @@ bt_outliers_ctfidf <- function(fitted_model,
 #' this operation. A model is returned out of convention, in reality, the function
 #' is applied to and changes the input model. The input model will be the same as
 #' the output model after the operation has been performed.
+#' 
+#' @details
+#' NOTE: If using this function to update outlier topics, it may lead to errors 
+#' if topic reduction or topic merging techniques are used afterwards. The reason 
+#' for this is that when you assign a -1 document to topic 1 and another -1 document 
+#' to topic 2, it is unclear how you map the -1 documents. Is it matched to topic 1 or 2.
+#' 
 #'
 #' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
 #' @param documents documents to which the model was fit
 #' @param new_topics Topics to update model with
-#' @param vectorizer_model Model for vectorising input for topic representations (Python object)
+#' @param vectoriser_model Model for vectorising input for topic representations (Python object)
 #' @param ctfidf_model Model for performing class-based tf-idf (ctf-idf) (Python object)
 #'
 #' @return the updated model
@@ -399,9 +406,9 @@ bt_outliers_ctfidf <- function(fitted_model,
 #'
 bt_update_topics <- function(fitted_model, 
                              documents, 
-                             new_topics,
+                             new_topics = NULL,
                              vectoriser_model = NULL,
-                             cftidf_model = NULL){
+                             ctfidf_model = NULL){
   
   #### Validation ####
   # Check fitted model
@@ -414,7 +421,7 @@ bt_update_topics <- function(fitted_model,
     test_labels_lengths(documents, new_topics)
   }
   
-  stopifnot(is.list(new_topics),
+  stopifnot(is.null(new_topics) | is.numeric(new_topics),
             is.character(documents),
             test_is_python_object(vectoriser_model) | is.null(vectoriser_model),
             test_is_python_object(ctfidf_model) | is.null(ctfidf_model))
@@ -433,12 +440,11 @@ bt_update_topics <- function(fitted_model,
     message("\nNo ctfidf model provided, creating model with default parameters")
   }
   
-  # I need to think about this a little bit more but something like:
-  model <- fitted_model$update_topics(docs = document, 
+  fitted_model$update_topics(docs = documents, 
                                       topics = new_topics, 
                                       vectorizer_model = vectoriser_model, 
                                       ctfidf_model = ctfidf_model)
   
-  return(model)
+  return(fitted_model)
   
 }

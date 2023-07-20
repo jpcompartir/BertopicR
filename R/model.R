@@ -34,7 +34,7 @@ bt_compile_model <- function(embedding_model = NULL, reduction_model = NULL, clu
 
   #If no UMAP model given, provide empty
   if(is.null(reduction_model)){
-    reduction_model <- bt_make_reducer()
+    reduction_model <- bt_make_reducer_umap()
     message("\nNo umap_model provided, using default parameters.")
   }
 

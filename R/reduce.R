@@ -1,12 +1,12 @@
-#' Create dimensionality reduction model
+#' Create umap dimensionality reduction model
 #'
 #' This function wraps the UMAP functionality from Python's umap-learn package for use in R via reticulate. It allows you to perform dimension reduction on high-dimensional data, its intended use is in a BertopicR pipeline/
 #'
-#' If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, you should call `reducer <- bt_base_reducer()`
+#' If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, you should call `reducer <- bt_base_reducer()` 
 #'
 #' low_memory = TRUE is currently inadvisable as trial and error suggests the results are not as robust in later clustering.
 #'
-#' @param ... Sent to umap$UMAP for adding additional arugments
+#' @param ... Sent to umap$UMAP for adding additional arguments
 #' @param n_neighbors The size of local neighbourhood (in terms of number of neighboring data points) used
 #'        for manifold approximation (default: 15).
 #' @param n_components The number of dimensions to reduce to (default: 5).
@@ -16,11 +16,10 @@
 #' @param low_memory Loogical, use a low memory version of UMAP (default: FALSE)
 #' @param verbose Logical flag indicating whether to report progress during the dimension reduction (default: TRUE).
 #'
-#' @return A matrix or data frame of the dimension-reduced data. The number of rows will be the same
-#'      as `embeddings`, and the number of columns will be `n_components`.
+#' @return A UMAP Model that can be input to bt_do_reducing to reduce dimensions of data
 #'
 #' @export
-bt_make_reducer <- function( ..., n_neighbors = 15L, n_components = 5L, min_dist = 0.0, metric = "euclidean", random_state = 42L, low_memory = FALSE, verbose = TRUE
+bt_make_reducer_umap <- function( ..., n_neighbors = 15L, n_components = 5L, min_dist = 0.0, metric = "euclidean", random_state = 42L, low_memory = FALSE, verbose = TRUE
 ) {
 
   #Early stopping and input validation ----
@@ -48,6 +47,119 @@ bt_make_reducer <- function( ..., n_neighbors = 15L, n_components = 5L, min_dist
   return(reducer)
 }
 
+#' Create pca dimensionality reduction model
+#'
+#' @description  
+#' This function wraps the PCA functionality from Python's sklearn package for 
+#' use in R via reticulate. It allows you to perform dimension reduction on 
+#' high-dimensional data, its intended use is in a BertopicR pipeline.
+#'
+#' @param ... Sent to sklearn.decomposition UMAP function for adding additional arguments
+#' @param n_components Number of components to keep
+#' @param svd_solver method for reducing components can be auto, full, arpack, randomized
+#'
+#' @return A PCA Model that can be input to bt_do_reducing to reduce dimensions of data
+#' @export
+#'
+bt_make_reducer_pca <- function(..., 
+                                n_components,
+                                svd_solver = "auto"){
+  
+  #### input validation ####
+  
+  #Import the sklearn decomposition library i
+  skl <- reticulate::import("sklearn.decomposition")
+  
+  #Convert the `...` (dot-dot-dot or ellipsis) to list for checking purposes
+  dots <- rlang::list2(...)
+  
+  #Instantiate empty model to get valid arguments
+  empty_model <- skl$PCA()
+  
+  #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad
+  if(any(!names(dots) %in% names(empty_model))){
+    
+    bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
+    stop(paste("Bad argument(s) attempted to be sent to PCA():", bad_args, sep = ' '))
+  }
+  
+  # correct UK/US spelling convention
+  if (svd_solver == "randomised"){svd_solver = "randomized"}
+  
+  stopifnot(is.numeric(n_components),
+            svd_solver %in% c("auto", "full", "arpack", "randomized"))
+  
+  #### End of input validation ####
+  
+  n_components <- as.integer(n_components) # convert to intger
+  
+  pca_model <- skl$PCA(n_components = n_components,
+                       svd_solver = svd_solver,
+                       ...)
+  
+  return(pca_model)
+}
+
+
+#' Created Truncated SVD dimensionality reduction model
+#' 
+#' @description  
+#' This function wraps the Truncated SVD (Single Value Decomposition) functionality
+#' from Python's sklearn package for use in R via reticulate. It allows you to 
+#' perform dimension reduction on high-dimensional data. 
+#' Its intended use is in a BertopicR pipeline.
+#'
+#' @param ... Sent to sklearn.decomposition Truncated SVD function for adding additional arguments
+#' @param n_components Number of components to keep
+#' @param n_iter Number of iterations for randomised svd solver. Not used if svd solver is "arpack".
+#' @param svd_solver method for reducing components can be arpack or randomized
+#'
+#' @return Truncated SVD Model that can be input to bt_do_reducing to reduce dimensions of data
+#' @export
+#'
+bt_make_reducer_truncated_svd <- function(..., 
+                                n_components,
+                                n_iter = 5,
+                                svd_solver = "randomized"){
+  
+  #### input validation ####
+  
+  #Import the sklearn decomposition library i
+  skl <- reticulate::import("sklearn.decomposition")
+  
+  #Convert the `...` (dot-dot-dot or ellipsis) to list for checking purposes
+  dots <- rlang::list2(...)
+  
+  #Instantiate empty model to get valid arguments
+  empty_model <- skl$TruncatedSVD()
+  
+  #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad
+  if(any(!names(dots) %in% names(empty_model))){
+    
+    bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
+    stop(paste("Bad argument(s) attempted to be sent to TruncatedSVD():", bad_args, sep = ' '))
+  }
+  
+  # correct UK/US spelling convention
+  if (svd_solver == "randomised"){svd_solver = "randomized"}
+  
+  stopifnot(is.numeric(n_components),
+            is.numeric(n_iter),
+            svd_solver %in% c("arpack", "randomized"))
+  
+  #### End of input validation ####
+  
+  n_components <- as.integer(n_components) # convert to integer
+  n_iter <- as.integer(n_iter)
+  
+  truncated_svd_model <- skl$TruncatedSVD(n_components = n_components,
+                                n_iter = n_iter,
+                       algorithm = svd_solver,
+                       ...)
+
+  
+  return(truncated_svd_model)
+}
 
 
 #' Perform dimensionality reduction on your embeddings
@@ -81,10 +193,37 @@ bt_do_reducing <- function(reducer, embeddings) {
   #Add additional attributes which may be helpful to track later on ----
   attr(reduced_embeddings, "reduced") <- dim(reduced_embeddings)[[2]] < dim(embeddings)[[2]]
   attr(reduced_embeddings, "original_dim") <- dim(embeddings)
-  attr(reduced_embeddings, "n_neighbors") <- reducer$n_neighbors
-  attr(reduced_embeddings, "metric") <- reducer$metric
-  attr(reduced_embeddings, "random_state") <- reducer$random_state
-
+  
+  if ("n_neighbors" %in% names(reducer)) {
+    attr(reduced_embeddings, "n_neighbors") <- reducer$n_neighbors
+    } else {
+      attr(reduced_embeddings, "n_neighbors") <- NA
+    }
+  
+  if ("metric" %in% names(reducer)) {
+    attr(reduced_embeddings, "metric") <- reducer$metric
+  } else {
+    attr(reduced_embeddings, "metric") <- NA
+  }
+  
+  if ("random_state" %in% names(reducer)) {
+    attr(reduced_embeddings, "random_state") <- reducer$random_state
+  } else {
+    attr(reduced_embeddings, "random_state") <- NA
+  }
+  
+  if ("svd_solver" %in% names(reducer)) {
+    attr(reduced_embeddings, "svd_solver") <- reducer$svd_solver
+  } else {
+    attr(reduced_embeddings, "svd_solver") <- NA
+  }
+  
+  if ("n_components" %in% names(reducer)) {
+    attr(reduced_embeddings, "n_components") <- reducer$n_components
+  } else {
+    attr(reduced_embeddings, "n_components") <- NA
+  }
+  
   #Return the reduced embeddings
   return(reduced_embeddings)
 }

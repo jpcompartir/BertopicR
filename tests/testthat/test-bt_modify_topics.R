@@ -280,3 +280,49 @@ test_that("bt_outliers_tokenset_similarty returns correct output", {
   expect_true((df %>% dplyr::filter(current_topics == -1) %>% nrow()) > (df %>% dplyr::filter(new_topics == -1) %>% nrow()))
 
 })
+
+test_that("bt_update_topics errors on incorrect input", {
+  
+  # setup
+  bt <- reticulate::import("bertopic")
+  sentences <- stringr::sentences[1:50]
+  model <- bt$BERTopic()
+  model$fit(sentences)
+  model_unfitted = bt$BERTopic()
+  vectoriser_model <- bt_make_vectoriser(ngram_range = c(1, 3))
+  ctfidf <- bt_make_ctfidf(reduce_frequent_words = TRUE, bm25_weighting = FALSE)
+  
+  # model detection is working:
+  expect_error(bt_merge_topics(fitted_model = "test"),
+               regexp = "Model should be a BERTopic model")
+  
+  # fitted model detection is working:
+  expect_error(bt_merge_topics(fitted_model = model_unfitted),
+               regexp = "BERTopic model is not fitted, use bt_fit_model to fit.")
+  
+  expect_error(bt_update_topics(fitted_model = model,
+                     documents = "text",
+                     vectoriser_model = "test"))
+  
+  expect_error(bt_update_topics(fitted_model = model,
+                     documents = "text",
+                     ctfidf_model = "test"))
+  
+})
+
+test_that("bt_update_topics updates topics", {
+  
+  # setup
+  bt <- reticulate::import("bertopic")
+  sentences <- stringr::sentences[1:50]
+  new_topics <- sample(1:5, 50, replace = TRUE)
+  model <- bt$BERTopic()$fit(sentences)
+  vectoriser_model <- bt_make_vectoriser(ngram_range = c(1, 3), min_frequency = 1)
+  
+  expect_equal(bt_update_topics(fitted_model = model,
+                                documents = sentences,
+                                new_topics = new_topics,
+                                vectoriser_model = vectoriser_model)$get_document_info(sentences)$Topic,
+               new_topics)
+
+})

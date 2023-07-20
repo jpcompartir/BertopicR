@@ -25,6 +25,6 @@ similarity to. Note that the purpose
 of this function is to obtain a new list of topics that can then be used to
 update the model, it does not make any changes to the model itself, the topic
 classification the model outputs does not change after running this function.
-The bt_update_model function needs to be used to make the change to the model
+The bt_update_topics function needs to be used to make the change to the model
 itself.
 }
