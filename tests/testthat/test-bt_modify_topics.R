@@ -2,8 +2,11 @@ test_that("bt_merge_topics errors on unpermitted input", {
 
   bt <- reticulate::import("bertopic")
   sentences <- stringr::sentences[1:50]
-  model <- bt$BERTopic()
-  model$fit(sentences)
+  embeddings <- array(runif(100), dim = c(50, 2))
+  model <- bt$BERTopic(
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+  )$fit(sentences, embeddings = embeddings)
   model_unfitted <- bt$BERTopic()
 
   # model detection is working:
@@ -34,9 +37,15 @@ test_that("bt_merge_topics errors on unpermitted input", {
 test_that("bt_merge_topics merges topics", {
 
   bt <- reticulate::import("bertopic")
-  sentences <- stringr::sentences[1:150]
-  model <- bt$BERTopic(nr_topics = 4L)
-  n_topics <- model$fit(sentences)$get_topic_info() %>% nrow()
+  sentences <- stringr::sentences[1:200]
+  embeddings <- array(runif(500), dim = c(200, 2))
+  model <- bt$BERTopic(
+    min_topic_size = 2L,
+    nr_topics = 4L,
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+  )$fit(sentences, embeddings = embeddings)
+  n_topics <- model$get_topic_info() %>% nrow()
   merged_model <- bt_merge_topics(fitted_model = model,
                                   documents = sentences,
                                   topics_to_merge = list(c(-1, 1),
@@ -54,10 +63,17 @@ test_that("bt_probability_matrix outputs matrix and errors appropriately", {
   skl <- reticulate::import("sklearn.cluster")
   
   sentences <- stringr::sentences[1:50]
-  model_hdb <- bt$BERTopic()
-  model_skl <- bt$BERTopic(hdbscan_model = skl$KMeans())
-  model_hdb$fit(sentences)
-  model_skl$fit(sentences)
+  embeddings <- array(runif(100), dim = c(50, 2))
+  model_hdb <- bt$BERTopic(
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+  )$fit(sentences, embeddings = embeddings)
+  
+  model_skl <- bt$BERTopic(
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+    hdbscan_model = skl$KMeans()
+  )$fit(sentences, embeddings = embeddings)
   model_unfitted <- bt$BERTopic()
   
   # recognises model
@@ -78,9 +94,13 @@ test_that("bt_outlier_probs errors on incorrect input", {
 
   bt <- reticulate::import("bertopic")
   sentences <- stringr::sentences[1:50]
-  model <- bt$BERTopic()
+  embeddings <- array(runif(100), dim = c(50, 2))
+  model <- bt$BERTopic(
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+  )$fit(sentences, embeddings = embeddings)
   model_unfitted <- bt$BERTopic()
-  n_topics <- model$fit(sentences)$get_topic_info() %>% nrow()
+  n_topics <- model$get_topic_info() %>% nrow()
   prob_matrix <- matrix(data = rep(1, 50*(n_topics-1)), ncol = n_topics-1)
 
   # model detection is working:
@@ -115,9 +135,15 @@ test_that("bt_outliers_probs returns correct output", {
 
   # setup
   bt <- reticulate::import("bertopic")
-  sentences <- stringr::sentences[1:70]
-  model <- bt$BERTopic(nr_topics = 2L)
-  n_topics <- model$fit(sentences)$get_topic_info() %>% nrow()
+  sentences <- stringr::sentences[1:50]
+  embeddings <- array(runif(100), dim = c(50, 2))
+  model <- bt$BERTopic(
+    min_topic_size = 2L,
+    nr_topics = 3L,
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+  )$fit(sentences, embeddings = embeddings)
+  n_topics <- model$get_topic_info() %>% nrow()
   prob_matrix <- matrix(data = rep(1, length(sentences)*(n_topics-1)), ncol = n_topics-1)
 
   # run function
@@ -170,16 +196,21 @@ test_that("bt_outliers_embeddings returns correct output", {
 
   # setup
   bt <- reticulate::import("bertopic")
-  sentences <- stringr::sentences[1:100]
-  model <- bt$BERTopic()
-  model$fit(sentences)
+  sentences <- stringr::sentences[1:50]
+  embeddings <- array(runif(100), dim = c(50, 2))
+  model <- bt$BERTopic(
+    min_topic_size = 2L,
+    nr_topics = 3L,
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+  )$fit(sentences, embeddings = embeddings)
   n_topics <- model$get_topic_info() %>% nrow()
 
   # run function
   df <- bt_outliers_probs(fitted_model = model,
                           documents = sentences,
                           topics = model$get_document_info(sentences)$Topic,
-                          probability_matrix = matrix(runif(100 * (n_topics-1)), nrow = 100),
+                          probability_matrix = embeddings,
                           threshold = 0.01)
 
   # returns df with document, old topics, new topics:
@@ -192,9 +223,13 @@ test_that("bt_outlier_tokenset_similarity errors on incorrect input", {
 
   bt <- reticulate::import("bertopic")
   sentences <- stringr::sentences[1:50] # docs
-  model <- bt$BERTopic() # intiate model
+  embeddings <- array(runif(100), dim = c(50, 2))
+  model <- bt$BERTopic(
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+  )$fit(sentences, embeddings = embeddings)
   model_unfitted <- bt$BERTopic() # unfitted model
-  n_topics <- model$fit(sentences)$get_topic_info() %>% length() # number topics
+  n_topics <- model$get_topic_info() %>% length() # number topics
 
   # model detection is working:
   expect_error(bt_outliers_tokenset_similarity(fitted_model = model_unfitted),
@@ -240,10 +275,14 @@ test_that("bt_outliers_tokenset_similarty returns correct output", {
 test_that("bt_outlier_ctfidf only accepts correct objects", {
 
   bt <- reticulate::import("bertopic")
-  sentences <- stringr::sentences[1:100] # docs
-  model <- bt$BERTopic() # intiate model
+  sentences <- stringr::sentences[1:50] # docs
+  embeddings <- array(runif(100), dim = c(50, 2))
+  model <- bt$BERTopic(
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+  )$fit(sentences, embeddings = embeddings)  
   model_unfitted <- bt$BERTopic() # unfitted model
-  n_topics <- model$fit(sentences)$get_topic_info() %>% length() # number topics
+  n_topics <- model$get_topic_info() %>% length() # number topics
 
   # model detection is working:
   expect_error(bt_outliers_ctfidf(fitted_model = model_unfitted),
@@ -286,8 +325,11 @@ test_that("bt_update_topics errors on incorrect input", {
   # setup
   bt <- reticulate::import("bertopic")
   sentences <- stringr::sentences[1:50]
-  model <- bt$BERTopic()
-  model$fit(sentences)
+  embeddings <- array(runif(100), dim = c(50, 2))
+  model <- bt$BERTopic(
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+  )$fit(sentences, embeddings = embeddings)
   model_unfitted = bt$BERTopic()
   vectoriser_model <- bt_make_vectoriser(ngram_range = c(1, 3))
   ctfidf <- bt_make_ctfidf(reduce_frequent_words = TRUE, bm25_weighting = FALSE)
@@ -316,7 +358,11 @@ test_that("bt_update_topics updates topics", {
   bt <- reticulate::import("bertopic")
   sentences <- stringr::sentences[1:50]
   new_topics <- sample(1:5, 50, replace = TRUE)
-  model <- bt$BERTopic()$fit(sentences)
+  embeddings <- array(runif(100), dim = c(50, 2))
+  model <- bt$BERTopic(
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+  )$fit(sentences, embeddings = embeddings)
   vectoriser_model <- bt_make_vectoriser(ngram_range = c(1, 3), min_frequency = 1)
   
   expect_equal(bt_update_topics(fitted_model = model,

@@ -72,7 +72,6 @@ test_that("bt_make_reducer_truncated_svd's arguments are working as expected", {
   
 })
 
-
 test_that("bt_base_reducer's is working as intended - returns a base model", {
 
   reducer <- bt_base_reducer()
@@ -93,10 +92,12 @@ test_that("bt_do_reducing accepts an array or a data frame as embeddings", {
 
   reducer <- bt_make_reducer_umap(verbose = FALSE)
   reducer_pca <- bt_make_reducer_pca(n_components = 10L)
+  reducer_truncated_svd <- bt_make_reducer_pca(n_components = 10L)
 
   expect_silent(bt_do_reducing(reducer, my_array))
   expect_silent(bt_do_reducing(reducer, my_df))
   expect_silent(bt_do_reducing(reducer_pca, my_df))
+  expect_silent(bt_do_reducing(reducer_truncated_svd, my_df))
 })
 
 #Integration test with bt_embed
