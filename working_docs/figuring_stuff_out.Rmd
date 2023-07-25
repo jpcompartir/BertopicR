@@ -90,3 +90,12 @@ probs2 <- output2[[2]]
 model1$reduce_outliers(sentences, topics = topics1, probabilities = list(probs1), strategy = "probabilities")
 
 ```
+
+
+```{python}
+!pip install bertopic 
+
+from bertopic import bertopic.representation
+
+bertopic.representation.PartOfSpeech(model = "en_core_web_sm")
+```
