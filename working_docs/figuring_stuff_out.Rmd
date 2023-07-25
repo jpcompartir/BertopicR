@@ -93,9 +93,42 @@ model1$reduce_outliers(sentences, topics = topics1, probabilities = list(probs1)
 
 
 ```{python}
-!pip install bertopic 
+!pip install xformers
+!pip install bertopic
+!pip show bertopic 
+
 
 from bertopic import bertopic.representation
+from bertopic import BERTopic
+
+representation <- bertopic
 
 bertopic.representation.PartOfSpeech(model = "en_core_web_sm")
 ```
+
+```{r}
+transformers <- reticulate::import("transformers")
+bt_rep <- reticulate::import("bertopic.representation")
+
+representation_gpt2<- bt_rep$TextGeneration('gpt2',
+                                        pipeline_kwargs = 
+                                        reticulate::py_dict(
+                                          keys = "max_length",
+                                          values = 150L, 
+                                          convert = TRUE))
+
+generator <- transformers$pipeline('text2text-generation', model='google/flan-t5-base')
+generator_gpt2 <- transformers$pipeline('text-generation', model='gpt2')
+representation_flan <- bt_rep$TextGeneration(generator)
+# representation_flan <- bt_rep$TextGeneration('google/flan-t5-base')
+representation_gpt2 <- bt_rep$TextGeneration(generator_gpt2)
+
+
+model_gpt2 <- bt$BERTopic(representation_model = representation_gpt2, nr_topics = 4L)$fit(sentences)
+model_flan <- bt$BERTopic(representation_model = representation_flan, nr_topics = 4L)$fit(sentences)
+model_gpt2$get_topic_info() %>% select(Topic, Name)
+model_flan$get_topic_info() %>% select(Topic, Name)
+```
+
+
+

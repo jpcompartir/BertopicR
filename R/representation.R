@@ -158,3 +158,49 @@ bt_representation_openai <- function(...,
   return(representation_model)
 
 }
+
+bt_representation_hf <- function(...,
+                                 task = "text-generation",
+                                 model = "gpt2",
+                                 prompt = NULL,
+                                 nr_docs = 10,
+                                 diversity = NULL){
+  
+  # There is an error in this function: AttributeError:'TextGeneration' object has no attribute 'random_state'
+  # This does not prevent the use of the function, only the ability to set the random state 
+  
+  #### Input Validation ####
+  stopifnot(is.character(task),
+            is.character(model),
+            is.character(prompt) | is.null(prompt),
+            is.numeric(nr_docs),
+            is.numeric(diversity) | is.null(diversity))
+  
+  transformers <- reticulate::import("transformers")
+  # empty_model <- transformers$pipeline()
+  
+  # gather extra arguments for input to py_dict
+  dots <- rlang::list2(...) # place ellipses in list
+  
+  dots_unlist <- c() # empty vec
+  for (i in dots){
+    if (is.numeric(i)){
+      i = as.integer(i)
+    }
+    dots_unlist <- append(dots_unlist, i) # place ellipses in vec
+  } 
+  
+  # import modules
+  bt_rep <- reticulate::import("bertopic.representation")
+  
+  generator <- transformers$pipeline(task = task, model = model)
+  representation_model <- reticulate::py_suppress_warnings(bt_rep$TextGeneration(model = generator, 
+                                                prompt = prompt, 
+                                                nr_docs = as.integer(nr_docs), 
+                                                diversity = as.integer(diversity),
+                                                pipeline_kwargs = 
+                                                  reticulate::py_dict(
+                                                    keys = c(names(dots_unlist)), 
+                                                    values = c(dots_unlist), 
+                                                    convert = TRUE)))
+}
