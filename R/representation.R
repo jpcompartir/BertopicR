@@ -178,6 +178,12 @@ bt_representation_hf <- function(...,
   
   transformers <- reticulate::import("transformers")
   # empty_model <- transformers$pipeline()
+  inspect <- reticulate::import("inspect")
+  args <- inspect$signature(transformers$pipeline) %>% 
+    as.character() %>%
+    stringr::str_match_all("\\w+(?=:)") %>% 
+    sapply(function(x) x[,1])
+  
   
   # gather extra arguments for input to py_dict
   dots <- rlang::list2(...) # place ellipses in list
