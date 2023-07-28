@@ -44,3 +44,11 @@ convert_to_np_array <- function(x, ...){
 
   return(x)
 }
+# do I need this function?
+# create_prompt <- function(docs,
+#                           topic,
+#                           topics){
+#   
+#   keywords <- paste(list(unlist(topics[[topic]])[, 1]), collapse = ", ")
+#   
+# }
