@@ -161,124 +161,78 @@ bt_representation_openai <- function(...,
 
 }
 
-# create class ----
-pyclass_test <- reticulate::PyClass("TextGeneration",
-                                    defs = list(
-                                      transformers = NULL,
-                                      model = NULL,
-                                      prompt = NULL,
-                                      pipeline_kwargs = NULL,
-                                      nr_docs = NULL,
-                                      diversity = NULL,
-                                      # "_create_prompt" = NULL,
-                                      '__init__' = function(self,
-                                                            model = "google/flan-t5-base",
-                                                            prompt = NULL,
-                                                            pipeline_kwargs = list(),
-                                                            # random_state = 42,
-                                                            nr_docs = 4,
-                                                            diversity = NULL) {
-                                        DEFAULT_PROMPT <- "I have a topic described by the following keywords: [KEYWORDS]. The name of this topic is:"
-                                        transformers <- reticulate::import("transformers", convert = FALSE)
-                                        if (is.character(model)){
-                                          self$model <- transformers$pipeline("text2text-generation", model = model)
-                                        }
-                                        else if (any(grepl("pipelines", class(model)))){
-                                          self$model <- model
-                                        }
-                                        else {
-                                          stop("Make sure that the HF model that youpass is either a string referring to a HF model or a `transformers.pipeline` object.")
-                                        }
-                                        if (!is.null(prompt)) {
-                                          self$prompt <- prompt
-                                        }
-                                        else {
-                                          self$prompt <- DEFAULT_PROMPT
-                                        }
-                                        self$default_prompt_ <- DEFAULT_PROMPT
-                                        self$pipeline_kwargs <- pipeline_kwargs
-                                        self$nr_docs <- nr_docs
-                                        self$diversity <- diversity
-                                      },
-                                      "_create_prompt" = function(){
-                                        # self$"_create_prompt" <- reticulate::py_eval("r.bt.representation.TextGeneration._create_prompt")
-                                      }))
 
 
+#' Use Huggingface models to create topic representation
+#'
+#' @details
+#' Representative documents are chosen from each topic by sampling (nr_samples)
+#' a number of documents from the topic and calculating which of those documents are
+#' most representative of the topic by cosine similarity between the topic and the
+#' individual documents. From this the most representative documents (the number
+#' is defined by the nr_repr_docs parameter) is extracted and passed to the huggingface
+#' model and topic description predicted. 
+#'
+#' @param ... arguments sent to the transformers.pipeline function
+#' @param task Task defining the pipeline that will be returned. See https://huggingface.co/transformers/v3.0.2/main_classes/pipelines.html for more information. Use "text-generation" for gpt-like models and "text2text-generation" for T5-like models
+#' @param hf_model The model that will be used by the pipeline to make predictions 
+#' @param topic_model The fitted bertopic model
+#' @param documents the documents the topic model was fitted to
+#' @param default_prompt Whether to use the "keywords" or "documents" default prompt. Passing a custom_prompt will render this argument NULL. Default is "keywords" prompt.
+#' @param custom_prompt The custom prompt to be used in the pipeline. If not specified, the "keywords" or "documents" default_prompt will be used. Use "\[KEYWORDS\]" and "\[DOCUMENTS\]" in the prompt to decide where the keywords and documents are inserted.
+#' @param nr_samples When choosing representative documents to be sent to 
+#' @param nr_repr_docs Number of representative documents to be sent to the huggingface model
+#' @param diversity diversity of documents to be sent to the huggingface model. 0 = no diversity, 1 = max diversity. 
 
-# bt_representation_hf <- function(task = "text_generation",
-#                                  model = "gpt2"){
-# 
-# 
-#   np <- reticulate::import("numpy")
-#   transformers <- reticulate::import("transformers")
-#   generator <- transformers$pipeline(task = task, model = model)
-#   bt <- reticulate::import("bertopic")
-#   c_tf_idf = model$c_tf_idf_
-# 
-# 
-#   top_n_words <- max(model$top_n_words, 30) %>% as.integer()
-#   indices <- reticulate::py_eval("r.bt.BERTopic._top_n_idx_sparse(r.c_tf_idf, r.top_n_words)")
-#   scores <- reticulate::py_eval("r.bt.BERTopic._top_n_values_sparse(r.c_tf_idf, r.indices)")
-#   sorted_indices <- np$argsort(scores, 1L)
-#   indices <- reticulate::r_to_py(indices)
-#   sorted_indices <- reticulate::r_to_py(sorted_indices)
-#   scores <- reticulate::r_to_py(scores)
-#   indices <- np$take_along_axis(indices, sorted_indices$astype("int"), axis=1L)
-#   scores <- np$take_along_axis(scores, sorted_indices$astype("int"), axis=1L)
-# 
-#   labels <- model$get_topic_info()$Name %>% unique()
-#   docs <- sentences
-#   pd <- reticulate::import("pandas")
-#   documents <- reticulate::py_eval("r.pd.DataFrame({\"Document\": r.docs, \"Topic\": r.model.get_document_info(r.docs).Topic})")
-#   documents <- reticulate::r_to_py(documents)
-#   documents_per_topic = reticulate::py_eval("r.documents.groupby(['Topic'], as_index=False).agg({'Document': ' '.join})")
-#   words <- reticulate::py_eval("r.model._c_tf_idf(r.documents_per_topic)")[[2]]
-# 
-#   topics <- reticulate::py_eval("{label: [(r.words[word_index], score)
-#                     if word_index is not None and score > 0
-#                     else (\"\", 0.00001)
-#                     for word_index, score in zip(r.indices[index][::-1], r.scores[index][::-1])]
-#     for index, label in enumerate(r.labels)}")
-# 
-#   # if I can't get this working I will try the next line instead
-#   # representative_docs <- reticulate::py_run_string("r.bt.BERTopic._extract_representative_docs(r.c_tf_idf")
-#   create_prompt <- reticulate::py_run_string("r.bt.representation.TextGeneration._create_prompt")
-#   bt$representation$TextGeneration$extract_topics(self = test,
-#                                                   topic_model = model,
-#                                                   documents = sentences,
-#                                                   c_tf_idf = c_tf_idf,
-#                                                   topics = topics)
-# 
-# }
-
-# New strategy is to get representative docs and send these to hf independently
-
-bt_representation_hf <- function(task,
+#'
+#' @return updated representation of each topic
+#' @export
+#'
+bt_representation_hf <- function(...,
+                                 task,
                                  hf_model,
                                  topic_model,
+                                 documents,
                                  default_prompt = "keywords",
                                  custom_prompt = NULL,
-                                 nr_samples = 100,
-                                 nr_repr_docs = 2,
-                                 diversity = 10,
-                                 ...){
-  
+                                 nr_samples = 500,
+                                 nr_repr_docs = 20,
+                                 diversity = 10){
+
   #### Validation ####
   stopifnot(!is.null(default_prompt) | !is.null(custom_prompt),
-            is.str(task),
-            is.str(hf_model),
-            is.str(custom_prompt) | is.null(custom_prompt))
-  
+            is.character(task),
+            is.character(hf_model),
+            is.character(documents),
+            is.character(default_prompt) | is.null(default_prompt),
+            is.character(custom_prompt) | is.null(custom_prompt),
+            is.numeric(nr_samples),
+            is.numeric(nr_repr_docs),
+            is.numeric(diversity))
+
   # Check fitted model
   if(!is.null(topic_model)) {
     test_is_fitted_model(topic_model)
   }
+
+  # check extra arguments passed
+  transformer <- reticulate::import("transformers") # import transformers library
+  pipeline_args <- args(transformer$pipeline) %>% as.list() %>% names()
+  
+  #Convert the `...` (dot-dot-dot or ellipsis) to list for checking purposes
+  dots <- rlang::list2(...)
+  
+  #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad
+  if(any(!names(dots) %in% pipeline_args)){
+    
+    bad_args <- names(dots)[!names(dots) %in% pipeline_args]
+    stop(paste("Bad argument(s) attempted to be sent to pipeline():", bad_args, sep = ' '))
+  }
   
   #### end of validation ####
-  
+
   # Set prompt to use
-  if (custom_prompt){
+  if (!is.null(custom_prompt)){
     prompt <- custom_prompt
   }
   else if (default_prompt == "keywords"){
@@ -288,336 +242,70 @@ bt_representation_hf <- function(task,
     prompt <- "I have a topic described by the following documents: [DOCUMENTS]. The name of this topic is:"
   }
 
-  
-  
-  # labels <- model$get_topic_info()$Name %>% unique()
-  # docs <- sentences
- 
-  # first get representative docs and keywords
-  c_tf_idf <- reticulate::py_eval("r.topic_model.c_tf_idf_") # ctfidf for input to _extract_representative_docs
-  
-  docs <- data.frame(Document = sentences,
-                     Topic = topic_model$get_document_info(sentences)$Topic) %>% reticulate::r_to_py() # pandas df with Topic and Document cols
-  
-  # representative docs
-  representative_docs <- reticulate::py_eval("r.topic_model._extract_representative_docs(r.c_tf_idf, r.docs, r.model.topic_representations_, r.nr_samples, r.nr_repr_docs, r.diversity)")[[1]]
-  # representative keywords
-  topic_representation <- topic_model$topic_representations_
-  
-  # concatenate keywords into single string per topic
-  keywords <- list()
-  for (topic in seq_along(topic_representation)){
-    topic_list <- topic_representation[[topic]]
-    for (word_info in seq_along(topic_list)){
-      word_list <- topic_list[[word_info]][[1]]
-      keywords[[topic]] <- paste(word_list, collapse = ", ")
-    }
-  }
-  
-  # create pipeline 
-  transformer <- reticulate::import("transformers") # import transformers library
-  generator <- transformer$pipeline(task = task, model = hf_model) # create pipeline
-  
-  # updated_representation <- list()
-  # updated_prompt <- list()
-  # empty_string <- ""
-  # format_docs <- list()
-  # join_docs <- list()
-  
-  # # add in something about custom prompts
-  # if (prompt == "keywords"){
-  #   for (topic in seq_along(keywords)){
-  #     updated_prompt <- gsub("\\[KEYWORDS\\]", keywords[[topic]], prompt_keywords)
-  #     updated_representation[[topic]] <- generator(updated_prompt) # add pipeline_kwargs here
-  #   }
-  # }
-  # else if (prompt == "documents"){
-  #   for (doc in seq_along(representative_docs)){
-  #     format_docs <- paste(empty_string, paste0("- ", substr(representative_docs[[doc]], 1, 255)), "\n")
-  #     join_docs <- paste(format_docs, collapse = "")
-  #     
-  #     updated_prompt <- gsub("\\[DOCUMENTS\\]", join_docs, prompt_documents)
-  #     updated_representation[[doc]] <- generator(updated_prompt)[[1]][[1]] # add pipeline_kwargs here
-  #   }
-  # }
-  # 
-  
+  # create pipeline
+  generator <- transformer$pipeline(task = task, model = hf_model, ...) # create pipeline
+
   empty_string <- ""
   updated_representation <- list()
   record_prompt <- list()
-  for (doc in seq_along(representative_docs)) {
-    use_prompt <- prompt
+  for (doc in seq_along(topic_model$get_topic_info()$Topic)) {
+    
+    updated_prompt <- prompt # don't want to overwrite prompt
+    
     if (stringr::str_detect(prompt, "\\[KEYWORDS\\]")){
-      use_prompt <- gsub("\\[KEYWORDS\\]", keywords[[doc]], use_prompt)
+      
+      # representative keywords
+      topic_representation <- topic_model$topic_representations_
+      
+      # concatenate keywords into single string per topic
+      keywords <- list()
+      # words_per_topic <- list()
+      for (topic in seq_along(topic_representation)){
+        topic_list <- topic_representation[[topic]]
+        # words_per_topic <- character()
+        words_per_topic <- NULL
+        for (word_info in seq_along(topic_list)){
+          word_list <- topic_list[[word_info]][[1]]
+          words_per_topic <- c(words_per_topic, word_list)
+          keywords[[topic]] <- paste(words_per_topic, collapse = ", ")
+          
+        }
+      }
+      
+      updated_prompt <- gsub("\\[KEYWORDS\\]", keywords[[doc]], updated_prompt)
     }
+    
     if (stringr::str_detect(prompt, "\\[DOCUMENTS\\]")){
+      
+      # first get representative docs and keywords
+      c_tf_idf <- reticulate::py_eval("r.topic_model.c_tf_idf_") # ctfidf for input to _extract_representative_docs
+      
+      # _extract_representative_docs requires df with Document and Topic columns
+      docs <- data.frame(Document = documents,
+                         Topic = topic_model$get_document_info(documents)$Topic) %>% reticulate::r_to_py() # pandas df with Topic and Document cols
+      
+      # convert to integers
+      nr_samples <- as.integer(nr_samples)
+      nr_repr_docs <- as.integer(nr_repr_docs)
+      diversity = as.integer(diversity)
+      
+      # representative docs
+      representative_docs <- reticulate::py_eval("r.topic_model._extract_representative_docs(r.c_tf_idf, r.docs, r.topic_model.topic_representations_, r.nr_samples, r.nr_repr_docs, r.diversity)")[[1]]
       format_docs <- paste(empty_string, paste0("- ", substr(representative_docs[[doc]], 1, 255)), "\n")
       join_docs <- paste(format_docs, collapse = "")
-      
-      use_prompt <- gsub("\\[DOCUMENTS\\]", join_docs, use_prompt)
+
+      updated_prompt <- gsub("\\[DOCUMENTS\\]", join_docs, updated_prompt)
     }
-    updated_representation[[doc]] <- generator(updated_prompt)[[1]][[1]] # add pipeline_kwargs here
-    record_prompt[[doc]] <- use_prompt
     
+    updated_representation[[doc]] <- generator(updated_prompt)[[1]][[1]] 
+    # record_prompt[[doc]] <- updated_prompt
+
   }
   
-   return(updated_representation, record_prompt) 
-    
+  return(updated_representation)
+
+   # return(list("updated_representation" = updated_representation, "prompts" = record_prompt))
+
   }
   
 
-
-
-# bt_representation_hf <- function(...,
-#                                  task = "text-generation",
-#                                  model = "gpt2",
-#                                  prompt = NULL,
-#                                  nr_docs = 10,
-#                                  diversity = NULL){
-#   
-#   # There is an error in this function: AttributeError:'TextGeneration' object has no attribute 'random_state'
-#   # This does not prevent the use of the function, only the ability to set the random state 
-#   
-#   #### Input Validation ####
-#   stopifnot(is.character(task),
-#             is.character(model),
-#             is.character(prompt) | is.null(prompt),
-#             is.numeric(nr_docs),
-#             is.numeric(diversity) | is.null(diversity))
-#   
-#   transformers <- reticulate::import("transformers")
-#   # empty_model <- transformers$pipeline()
-#   inspect <- reticulate::import("inspect")
-#   args <- inspect$signature(transformers$pipeline) %>% 
-#     as.character() %>%
-#     stringr::str_match_all("\\w+(?=:)") %>% 
-#     sapply(function(x) x[,1])
-#   
-#   
-#   # gather extra arguments for input to py_dict
-#   dots <- rlang::list2(...) # place ellipses in list
-#   
-#   dots_unlist <- c() # empty vec
-#   for (i in dots){
-#     if (is.numeric(i)){
-#       i = as.integer(i)
-#     }
-#     dots_unlist <- append(dots_unlist, i) # place ellipses in vec
-#   } 
-#   
-#   # import modules
-#   bt_rep <- reticulate::import("bertopic.representation")
-#   
-#   generator <- transformers$pipeline(task = task, model = model)
-#   representation_model <- reticulate::py_suppress_warnings(bt_rep$TextGeneration(model = generator, 
-#                                                 prompt = prompt, 
-#                                                 nr_docs = as.integer(nr_docs), 
-#                                                 diversity = as.integer(diversity),
-#                                                 pipeline_kwargs = 
-#                                                   reticulate::py_dict(
-#                                                     keys = c(names(dots_unlist)), 
-#                                                     values = c(dots_unlist), 
-#                                                     convert = TRUE)))
-# }
-
-# library(R6)
-# library(reticulate)
-# 
-# CustomTextGeneration <- R6Class(
-#   classname = "CustomTextGeneration",
-#   public = list(
-#     transformers = NULL,
-#     model = NULL,
-#     prompt = NULL,
-#     default_prompt_ = NULL,
-#     pipeline_kwargs = NULL,
-#     nr_docs = NULL,
-#     diversity = NULL,
-#     initialize = function(
-#     model,
-#     prompt = NULL,
-#     pipeline_kwargs = list(),
-#     # random_state = 42,
-#     nr_docs = 4,
-#     diversity = NULL
-#     ) {
-#       
-#       transformers <- reticulate::import("transformers", convert = FALSE)  # Import Python module into the environment
-#       
-#       # python$set_seed(random_state)
-#       if (is.character(model)) {
-#         self$model <- transformers$pipeline("text-generation", model=model)
-#       } else if (inherits(model, "PythonEnv")) {
-#         self$model <- model
-#       } else {
-#         stop("Make sure that the HF model that you pass is either a string referring to a HF model or a `transformers.pipeline` object.")
-#       }
-#       self$prompt <- if (!is.null(prompt)) prompt else "DEFAULT_PROMPT"
-#       self$default_prompt_ <- "DEFAULT_PROMPT"
-#       self$pipeline_kwargs <- pipeline_kwargs
-#       self$nr_docs <- nr_docs
-#       self$diversity <- diversity
-#     }
-#   )
-# )
-# 
-
-# pyclass_test <- reticulate::PyClass("TextGeneration",
-#                         defs = list(
-#                           transformers = NULL,
-#                           model = NULL,
-#                           prompt = NULL,
-#                           pipeline_kwargs = NULL,
-#                           nr_docs = NULL,
-#                           diversity = NULL,
-#                           '__init__' = function(self,
-#                                                 model = "google/flan-t5-base",
-#                                                 prompt = NULL,
-#                                                 pipeline_kwargs = list(),
-#                                                 # random_state = 42,
-#                                                 nr_docs = 4,
-#                                                 diversity = NULL) {
-#                             DEFAULT_PROMPT <- "I have a topic described by the following keywords: [KEYWORDS]. The name of this topic is:"
-#                             transformers <- reticulate::import("transformers", convert = FALSE)
-#                             if (is.character(model)){
-#                               self$model <- transformers$pipeline("text2text-generation", model = model)
-#                             }
-#                             else if (any(grepl("pipelines", class(model)))){
-#                               self$model <- model
-#                             }
-#                             else {
-#                               stop("Make sure that the HF model that youpass is either a string referring to a HF model or a `transformers.pipeline` object.")
-#                             }
-#                             if (!is.null(prompt)) {
-#                               self$prompt <- prompt
-#                               }
-#                             else {
-#                               self$prompt <- DEFAULT_PROMPT
-#                             }
-#                             self$default_prompt_ <- DEFAULT_PROMPT
-#                             self$pipeline_kwargs <- pipeline_kwargs
-#                             self$nr_docs <- nr_docs
-#                             self$diversity <- diversity
-#                           }, 
-#                           'extract_topics' = function(self,
-#                                                       topic_model,
-#                                                       documents,
-#                                                       c_tf_idf,
-#                                                       topics) {
-#                             if (self$prompt != DEFAULT_PROMPT & "[DOCUMENTS]" %in% self$prompt){
-#                               repr_docs_mappings <- topic_model$_extract_representative_docs(c_tf_idf,
-#                                                                          documents,
-#                                                                          topics,
-#                                                                          500,
-#                                                                          self$nr_docs,
-#                                                                          self$diversity)[1]
-#      
-#                             }
-#                             else {
-#                               for (topic in names(topics)) {
-#                                 repr_docs_mappings[[topic]] <- NULL
-#                               }
-#                             }
-#                             
-#                             updated_topics <- list()
-#                             
-#                             for (topic in topics$items()){
-#                               prompt <- self$_create_prompt(repr_docs_mappings[topic], topic, topics)
-#                               topic_description <- self$model(prompt)
-#                               # topic_description <- [(description["generated_text"]$replace(prompt, ""), 1) for description in topic_description]
-#                               process_description <- function(description) {
-#                                 generated_text <- gsub(prompt, "", description$generated_text)
-#                                 list(generated_text, 1)
-#                               }
-#                               topic_description <- lapply(topic_description, process_description)
-#                               
-#                               # if (length(topic_description) < 10){
-#                               #   topic_description
-#                               # }
-#                             }
-#                             updated_topics[topic] <- topic_description
-#                             return(updated_topics)
-#                           }),
-#                         inherits(_create_prompt,
-#                                  _extract_resentative_docs]))
-
-    
-    
-
-  
-
-# s3_test <- list(model = "gpt2", prompt = NULL, pipeline_kwargs = NULL, nr_docs = 4L, diversity = NULL)
-# class(s3_test) <- "representation"
-
-
-# test <- function(model,
-#                  prompt = NULL,
-#                  pipeline_kwargs = NULL,
-#                  nr_docs = 4L,
-#                  diversity = NULL){
-#   
-#   test_instance <- "
-#   if isinstance(model, str):
-#     self.model = pipeline(\"text-generation\", model=model)
-# elif isinstance(model, Pipeline):
-#     self.model = model
-# else:
-#     raise ValueError(\"Make sure that the HF model that you pass is either a string referring to a HF model or a `transformers.pipeline` object.\")
-# In the corrected code, the if, elif, and else blocks are indented at the same level, and the code should work as intended. Make sure to use the correct indentation in your Python code to ensure proper execution and avoid syntax errors.
-#   "
-#   
-#   set_params <- "self.prompt = prompt if prompt is not None else DEFAULT_PROMPT
-#   self.default_prompt_ = DEFAULT_PROMPT
-#   self.pipeline_kwargs = pipeline_kwargs
-#   self.nr_docs = nr_docs
-#   self.diversity = diversity"
-#   
-#   reticulate::py_run_string(test_instance)
-#   reticulate::py_run_string(set_params)
-#     
-# }
-
-# Define the S3 generic function
-# # CustomTextGeneration <- function(model,
-#                                  prompt = NULL, 
-#                                  pipeline_kwargs = list(), 
-#                                  nr_docs = 4L, 
-#                                  diversity = NULL) {
-#   UseMethod("CustomTextGeneration")
-# }
-# 
-# # Define the S3 method for character class
-# CustomTextGeneration.character <- function(model, prompt = NULL, pipeline_kwargs = list(), nr_docs = 4L, diversity = NULL) {
-#   transformers <- reticulate::import("transformers")
-#   model_obj <- transformers$pipeline("text-generation", model=model)
-#   CustomTextGeneration(model_obj, prompt, pipeline_kwargs, random_state, nr_docs, diversity)
-# }
-# 
-# # Define the S3 method for pipeline class
-# CustomTextGeneration.Pipeline <- function(model, prompt = NULL, pipeline_kwargs = list(), random_state = 42, nr_docs = 4, diversity = NULL) {
-#   self <- list()
-#   class(self) <- "CustomTextGeneration"
-#   
-#   # Your init logic
-#   set.seed(random_state)
-#   self$model <- model
-#   self$prompt <- if (!is.null(prompt)) prompt else "DEFAULT_PROMPT"
-#   self$default_prompt_ <- "DEFAULT_PROMPT"
-#   self$pipeline_kwargs <- pipeline_kwargs
-#   self$nr_docs <- nr_docs
-#   self$diversity <- diversity
-#   
-#   return(self)
-# }
-# 
-# # Sample usage
-# # Assuming you have defined the CustomTextGeneration S3 function as shown above
-# # You can now use the S3 method with different types of model inputs:
-# 
-# # If the model is a character (string) representing the model name
-# custom_generator <- CustomTextGeneration("gpt2")
-# 
-# # If the model is an existing Pipeline object
-# model_path <- "path/to/your/model"  # Replace with the path to your HF model
-# model <- py$transformers$AutoModelForCausalLM$from_pretrained(model_path)
-# custom_generator <- CustomTextGeneration(model)

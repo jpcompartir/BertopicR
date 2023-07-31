@@ -96,30 +96,111 @@ test_that("bt_representation_openai returns correct output on correct input", {
   expect_equal(representation_openai$diversity, 0.1)
 })
 
-# test_that("bt_representation_openai errors on bad input", {
-#   # expect_error(bt_representation_openai(), "str_detect.*api_key") # make sure to enter an api key that does not start with
-#   
-#   # Override readline to use mock inputs
-#   with_mocked_bindings(
-#     readline <- function(prompt = "") {
-#       return("test")
-#     },
-#     {expect_error(bt_representation_openai(), "str_detect.*api_key")
-#       }
-#   )
-#   
-#   # Call the function and check for error
-#   
-# })
-# 
-# test_that("bt_representation_openai errors on bad input", {
-#   # Mock the readline function to return a fixed string
-#   with_mocked_bindings(input = list(readline = function(prompt = "") { return("test") }),
-#                        {
-#                          # Call the function and check for error
-#                          expect_error(bt_representation_openai(), "str_detect.*api_key")
-#                        })
-# })
-# 
-# 
+test_that("bt_representation_hf errors on bad input", {
+  
+  bt <- reticulate::import("bertopic")
+  model_unfitted <- bt$BERTopic()
+  
+  sentences <- stringr::sentences[1:50] # docs
+  embeddings <- array(runif(100), dim = c(50, 2))
+  model <- bt$BERTopic(
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+  )$fit(sentences, embeddings = embeddings) 
+  
+  # standard inputs
+  expect_error(bt_representation_hf(task = 6),
+               "is.character.*task")
+  
+  expect_error(bt_representation_hf(task = "text",
+                                    hf_model = 6),
+               "is.character.*hf_model")
+  
+  expect_error(bt_representation_hf(task = "text",
+                                    hf_model = "text",
+                                    documents = 6),
+               "is.character.*documents")
+  
+  expect_error(bt_representation_hf(task = "text",
+                                    hf_model = "text",
+                                    documents = "text",
+                                    default_prompt = NULL),
+               "!is.null.*default_prompt.*custom_prompt")
+  
+  expect_error(bt_representation_hf(task = "text",
+                                    hf_model = "text",
+                                    documents = "text",
+                                    default_prompt = 6),
+               "is.character.*default_prompt.*is.null.*default_prompt")
+  
+  expect_error(bt_representation_hf(task = "text",
+                                    hf_model = "text",
+                                    documents = "text",
+                                    custom_prompt = 6),
+               "is.character.*custom_prompt.*is.null.*custom_prompt")
+  
+  expect_error(bt_representation_hf(task = "text",
+                                    hf_model = "text",
+                                    documents = "text",
+                                    nr_samples = "test"),
+               "is.numeric.*nr_samples")
+  
+  expect_error(bt_representation_hf(task = "text",
+                                    hf_model = "text",
+                                    documents = "text",
+                                    nr_repr_docs = "test"),
+               "is.numeric.*nr_repr_docs")
+  
+  expect_error(bt_representation_hf(task = "text",
+                                    hf_model = "text",
+                                    documents = "text",
+                                    diversity = "test"),
+               "is.numeric.*diversity")
+  
+  # model detection is working:
+  expect_error(bt_representation_hf(task = "text",
+                                    hf_model = "text",
+                                    documents = "text",
+                                    topic_model = "test"),
+               "Model should be a BERTopic model")
+  
+  expect_error(bt_representation_hf(task = "text",
+                                    hf_model = "text",
+                                    documents = "text",
+                                    topic_model = model_unfitted),
+               regexp = "BERTopic model is not fitted, use bt_fit_model to fit.")
+  
+  
+  # extra inputs
+  expect_error(bt_representation_hf(test_input = "test",
+                                    task = "text",
+                                    hf_model = "text",
+                                    documents = "text",
+                                    topic_model = model),
+               "Bad argument\\(s\\) attempted to be sent to pipeline\\(\\): test_input")
+})
 
+
+
+test_that("bt_representation_openai returns correct output on correct input", {
+  
+  bt <- reticulate::import("bertopic")
+  sentences <- stringr::sentences[1:100] # docs
+  embeddings <- array(runif(200), dim = c(100, 2))
+  model <- bt$BERTopic(
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+    nr_topics = 2L
+  )$fit(sentences, embeddings = embeddings) 
+  
+  nr_topics <- model$get_topic_info() %>% nrow()
+  
+  representation_hf <- bt_representation_hf(task = "text-generation",
+                                                 hf_model = "gpt2",
+                                                 documents = sentences,
+                                                 topic_model = model)
+  
+  expect_equal(nr_topics, length(representation_hf))
+  expect_true(is.character(unlist(representation_hf)))
+  expect_true(representation_hf[[1]] != representation_hf[[2]])
+})
