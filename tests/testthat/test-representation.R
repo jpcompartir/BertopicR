@@ -78,7 +78,7 @@ test_that("bt_representation_openai errors on bad input", {
                "Bad argument\\(s\\) attempted to be sent to OpenAI\\(\\): test_input")
 })
 
-test_that("bt_representation_openai returns correct output on correct input", {
+test_that("bt_representation_hf returns correct output on correct input", {
   
   representation_openai <- bt_representation_openai(api_key = Sys.getenv("OPENAI_API_KEY"),
                                         delay_in_seconds = 1,
@@ -182,17 +182,17 @@ test_that("bt_representation_hf errors on bad input", {
 
 
 
-test_that("bt_representation_openai returns correct output on correct input", {
+test_that("bt_representation_hf returns correct output on correct input", {
   
   bt <- reticulate::import("bertopic")
-  sentences <- stringr::sentences[1:100] # docs
-  embeddings <- array(runif(200), dim = c(100, 2))
+  sentences <- stringr::sentences[1:150] # docs
+  embeddings <- array(runif(300), dim = c(150, 2))
   model <- bt$BERTopic(
     embedding_model = bt_base_embedder(),
     umap_model = bt_base_reducer(),
     nr_topics = 2L
   )$fit(sentences, embeddings = embeddings) 
-  
+  # model$get_topic_info()
   nr_topics <- model$get_topic_info() %>% nrow()
   
   representation_hf <- bt_representation_hf(task = "text-generation",
@@ -204,3 +204,25 @@ test_that("bt_representation_openai returns correct output on correct input", {
   expect_true(is.character(unlist(representation_hf)))
   expect_true(representation_hf[[1]] != representation_hf[[2]])
 })
+
+# bt <- reticulate::import("bertopic")
+# sentences <- stringr::sentences[1:150] # docs
+# embeddings <- array(runif(300), dim = c(150, 2))
+# for (i in 1:100){
+#  
+#   model <- bt$BERTopic(
+#     embedding_model = bt_base_embedder(),
+#     umap_model = bt_base_reducer(),
+#     nr_topics = 2L
+#   )$fit(sentences, embeddings = embeddings) 
+#   
+#   representation_hf <- bt_representation_hf(task = "text-generation",
+#                                             hf_model = "gpt2",
+#                                             documents = sentences,
+#                                             topic_model = model)
+#   
+#   test_error <- representation_hf[[2]]
+#   
+#   
+# }
+

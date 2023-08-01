@@ -398,6 +398,8 @@ bt_outliers_ctfidf <- function(fitted_model,
 #' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
 #' @param documents documents to which the model was fit
 #' @param new_topics Topics to update model with
+#' @param representation_model model for updating topic representations
+#' @param embedding_model if updating representations using a MaximalMarginalRelevance or KeyBERTInspired representation model, a word embedding model is required to calculate word embeddings. If no word embedding model is passed the sentence embedding model passed to bt_compile_model will be used. If this was an empty model, this function will not work for MaximalMarginalRelevance or KeyBERTInspired representation models.
 #' @param vectoriser_model Model for vectorising input for topic representations (Python object)
 #' @param ctfidf_model Model for performing class-based tf-idf (ctf-idf) (Python object)
 #'
@@ -407,6 +409,8 @@ bt_outliers_ctfidf <- function(fitted_model,
 bt_update_topics <- function(fitted_model, 
                              documents, 
                              new_topics = NULL,
+                             representation_model = NULL,
+                             embedding_model = NULL,
                              vectoriser_model = NULL,
                              ctfidf_model = NULL){
   
@@ -426,25 +430,51 @@ bt_update_topics <- function(fitted_model,
             test_is_python_object(vectoriser_model) | is.null(vectoriser_model),
             test_is_python_object(ctfidf_model) | is.null(ctfidf_model))
   
+  if (any(grepl("KeyBERT|MaximalMarginalRelevance", methods::S3Class(representation_model))) &
+    is.null(fitted_model$embedding_model$embedding_model) & is.null(embedding_model)){
+    stop("The current embedding_model instance variable is Null. Must pass an embedding_model")
+  }
+
+  # If the embedder isn't a sentence transformers object, stop early.
+  if(!grepl("^sentence_tran", class(embedding_model)[[1]])){
+    stop("This package currently only supports embedding models from the sentence transformer library, embedder should be a sentence transformers model")
+  }
+  
   #### end of validation ####
   
-  # default vectoriser if none given
-  if(is.null(vectoriser_model)){
-    vectoriser_model <- bt_make_vectoriser()
-    message("\nNo vectorising model provided, creating model with default parameters")
+  # let user know what embedding model is being used
+  if (any(grepl("KeyBERT|MaximalMarginalRelevance", methods::S3Class(representation_model))) &
+      is.null(embedding_model)){
+    message("No embedding model provided, using original sentence embedding model:\n", fitted_model$embedding_model$embedding_model)
   }
   
-  # default ctfidf if none given
-  if(is.null(ctfidf_model)){
-    ctfidf_model <- bt_make_ctfidf()
-    message("\nNo ctfidf model provided, creating model with default parameters")
+  if (!is.null(embedding_model)){
+    bt_backend <- reticulate::import("bertopic.backend._utils")
+    embedding_model <- bt_backend$select_backend(embedding_model = embedding_model)
+    fitted_model$embedding_model <- embedding_model
   }
+  
+  # this was causing errors to do with max and min df - will look into this and reimplement
+  # # default vectoriser if none given
+  # if(is.null(vectoriser_model)){
+  #   vectoriser_model <- bt_make_vectoriser()
+  #   message("\nNo vectorising model provided, creating model with default parameters")
+  # }
+  # 
+  # # default ctfidf if none given
+  # if(is.null(ctfidf_model)){
+  #   ctfidf_model <- bt_make_ctfidf()
+  #   message("\nNo ctfidf model provided, creating model with default parameters")
+  # }
+  
+  
   
   fitted_model$update_topics(docs = documents, 
-                                      topics = new_topics, 
-                                      vectorizer_model = vectoriser_model, 
-                                      ctfidf_model = ctfidf_model)
-  
+                            topics = new_topics, 
+                             representation_model = representation_model,
+                            vectorizer_model = vectoriser_model, 
+                            ctfidf_model = ctfidf_model)
+
   return(fitted_model)
   
 }

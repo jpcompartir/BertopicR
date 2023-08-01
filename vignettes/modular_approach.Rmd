@@ -113,7 +113,7 @@ TIP: Like with embeddings, it's a good idea to save your reduced embeddings, as 
 We'll use a low-ish value for n_neighbours (we have a small dataset) and an output with 5 dimensions (n_components = 5L). We'll set the min_distance to 0, so that our dimensionality reduction model can place very similar documents *very* close together. We'll set the metric to "Euclidean" see [Embedding to non-Euclidean Spaces](https://umap-learn.readthedocs.io/en/latest/embedding_space.html) for alternatives.
 
 ```{r}
-reducer <- bt_make_reducer(
+reducer <- bt_make_reducer_umap(
   n_neighbors = 10L, 
   n_components = 10L,
   min_dist = 0L,
@@ -294,3 +294,123 @@ data <- data %>%
 )
 ```
 
+# Changing the Model Representation
+
+# Creating Representation Models
+
+Once you are happy with the topics/clusters that have been formed, there are a few methods we can use to improve the topic representations. To this, we first create the representation method, and then use this method to update the topic model. 
+
+The representation methods currently available are:
+
+1. **KeyBERT** is a keyword extraction technique that uses BERT embeddings to represent our topics with appropriate keywords and phrases. To achieve this we first create a KeyBERTInspired representation model.
+
+2. **MaximalMarginalRelevance** is a concept used to select the most relevant keywords or phrases while promoting diversity in keywords. It balances relevance to the topic with distinctiveness from previously chosen keywords or phrases using a trade-off parameter called lambda.
+
+3. **OpenAI** allows us to use their available models to generate topic summaries. An OpenAI API key is required to access their api and models.
+
+After creating each of these representation models below we can compile them into a single representation dictionary, this allows us to pass each representation model to the topic model. If we only wish to pass a single representation model, this step is not necessary.
+```{r keybert, eval = FALSE}
+representation_keybert <- bt_representation_keybert(top_n_words = 10,
+                                                    nr_docs = 50,
+                                                    nr_samples = 500,
+                                                    nr_candidate_words = 100)
+
+representation_mmr <- bt_representation_mmr(diversity = 0.5)
+
+
+representation_openai <- bt_representation_openai(openai_model = "gpt-3.5-turbo",
+                                                  nr_docs = 5,
+                                                  chat = TRUE,
+                                                  api_key = "sk-")
+
+# compile models
+representation_dict <- c(
+  "KeyBERT" = representation_keybert,
+  "MMR" = representation_mmr,
+  "OpenAI" = representation_openai
+)
+```
+
+```{r keybert_echo_false, echo = FALSE}
+representation_keybert <- bt_representation_keybert(top_n_words = 10,
+                                                    nr_docs = 50,
+                                                    nr_samples = 500,
+                                                    nr_candidate_words = 100)
+
+representation_mmr <- bt_representation_mmr(diversity = 0.5)
+
+
+representation_openai <- bt_representation_openai(openai_model = "gpt-3.5-turbo",
+                                                  nr_docs = 5,
+                                                  chat = TRUE,
+                                                  api_key = Sys.getenv("OPENAI_API_KEY"))
+
+# compile models
+representation_dict <- c(
+  "KeyBERT" = representation_keybert,
+  "MMR" = representation_mmr,
+  "OpenAI" = representation_openai
+)
+```
+
+After creating our representation models we can pass them to the bt_update_topics function to update our representations.
+
+++Note:++ When we initiated the current model using bt_compile_model, in order to skip the embedding step within model fitting (as we had already performed this), we passed an empty embedding_model. When using KeyBERT or MMR, an embedding model is required to calculate word and topic embeddings and so when updating representations using either of these methods, we must pass an embedding model. If you passed a valid embedding model to bt_compile_model, this is not required. 
+
+```{r update_keybert}
+fitted_model <- bt_update_topics(fitted_model = fitted_model,
+                                 documents = sentences,
+                                 representation_model = representation_dict,
+                                 embedding_model = embedder)
+
+fitted_model$get_topic_info() %>% select(-Representative_Docs, -Representation) %>% head(10)
+```
+
+## Utilising the Hugging Face Model Hub
+We can also utilise Hugging Face models to create topic representations. Some of these models can be very useful for creating coherent topic summaries without the cost associated with OpenAI models.
+
+This method for generating topic representations is slightly different to the above mentioned methods in that bt_representation_hf returns the actual topic representations rather than a representation model. 
+
+```{r}
+hf_representations <- bt_representation_hf(task = "text2text-generation",
+                                           hf_model = "google/flan-t5-base",
+                                           topic_model = fitted_model,
+                                           documents = sentences,
+                                           default_prompt = "keywords")
+
+hf_representations
+```
+
+We then use the set_topic_labels function to create a CustomName for each topic with the generated representations instead of the bt_update_topics function.
+
+```{r}
+fitted_model$set_topic_labels(hf_representations)
+
+fitted_model$get_topic_info() %>% select(-Representative_Docs, -Representation) %>% head(10)
+```
+
+# Modifying Topics
+
+## Merging Topics
+
+Particularly when using hdbscan we can end up with a large number of topics and it can be useful to merge some of these topics which we think are suitably similar. Looking at the topics we have already generated we might think that topic 6, which looks like it is something to do with farming, and topic 7, which looks like it is something to do with nature, could be merged into an "outdoor" category, but we should have a closer look at the data before deciding this.
+
+### Hierarchical Clustering
+
+If you have used a hdbscan clusterer you will be able to make use of its hierarchical clustering here and visualise how topics/clusters were formed.
+
+```{r}
+fitted_model$visualize_hierarchy()$show()
+```
+
+The dendrogram seems to say that topic 3 (something about books) and 5 (something about children and boats) are two of the later clusters to split from a common parent cluster. This does not necessarily mean that they should be merged but we could look more into these topics to investigate ourselves. This would be a good point to examine bigrams and top terms if the topics were large, but as these topics have only 13-18 posts each, we could just look at some exemplars. 
+
+Maybe I could just say in theory you should do this.... and not actually do anything?
+
+```{r}
+data %>% 
+  filter(topic == 3) %>%
+  ParseR::count_ngram(text_var = sentence) %>%
+  purrr::pluck("viz") %>%
+  ParseR::viz_ngram()
+```

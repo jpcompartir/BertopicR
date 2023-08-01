@@ -70,7 +70,7 @@ bt_representation_mmr <- function(diversity = 0.1,
   bt_rep <- reticulate::import("bertopic.representation") # import library
   
   representation_model <- bt_rep$MaximalMarginalRelevance(diversity = diversity,
-                                                          top_n_words = top_n_words)
+                                                          top_n_words = as.integer(top_n_words))
   
   return(representation_model)
   
@@ -247,7 +247,7 @@ bt_representation_hf <- function(...,
 
   empty_string <- ""
   updated_representation <- list()
-  record_prompt <- list()
+  # record_prompt <- list()
   for (doc in seq_along(topic_model$get_topic_info()$Topic)) {
     
     updated_prompt <- prompt # don't want to overwrite prompt

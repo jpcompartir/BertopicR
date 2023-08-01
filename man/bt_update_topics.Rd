@@ -8,6 +8,8 @@ bt_update_topics(
   fitted_model,
   documents,
   new_topics = NULL,
+  representation_model = NULL,
+  embedding_model = NULL,
   vectoriser_model = NULL,
   ctfidf_model = NULL
 )
@@ -18,6 +20,10 @@ bt_update_topics(
 \item{documents}{documents to which the model was fit}
 
 \item{new_topics}{Topics to update model with}
+
+\item{representation_model}{model for updating topic representations}
+
+\item{embedding_model}{if updating representations using a MaximalMarginalRelevance or KeyBERTInspired representation model, a word embedding model is required to calculate word embeddings. If no word embedding model is passed the sentence embedding model passed to bt_compile_model will be used. If this was an empty model, this function will not work for MaximalMarginalRelevance or KeyBERTInspired representation models.}
 
 \item{vectoriser_model}{Model for vectorising input for topic representations (Python object)}
 

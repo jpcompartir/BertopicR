@@ -51,7 +51,7 @@ bt_do_embedding <- function(embedder, documents, ..., accelerator = "mps", progr
 
   #If the embedder isn't a sentence transformers object, stop early.
   if(!grepl("^sentence_tran",class(embedder)[[1]])){
-    stop("embedder should be a sentence transformers model")
+    stop("This package currently only supports embedding models from the sentence transformer library, embedder should be a sentence transformers model")
   }
 
   #Store the attributes associated with the embedder for adding the embedding_model later
