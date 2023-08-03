@@ -20,6 +20,11 @@ bertopic model with specified topics merged
 Merge topics of an already-fitted BertopicR model.
 You can feed in a list, to merge topics together, or a list of lists to perform
 merges on multiple groups of topics.
+
+NOTE: The bertopic model you are working with is a pointer to a python object
+at a point in memory. This means that the input and the output model cannot be
+differentiated between without explicitly saving the model before performing
+this operation. A model is not returned as the function changes the input model.
 }
 \details{
 This function updates the model so that the topics in the topics_to_merge list

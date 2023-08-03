@@ -20,4 +20,9 @@ a fitted BERTopic model
 }
 \description{
 If you've already performed dimensionality reduction on your embeddings, you can feed in the reduced dimension embeddings to the embeddings argument, make sure to supply \code{bt_compile_model} with a base reducer (the output of \code{bt_base_reducer()})
+
+NOTE: The bertopic model you are working with is a pointer to a python object
+at a point in memory. This means that the input and the output model cannot be
+differentiated between without explicitly saving the model before performing
+this operation. A model is not returned as the function changes the input model.
 }

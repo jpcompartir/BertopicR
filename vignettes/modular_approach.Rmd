@@ -98,13 +98,11 @@ We take a peek at the first 10 columns (dimensions), of the first row of our emb
 
 The next step in the pipeline is to reduce the dimensions of our embeddings, we do this for two reasons:
 
-In the bertopic pipeline we perform dimensionality reduction for two reasons
-
 1.  to allow our clustering algorithm to run smoothly
 
 2.  to visualise our clusters on a plane (we will eventually reduce to 2 dimensions)
 
-In machine learning more generally, dimensionality reduction is often an important step to avoid overfitting and the curse of dimensionality. For more information on the UMAP algorithm - uniform manifold approximation and projection for dimension reduction - *catchy*, see [UMAP Docs](https://umap-learn.readthedocs.io/en/latest/).
+In machine learning more generally, dimensionality reduction is often an important step to avoid overfitting and the curse of dimensionality. In this example we will use the UMAP algorithm (however dimensionality reduction using PCA and truncatedSVD are also currently available) for more information on the UMAP algorithm - uniform manifold approximation and projection for dimension reduction - *catchy*, see [UMAP Docs](https://umap-learn.readthedocs.io/en/latest/). 
 
 TIP: Like with embeddings, it's a good idea to save your reduced embeddings, as reducing dimensions can be a costly process.
 
@@ -214,14 +212,14 @@ But how do our other clusters look?
 ```{r}
 data %>%
   filter(cluster == 0) %>%
-  sample_n(10) %>% 
+  sample_n(5) %>% 
   pull(sentence)
 ```
 
 ```{r}
 data %>%
   filter(cluster == 1) %>%
-  sample_n(10) %>%
+  sample_n(5) %>%
   pull(sentence)
 ```
 
@@ -229,7 +227,7 @@ The more clusters we look at, the more difficult it will become to figure out wh
 ```{r}
 data %>%
   filter(cluster == 2) %>%
-  sample_n(10) %>%
+  sample_n(5) %>%
   pull(sentence)
 ```
 
@@ -272,18 +270,18 @@ topic_model <- bt_compile_model(
 We feed in our reduced embeddings rather than the original embeddings, this allows us to skip steps in the workflow; this can save us a lot of time, particularly when we have many documents.
 
 ```{r}
-fitted_model <- bt_fit_model(topic_model, data$sentence, embeddings = reduced_embeddings)
+bt_fit_model(topic_model, data$sentence, embeddings = reduced_embeddings)
 ```
 
 We can create a look up table to join our sentences to their topic labels and their topic descriptions and join this information with our original dataframe:
 
 ```{r}
-topic_representations <- fitted_model$get_topic_info()
+topic_representations <- topic_model$get_topic_info()
 topic_rep_lookup <- topic_representations %>%
   select(topic = Topic, description = Name, topic_size = Count)
 
 data <- data %>%
-  mutate(topic = fitted_model$topics_) %>%
+  mutate(topic = topic_model$topics_) %>%
   left_join(topic_rep_lookup)
 
 (data <- data %>% 
@@ -339,17 +337,17 @@ representation_keybert <- bt_representation_keybert(top_n_words = 10,
 
 representation_mmr <- bt_representation_mmr(diversity = 0.5)
 
-
-representation_openai <- bt_representation_openai(openai_model = "gpt-3.5-turbo",
-                                                  nr_docs = 5,
-                                                  chat = TRUE,
-                                                  api_key = Sys.getenv("OPENAI_API_KEY"))
+# 
+# representation_openai <- bt_representation_openai(openai_model = "gpt-3.5-turbo",
+#                                                   nr_docs = 5,
+#                                                   chat = TRUE,
+#                                                   api_key = Sys.getenv("OPENAI_API_KEY"))
 
 # compile models
 representation_dict <- c(
   "KeyBERT" = representation_keybert,
-  "MMR" = representation_mmr,
-  "OpenAI" = representation_openai
+  "MMR" = representation_mmr #,
+  # "OpenAI" = representation_openai
 )
 ```
 
@@ -358,12 +356,12 @@ After creating our representation models we can pass them to the bt_update_topic
 ++Note:++ When we initiated the current model using bt_compile_model, in order to skip the embedding step within model fitting (as we had already performed this), we passed an empty embedding_model. When using KeyBERT or MMR, an embedding model is required to calculate word and topic embeddings and so when updating representations using either of these methods, we must pass an embedding model. If you passed a valid embedding model to bt_compile_model, this is not required. 
 
 ```{r update_keybert}
-fitted_model <- bt_update_topics(fitted_model = fitted_model,
-                                 documents = sentences,
-                                 representation_model = representation_dict,
-                                 embedding_model = embedder)
+bt_update_topics(fitted_model = topic_model,
+                 documents = sentences,
+                 representation_model = representation_dict,
+                 embedding_model = embedder)
 
-fitted_model$get_topic_info() %>% select(-Representative_Docs, -Representation) %>% head(10)
+topic_model$get_topic_info() %>% select(-Representative_Docs, -Representation) %>% head(10)
 ```
 
 ## Utilising the Hugging Face Model Hub
@@ -374,7 +372,7 @@ This method for generating topic representations is slightly different to the ab
 ```{r}
 hf_representations <- bt_representation_hf(task = "text2text-generation",
                                            hf_model = "google/flan-t5-base",
-                                           topic_model = fitted_model,
+                                           topic_model = topic_model,
                                            documents = sentences,
                                            default_prompt = "keywords")
 
@@ -384,9 +382,9 @@ hf_representations
 We then use the set_topic_labels function to create a CustomName for each topic with the generated representations instead of the bt_update_topics function.
 
 ```{r}
-fitted_model$set_topic_labels(hf_representations)
+topic_model$set_topic_labels(hf_representations)
 
-fitted_model$get_topic_info() %>% select(-Representative_Docs, -Representation) %>% head(10)
+topic_model$get_topic_info() %>% select(-Representative_Docs, -Representation) %>% head(10)
 ```
 
 # Modifying Topics
@@ -399,15 +397,20 @@ Particularly when using hdbscan we can end up with a large number of topics and 
 
 Hdbscan clustering forms clusters through a hierarchical processes which you can visualise with a dendrogram. This can be useful when merging topics as you can see how clusters split to become the topics that emerged from our topic modelling process. The x-axis here is a measure of the distance between topic embeddings, so when clusters split at a higher x-value there is a larger distance between their embeddings. We can see that for this particular dataset, the clusters split into their final topics quite early on in the hierarchy and so it might not be appropriate to merge topics based on how they have emerged in the hierarchy. 
 
-```{r}
-hierarchical_topics <- fitted_model$hierarchical_topics(sentences)
-fitted_model$visualize_hierarchy(hierarchical_topics = hierarchical_topics)$show()
+```{r, eval = FALSE}
+hierarchical_topics <- topic_model$hierarchical_topics(sentences)
+topic_model$visualize_hierarchy(hierarchical_topics = hierarchical_topics)$show()
+```
+
+```{python, echo = FALSE}
+hierarchical_topics = r.topic_model.hierarchical_topics(r.sentences)
+r.topic_model.visualize_hierarchy(hierarchical_topics = hierarchical_topics).show()
 ```
 
 The hierarchical structure is based on how topics emerge based on the similarity of their embeddings, however, we can often find topics that we think should be merged based on our knowledge. For example, despite their embeddings having a relatively large distance between them, topic 2 and 14 both appear to be about food. 
 
 ```{r}
-fitted_model$get_topic_info() %>% 
+topic_model$get_topic_info() %>% 
   filter(Topic %in% c(2,14)) %>% 
   select(-Representative_Docs, - Representation)
 ```
@@ -416,26 +419,26 @@ For larger topics we could use ParseR to analyse topic bigrams here, but since t
 
 ```{r}
 data %>%
-  filter(Topic %in% c(2,14)) %>% 
-  arrange(Topic) %>% 
-  select(Document, Topic)
+  filter(topic %in% c(2,14)) %>% 
+  arrange(topic) %>% 
+  select(sentence, topic)
 ```
 
 I am pretty happy that these two topics could be merged into a larger "food" topic, to do this we use the bt_merge_topics function:
 
 ```{r}
-bt_merge_topics(fitted_model = fitted_model,
+bt_merge_topics(fitted_model = topic_model,
                 documents = sentences,
                 topics_to_merge = list(2, 14))
 
-fitted_model$get_topic_info()
+topic_model$get_topic_info()
 ```
 
 We have been maintaining a dataframe all along that is tracking each step we've completed, it would be good to now update that dataframe with our new topics.
 
 ```{r}
 data <- data %>%
-  mutate(merged_topics = fitted_model$topics_)
+  mutate(merged_topics = topic_model$topics_)
 ```
 ## Reducing Outliers
 
@@ -452,21 +455,21 @@ The methods currently available to us are:
 We can play with all outlier strategies as, unlike when we merge topics or fit the model, the bt_outlier_* functions do not update the model, they only output a df with each document, their current topic classification and the potential new topics. We must update the model using bt_update_topics to actually change the topics within the model.
 
 ```{r}
-outliers_ts_sim <- bt_outliers_tokenset_similarity(fitted_model = fitted_model,
+outliers_ts_sim <- bt_outliers_tokenset_similarity(fitted_model = topic_model,
                                                    documents = sentences,
-                                                   topics = fitted_model$topics_,
+                                                   topics = topic_model$topics_,
                                                    threshold = 0.1)
 
-outliers_embed <- bt_outliers_embeddings(fitted_model = fitted_model,
+outliers_embed <- bt_outliers_embeddings(fitted_model = topic_model,
                                          documents = sentences,
-                                         topics = fitted_model$topics_,
+                                         topics = topic_model$topics_,
                                          embeddings = reduced_embeddings,
                                          embedding_model = embedder,
                                          threshold = 0.1)
 
-outliers_ctfidf <- bt_outliers_ctfidf(fitted_model = fitted_model,
+outliers_ctfidf <- bt_outliers_ctfidf(fitted_model = topic_model,
                                       documents = sentences,
-                                      topics = fitted_model$topics_,
+                                      topics = topic_model$topics_,
                                       threshold = 0.1)
 ```
 
@@ -496,3 +499,14 @@ data %>%
 
 ```
 
+You should take a look at some of the documents which have been redistributed and the topic which they have been redistributed to before deciding on the best strategy for your data. This can be quite laborious for large amounts of data with many topics. As this dataset is relatively small it may not be appropriate, but you can use things like bigrams and top terms on outlier documents that have been redistributed to investigate if they line up with the topics they have been moved to.
+
+Once you have settled on a new list of topics that you are happy with, you can update your model with those new topics. For example, if after looking at you redistributed outliers, you decided that the c-TF-IDF strategy was the most appropriate you can update your model accordingly:
+
+```{r}
+bt_update_topics(fitted_model = topic_model,
+                 documents = sentences,
+                 new_topics = outliers_ctfidf$new_topics)
+```
+
+And that's it! You've completed a basic topic modelling pipeline using bertopic! If you would like to have a deeper look at what else we can do using bertopic, refer to the BertopicR function documentation and the BERTopic python library, https://maartengr.github.io/BERTopic/index.html.

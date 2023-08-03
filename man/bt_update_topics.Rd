@@ -42,9 +42,7 @@ bt_compile_model.
 NOTE: The bertopic model you are working with is a pointer to a python object
 at a point in memory. This means that the input and the output model cannot be
 differentiated between without explicitly saving the model before performing
-this operation. A model is returned out of convention, in reality, the function
-is applied to and changes the input model. The input model will be the same as
-the output model after the operation has been performed.
+this operation. A model is not returned as the function changes the input model.
 }
 \details{
 NOTE: If using this function to update outlier topics, it may lead to errors

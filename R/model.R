@@ -68,7 +68,14 @@ bt_compile_model <- function(embedding_model = NULL, reduction_model = NULL, clu
 
 #' Fit a topic model on your documents & embeddings
 #'
+#' @description
+#' 
 #' If you've already performed dimensionality reduction on your embeddings, you can feed in the reduced dimension embeddings to the embeddings argument, make sure to supply `bt_compile_model` with a base reducer (the output of `bt_base_reducer()`)
+#' 
+#' NOTE: The bertopic model you are working with is a pointer to a python object 
+#' at a point in memory. This means that the input and the output model cannot be 
+#' differentiated between without explicitly saving the model before performing 
+#' this operation. A model is not returned as the function changes the input model.
 #'
 #' @param model Output of bt_compile_model() or another bertopic topic model
 #' @param documents Your documents to topic model on
@@ -102,5 +109,5 @@ bt_fit_model <- function(model, documents, embeddings, topic_labels = NULL){
 
   fitted_model <- model$fit(documents = documents, embeddings = embeddings, y = topic_labels)
 
-  return(fitted_model)
+  # return(fitted_model)
 }

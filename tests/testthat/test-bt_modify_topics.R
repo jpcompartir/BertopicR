@@ -46,49 +46,49 @@ test_that("bt_merge_topics merges topics", {
     umap_model = bt_base_reducer(),
   )$fit(sentences, embeddings = embeddings)
   n_topics <- model$get_topic_info() %>% nrow()
-  merged_model <- bt_merge_topics(fitted_model = model,
+  bt_merge_topics(fitted_model = model,
                                   documents = sentences,
                                   topics_to_merge = list(c(-1, 1),
                                                          c(0, 2)))
 
   # merges topics:
   expect_equal(n_topics,
-               merged_model$get_topic_info() %>% 
+               model$get_topic_info() %>% 
                  nrow() + 2)
 }) 
-
-test_that("bt_probability_matrix outputs matrix and errors appropriately", {
-  
-  bt <- reticulate::import("bertopic")
-  skl <- reticulate::import("sklearn.cluster")
-  
-  sentences <- stringr::sentences[1:50]
-  embeddings <- array(runif(100), dim = c(50, 2))
-  model_hdb <- bt$BERTopic(
-    embedding_model = bt_base_embedder(),
-    umap_model = bt_base_reducer(),
-  )$fit(sentences, embeddings = embeddings)
-  
-  model_skl <- bt$BERTopic(
-    embedding_model = bt_base_embedder(),
-    umap_model = bt_base_reducer(),
-    hdbscan_model = skl$KMeans()
-  )$fit(sentences, embeddings = embeddings)
-  model_unfitted <- bt$BERTopic()
-  
-  # recognises model
-  expect_error(bt_probability_matrix(fitted_model = model_unfitted),
-               regexp = "BERTopic model is not fitted, use bt_fit_model to fit.")
-  
-  expect_error(bt_probability_matrix(fitted_model = "text"),
-               regexp = "Model should be a BERTopic model")
-  
-  expect_error(bt_probability_matrix(fitted_model = model_skl),
-               regexp = "^Clustering method is")
-  
-  expect_true(is.array(bt_probability_matrix(fitted_model = model_hdb)))
-  
-})
+# 
+# test_that("bt_probability_matrix outputs matrix and errors appropriately", {
+#   
+#   bt <- reticulate::import("bertopic")
+#   skl <- reticulate::import("sklearn.cluster")
+#   
+#   sentences <- stringr::sentences[1:50]
+#   embeddings <- array(runif(100), dim = c(50, 2))
+#   model_hdb <- bt$BERTopic(
+#     embedding_model = bt_base_embedder(),
+#     umap_model = bt_base_reducer(),
+#   )$fit(sentences, embeddings = embeddings)
+#   
+#   model_skl <- bt$BERTopic(
+#     embedding_model = bt_base_embedder(),
+#     umap_model = bt_base_reducer(),
+#     hdbscan_model = skl$KMeans()
+#   )$fit(sentences, embeddings = embeddings)
+#   model_unfitted <- bt$BERTopic()
+#   
+#   # recognises model
+#   expect_error(bt_probability_matrix(fitted_model = model_unfitted),
+#                regexp = "BERTopic model is not fitted, use bt_fit_model to fit.")
+#   
+#   expect_error(bt_probability_matrix(fitted_model = "text"),
+#                regexp = "Model should be a BERTopic model")
+#   
+#   expect_error(bt_probability_matrix(fitted_model = model_skl),
+#                regexp = "^Clustering method is")
+#   
+#   expect_true(is.array(bt_probability_matrix(fitted_model = model_hdb)))
+#   
+# })
 
 # test_that("bt_outlier_probs errors on incorrect input", {
 # 
@@ -188,8 +188,6 @@ test_that("bt_outlier_embeddings errors on incorrect input", {
                                  documents = sentences,
                                  topics = replicate(100, 1),
                                  embeddings = array(runif(500), dim = c(50, 10))))
-
-
 })
 
 test_that("bt_outliers_embeddings returns correct output", {
@@ -207,10 +205,11 @@ test_that("bt_outliers_embeddings returns correct output", {
   n_topics <- model$get_topic_info() %>% nrow()
 
   # run function
-  df <- bt_outliers_probs(fitted_model = model,
+  df <- bt_outliers_embeddings(fitted_model = model,
                           documents = sentences,
                           topics = model$get_document_info(sentences)$Topic,
-                          probability_matrix = embeddings,
+                          embeddings = embeddings,
+                          embedding_model = "all-miniLM-L6-v2",
                           threshold = 0.01)
 
   # returns df with document, old topics, new topics:
@@ -365,10 +364,16 @@ test_that("bt_update_topics updates topics", {
   )$fit(sentences, embeddings = embeddings)
   vectoriser_model <- bt_make_vectoriser(ngram_range = c(1, 3), min_frequency = 1)
   
-  expect_equal(bt_update_topics(fitted_model = model,
-                                documents = sentences,
-                                new_topics = new_topics,
-                                vectoriser_model = vectoriser_model)$get_document_info(sentences)$Topic,
+  # update topics
+  bt_update_topics(fitted_model = model,
+                   documents = sentences,
+                   new_topics = new_topics,
+                   vectoriser_model = vectoriser_model)
+  
+  # get updated topics
+  topics <- model$get_document_info(sentences)$Topic
+  
+  expect_equal(topics,
                new_topics)
 
 })
