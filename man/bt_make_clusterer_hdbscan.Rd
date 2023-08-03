@@ -24,7 +24,7 @@ bt_make_clusterer_hdbscan(
 
 \item{cluster_selection_method}{The method used to select clusters. Default is "eom".}
 
-\item{prediction_data}{Logical}
+\item{prediction_data}{Set to TRUE if you intend on using model with any functions from hdbscan.prediction eg. if using bt_outliers_probabilities}
 }
 \value{
 An instance of the HDBSCAN clustering model (Python object.

@@ -151,7 +151,8 @@ We'll also set cluster_selection_method = "leaf", this means we'll tend to find 
 clusterer <- bt_make_clusterer_hdbscan(min_cluster_size = 5L,
                           metric = "euclidean",
                           cluster_selection_method = "leaf",
-                          min_samples = 3L)
+                          min_samples = 3L,
+                          prediction_data = TRUE)
 ```
 
 ### Do the clustering
@@ -430,21 +431,68 @@ bt_merge_topics(fitted_model = fitted_model,
 fitted_model$get_topic_info()
 ```
 
+We have been maintaining a dataframe all along that is tracking each step we've completed, it would be good to now update that dataframe with our new topics.
 
+```{r}
+data <- data %>%
+  mutate(merged_topics = fitted_model$topics_)
+```
 ## Reducing Outliers
 
 One feature of hdbscan is the outlier category, which can be quite large. Sometimes we might want to redistribute these outlier documents so that they fall within one of the existing topics. There are a number of methods to achieve this and it is good practice to look at different parameters and different methods when reducing outliers as it can be quite difficult to redistribute outlier documents while maintaining clarity within your topics. To this end, you should consider what your goal is for your project before perusing any of these methods, it is more important to have concise and coherent topics or to force most/all of your documents into topics, is it a balance of the two? 
 
-The methods curerntly available to us are:
+The methods currently available to us are:
 
-1. **Probabilities:** Uses hdbscan soft-clustering to find the best matching topic for each outlier document. To use this you will need to obtain the document-topic probabilities matrix using bt_probability_matrix.
+1. **Tokenset Similarity:** Divides each documents into tokensets and calculates the c-TF-IDF cosine similarity between each tokenset and each topic. The summation of each cosine similarity score for each topic across each outlier document gives the most similar topic for each outlier document.
 
-2. **Topic Distribution:** Divides each documents into tokensets and calculates the c-TF-IDF cosine similarity between each tokenset and each topic. The summation of each cosine similarity score for each topic across each outlier document gives the most similar topic for each outlier document.
+2. **Embeddings:** Measures the cosine similarty between embeddings for each outlier document and each topic. If we have passed an empty embedding model to bt_compile_model (which we did), we must specify an embedding model to be used with this function.
 
-3. **Embeddings:** Measures the cosine similarty between embeddings for each outlier document and each topic.
+3. **c-TF-IDF:** Calculates the c-TF-IDF cosine similarity for each outlier document and topic and redistributes outliers based on the topic with which it has the highest similarity.
 
-4. **c-TF-IDF:** Calculates the c-TF-IDF cosine similarity for each outlier document and topic and redistributes outliers based on the topic with which it has the highest similarity.
+We can play with all outlier strategies as, unlike when we merge topics or fit the model, the bt_outlier_* functions do not update the model, they only output a df with each document, their current topic classification and the potential new topics. We must update the model using bt_update_topics to actually change the topics within the model.
 
+```{r}
+outliers_ts_sim <- bt_outliers_tokenset_similarity(fitted_model = fitted_model,
+                                                   documents = sentences,
+                                                   topics = fitted_model$topics_,
+                                                   threshold = 0.1)
 
+outliers_embed <- bt_outliers_embeddings(fitted_model = fitted_model,
+                                         documents = sentences,
+                                         topics = fitted_model$topics_,
+                                         embeddings = reduced_embeddings,
+                                         embedding_model = embedder,
+                                         threshold = 0.1)
 
+outliers_ctfidf <- bt_outliers_ctfidf(fitted_model = fitted_model,
+                                      documents = sentences,
+                                      topics = fitted_model$topics_,
+                                      threshold = 0.1)
+```
+
+It would be useful now to look at how each method has redistributed the outlier topics. The graph below shows how outliers have been redistributed to topics below topic 12. You can see how each strategy does not redistribute topics in the same way, the embedding strategy for example, has found that 6 outlier documents are best represented by topic 1, while no other strategy has found any outlier documents that are best represented by topic 1. The embedding method has also redistributed all outlier documents, while the c-TF-IDF and tokenset similarity methods have left certain documents as outliers. This is where playing around with the threshold parameter, to find a good fit for your data and chosen strategy, is important.
+
+```{r}
+data %>%
+  mutate(outliers_ts_sim = outliers_ts_sim$new_topics,
+         outliers_embed = outliers_embed$new_topics,
+         outliers_ctfidf = outliers_ctfidf$new_topics) %>%
+  filter(merged_topics == -1,
+         outliers_ctfidf < 12,
+         outliers_embed < 12,
+         outliers_ts_sim < 12) %>%
+  select(outliers_ts_sim, outliers_embed, outliers_ctfidf) %>%
+  pivot_longer(everything(), names_to = "outlier_distribution_strategy", values_to = "topic") %>%
+  ggplot(aes(x = as.factor(topic), fill = outlier_distribution_strategy)) +
+  geom_bar(position = position_dodge2()) +
+  theme_minimal() + 
+  labs(x = "Numbers", 
+       y = "Count", 
+       title = "Number of outliers in each topic after redistribution",
+       fill = "Outlier redistribution strategy") +
+  scale_fill_discrete(labels = c(outliers_ctfidf = "c-TF-IDF",
+                               outliers_embed = "Embeddings",
+                               outliers_ts_sim = "Tokenset similarity"))
+
+```
 

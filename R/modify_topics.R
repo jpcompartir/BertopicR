@@ -54,127 +54,127 @@ bt_merge_topics <- function(fitted_model,
   topics_to_merge <- reticulate::r_to_py(topics_to_merge)
   
   fitted_model$merge_topics(documents,
-                      topics_to_merge_int)
+                            topics_to_merge_int)
   
-return(fitted_model)
+  return(fitted_model)
 }
 
-#' Calculates Topic-Document Probability Matrix
+#' #' Calculates Topic-Document Probability Matrix
+#' #' 
+#' #' @description
+#' #' Uses hdbscan soft clustering to create a matrix with a row per document and 
+#' #' column per model topic. The intersection of row and column is the probability
+#' #' that that document is part of that topic. This is only applicable for models 
+#' #' created using a hdbscan clustering method (bt_make_clusterer_hdbscan or equivalent) 
+#' #' 
+#' #'
+#' #' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
+#' #'
+#' #' @return topic-document probability matrix
+#' #' @export
+#' #'
+#' bt_probability_matrix <- function(fitted_model){
+#'   
+#'   #### input validation ###
+#'   
+#'   # Check fitted model
+#'   test_is_fitted_model(fitted_model)
 #' 
-#' @description
-#' Uses hdbscan soft clustering to create a matrix with a row per document and 
-#' column per model topic. The intersection of row and column is the probability
-#' that that document is part of that topic. This is only applicable for models 
-#' created using a hdbscan clustering method (bt_make_clusterer_hdbscan or equivalent) 
+#'   # validate hdbscan model used as clusterer
+#'   if(!any(grepl("hdbscan\\.hdbscan_\\.HDBSCAN", methods::S3Class(fitted_model$hdbscan_model)))){
+#'     stop("Clustering method is: ", methods::S3Class(fitted_model$hdbscan_model)[[1]], "\nProbability Matrix required HDBSCAN." )
+#'   }
+#'   
+#'   #### end of input validation ####
+#'   
+#'   # import hdbscan
+#'   hdb <- reticulate::import("hdbscan")
+#'   
+#'   # get probability matrix
+#'   probability_matrix <- hdb$all_points_membership_vectors(fitted_model$hdbscan_model)
+#'   
+#'   # set environment so that py_eval can access local variables
+#'   withr::with_options(c(reticulate.engine.environment = rlang::current_env()), {
+#'     
+#'     # map probabilities to topics incase any topic merging occured before this
+#'     probability_matrix_mapped <- reticulate::py_eval("r.fitted_model._map_probabilities(r.probability_matrix)")
+#'   })
 #' 
-#'
-#' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
-#'
-#' @return topic-document probability matrix
-#' @export
-#'
-bt_probability_matrix <- function(fitted_model){
-  
-  #### input validation ###
-  
-  # Check fitted model
-  test_is_fitted_model(fitted_model)
+#'   return(probability_matrix_mapped)
+#'   }
 
-  # validate hdbscan model used as clusterer
-  if(!any(grepl("hdbscan\\.hdbscan_\\.HDBSCAN", methods::S3Class(fitted_model$hdbscan_model)))){
-    stop("Clustering method is: ", methods::S3Class(fitted_model$hdbscan_model)[[1]], "\nProbability Matrix required HDBSCAN." )
-  }
-  
-  #### end of input validation ####
-  
-  # import hdbscan
-  hdb <- reticulate::import("hdbscan")
-  
-  # get probability matrix
-  probability_matrix <- hdb$all_points_membership_vectors(fitted_model$hdbscan_model)
-  
-  # set environment so that py_eval can access local variables
-  withr::with_options(c(reticulate.engine.environment = rlang::current_env()), {
-    
-    # map probabilities to topics incase any topic merging occured before this
-    probability_matrix_mapped <- reticulate::py_eval("r.fitted_model._map_probabilities(r.probability_matrix)")
-  })
-
-  return(probability_matrix_mapped)
-  }
-
-#' Redistributes outliers based on document-topic probability
+#' #' Redistributes outliers based on document-topic probability
+#' #' 
+#' #' @description Uses hdbscan soft clustering calculated probabilities to find 
+#' #' the most appropriate topic for each outlier (topic -1) document. Returns a df containing 
+#' #' the current and potential new topics for each document. Note that the purpose
+#' #' of this function is to obtain a new list of topics that can then be used to 
+#' #' update the model, it does not make any changes to the model itself, the topic 
+#' #' classification the model outputs does not change after running this function. 
+#' #' The bt_update_topics function needs to be used to make the change to the model 
+#' #' itself. 
+#' #' 
+#' #' @details If clustering was performed using hdbscan, you will likely have a 
+#' #' number of topics in the -1 outlier category. Soft clustering is a clustering 
+#' #' method that assigns a probability of being in each cluster to each datum. We
+#' #' can use the hdbscan soft clustering capabilities to reassign the outlier documents
+#' #' to topics based on these probabilities. 
+#' #'
+#' #' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
+#' #' @param documents documents to which the model was fit
+#' #' @param topics current topics associated with the documents
+#' #' @param probability_matrix topic-document probability matrix (probability of each document being a member of each topic). This can be obtained using the bt_probability_matrix function
+#' #' @param threshold minimum probability for outlier to be reassigned
+#' #'
+#' #' @return df with document, old topic, new topic
+#' #' @export
+#' #'
+#' bt_outliers_probs <- function(fitted_model,
+#'                               documents,
+#'                               topics,
+#'                               probability_matrix,
+#'                               threshold = 0.3){
+#'           
+#'           
+#'   
+#'   #Input validation
+#'   
+#'   # check is fitted model
+#'   if(!is.null(fitted_model)) {
+#'     test_is_fitted_model(fitted_model)
+#'   }
+#'   
+#'   # check probability matrix is matrix
+#'   if(!is.null(probability_matrix) & !is.matrix(probability_matrix)){
+#'     stop("topic-document probabilitiy matrix must be a matrix") 
+#'   }
+#'   
+#'   # check inputs
+#'   stopifnot(dim(probability_matrix)[1] == length(documents), # same number of docs 
+#'             dim(probability_matrix)[2] == length(unique(topics)) - 1, # same number of topics
+#'             is.character(documents), 
+#'             is.numeric(threshold))
+#'   
+#'   # check same number topics as docs
+#'   if(!is.null(topics) & !is.null(documents)) {
+#'     test_labels_lengths(documents, topics)
+#'   }
+#'   
+#'   ## validation finished ##
+#'   
+#'   
+#'   new_topics <- fitted_model$reduce_outliers(documents = documents,
+#'                                       topics = topics,
+#'                                       probabilities = probability_matrix,
+#'                                       strategy = "probabilities",
+#'                                       threshold = threshold)
 #' 
-#' @description Uses hdbscan soft clustering calculated probabilities to find 
-#' the most appropriate topic for each outlier (topic -1) document. Returns a df containing 
-#' the current and potential new topics for each document. Note that the purpose
-#' of this function is to obtain a new list of topics that can then be used to 
-#' update the model, it does not make any changes to the model itself, the topic 
-#' classification the model outputs does not change after running this function. 
-#' The bt_update_topics function needs to be used to make the change to the model 
-#' itself. 
-#' 
-#' @details If clustering was performed using hdbscan, you will likely have a 
-#' number of topics in the -1 outlier category. Soft clustering is a clustering 
-#' method that assigns a probability of being in each cluster to each datum. We
-#' can use the hdbscan soft clustering capabilities to reassign the outlier documents
-#' to topics based on these probabilities. 
-#'
-#' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
-#' @param documents documents to which the model was fit
-#' @param topics current topics associated with the documents
-#' @param probability_matrix topic-document probability matrix (probability of each document being a member of each topic). This can be obtained using the bt_probability_matrix function
-#' @param threshold minimum probability for outlier to be reassigned
-#'
-#' @return df with document, old topic, new topic
-#' @export
-#'
-bt_outliers_probs <- function(fitted_model,
-                              documents,
-                              topics,
-                              probability_matrix,
-                              threshold = 0.3){
-          
-          
-  
-  #Input validation
-  
-  # check is fitted model
-  if(!is.null(fitted_model)) {
-    test_is_fitted_model(fitted_model)
-  }
-  
-  # check probability matrix is matrix
-  if(!is.null(probability_matrix) & !is.matrix(probability_matrix)){
-    stop("topic-document probabilitiy matrix must be a matrix") 
-  }
-  
-  # check inputs
-  stopifnot(dim(probability_matrix)[1] == length(documents), # same number of docs 
-            dim(probability_matrix)[2] == length(unique(topics)) - 1, # same number of topics
-            is.character(documents), 
-            is.numeric(threshold))
-  
-  # check same number topics as docs
-  if(!is.null(topics) & !is.null(documents)) {
-    test_labels_lengths(documents, topics)
-  }
-  
-  ## validation finished ##
-  
-  
-  new_topics <- fitted_model$reduce_outliers(documents = documents,
-                                      topics = topics,
-                                      probabilities = probability_matrix,
-                                      strategy = "probabilities",
-                                      threshold = threshold)
-
-  new_topics_matched <- data.frame(message = documents,
-                                   current_topics = topics,
-                                   new_topics = unlist(new_topics))
-  
-  return(new_topics_matched)
-}
+#'   new_topics_matched <- data.frame(message = documents,
+#'                                    current_topics = topics,
+#'                                    new_topics = unlist(new_topics))
+#'   
+#'   return(new_topics_matched)
+#' }
 
 
 #' Redistributes outliers using embeddings
@@ -191,18 +191,23 @@ bt_outliers_probs <- function(fitted_model,
 #' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
 #' @param documents documents to which the model was fit
 #' @param topics current topics associated with the documents
-#' @param embeddings embeddings used to create topics
+#' @param embeddings embeddings used to create topics.
 #' @param threshold minimum probability for outlier to be reassigned
 #'
 #' @return df with document, old topic, new topic
 #' @export
 #'
 bt_outliers_embeddings <- function(fitted_model,
-                                          documents,
-                                          topics,
-                                          embeddings,
-                                          threshold = 0.3){
+                                   documents,
+                                   topics,
+                                   embeddings,
+                                   embedding_model = NULL,
+                                   threshold = 0.3){
   #Input validation
+  # is there an embedding model specified?
+  if (is.null(fitted_model$embedding_model$embedding_model) & is.null(embedding_model)){
+    stop(fitted_model, " embedding model is NULL and no embedding_model passed to function. Specify embedding_model in function input.")
+  }
   
   # Check fitted model
   if(!is.null(fitted_model)) {
@@ -226,12 +231,23 @@ bt_outliers_embeddings <- function(fitted_model,
   
   ## validation finished ##
   
+  # set embedding model to that specified in function input
+  if (!is.null(embedding_model)){
+    bt_backend <- reticulate::import("bertopic.backend._utils")
+    embedding_model <- bt_backend$select_backend(embedding_model = embedding_model)
+    fitted_model$embedding_model <- embedding_model
+  }
+  
+  # otherwise use current embedding model
+  else if (is.null(embedding_model)){
+    message("No embedding model provided, using current sentence embedding model:\n", fitted_model$embedding_model$embedding_model)
+  }
   
   new_topics <- fitted_model$reduce_outliers(documents = documents,
-                                      topics = topics,
-                                      embeddings = embeddings,
-                                      strategy = "embeddings",
-                                      threshold = threshold)
+                                             topics = topics,
+                                             embeddings = embeddings,
+                                             strategy = "embeddings",
+                                             threshold = threshold)
   
   new_topics_matched <- data.frame(message = documents,
                                    current_topics = topics,
@@ -268,10 +284,10 @@ bt_outliers_embeddings <- function(fitted_model,
 bt_outliers_tokenset_similarity <- function(...,
                                             fitted_model,
                                             documents,
-                                             topics,
-                                             window = 4,
-                                             stride = 1,
-                                             threshold = 0.3){
+                                            topics,
+                                            window = 4,
+                                            stride = 1,
+                                            threshold = 0.3){
   #Input validation
   
   # check fitted model
@@ -293,7 +309,7 @@ bt_outliers_tokenset_similarity <- function(...,
   ## validation finished ##
   
   dots <- rlang::list2(...) # place ellipses in list
-
+  
   dots_unlist <- c() # empty vec
   for (i in dots){
     if (is.numeric(i)){
@@ -307,17 +323,17 @@ bt_outliers_tokenset_similarity <- function(...,
   stride_int <- as.integer(stride)
   
   new_topics <- fitted_model$reduce_outliers(documents = documents,
-                                      topics = topics,
-                                      strategy = "distributions",
-                                      threshold = threshold,
-                                      distributions_params = 
-                                        reticulate::py_dict(
-                                          keys = c("window", "stride",
-                                                   names(dots_unlist)), 
-                                          values = c(4L, 1L,
-                                                     dots_unlist), 
-                                          convert = TRUE)) # dict for approx_distribution
-
+                                             topics = topics,
+                                             strategy = "distributions",
+                                             threshold = threshold,
+                                             distributions_params = 
+                                               reticulate::py_dict(
+                                                 keys = c("window", "stride",
+                                                          names(dots_unlist)), 
+                                                 values = c(4L, 1L,
+                                                            dots_unlist), 
+                                                 convert = TRUE)) # dict for approx_distribution
+  
   new_topics_matched <- data.frame(message = documents,
                                    current_topics = topics,
                                    new_topics = unlist(new_topics))
@@ -346,9 +362,9 @@ bt_outliers_tokenset_similarity <- function(...,
 #' @export
 #'
 bt_outliers_ctfidf <- function(fitted_model,
-                                      documents,
-                                      topics,
-                                      threshold = 0.3){
+                               documents,
+                               topics,
+                               threshold = 0.3){
   #Input validation
   
   # Check fitted model
@@ -367,9 +383,9 @@ bt_outliers_ctfidf <- function(fitted_model,
   ## validation finished ##
   
   new_topics <- fitted_model$reduce_outliers(documents = documents,
-                                      topics = topics,
-                                      strategy = "c-tf-idf",
-                                      threshold = threshold) # dict for approx_distribution
+                                             topics = topics,
+                                             strategy = "c-tf-idf",
+                                             threshold = threshold) # dict for approx_distribution
   
   new_topics_matched <- data.frame(message = documents,
                                    current_topics = topics,
@@ -438,10 +454,10 @@ bt_update_topics <- function(fitted_model,
             test_is_python_object(ctfidf_model) | is.null(ctfidf_model))
   
   if (any(grepl("KeyBERT|MaximalMarginalRelevance", methods::S3Class(representation_model))) &
-    is.null(fitted_model$embedding_model$embedding_model) & is.null(embedding_model)){
-    stop("The current embedding_model instance variable is Null. Must pass an embedding_model")
+      is.null(fitted_model$embedding_model$embedding_model) & is.null(embedding_model)){
+    stop("The current embedding_model instance variable is NULL. Must pass an embedding_model")
   }
-
+  
   # If the embedder isn't a sentence transformers object, stop early.
   if(!is.null(embedding_model) & !grepl("^sentence_tran", class(embedding_model)[[1]])){
     stop("This package currently only supports embedding models from the sentence transformer library, embedder should be a sentence transformers model")
@@ -449,16 +465,16 @@ bt_update_topics <- function(fitted_model,
   
   #### end of validation ####
   
-  # let user know what embedding model is being used
-  if (any(grepl("KeyBERT|MaximalMarginalRelevance", methods::S3Class(representation_model))) &
-      is.null(embedding_model)){
-    message("No embedding model provided, using original sentence embedding model:\n", fitted_model$embedding_model$embedding_model)
-  }
-  
+  # set embedding model to that specified in function input
   if (!is.null(embedding_model)){
     bt_backend <- reticulate::import("bertopic.backend._utils")
     embedding_model <- bt_backend$select_backend(embedding_model = embedding_model)
     fitted_model$embedding_model <- embedding_model
+  }
+  
+  # otherwise use current embedding model
+  else if (is.null(embedding_model)){
+    message("No embedding model provided, using current sentence embedding model:\n", fitted_model$embedding_model$embedding_model)
   }
   
   # this was causing errors to do with max and min df - will look into this and reimplement
@@ -477,11 +493,11 @@ bt_update_topics <- function(fitted_model,
   
   
   fitted_model$update_topics(docs = documents, 
-                            topics = new_topics, 
+                             topics = new_topics, 
                              representation_model = representation_model,
-                            vectorizer_model = vectoriser_model, 
-                            ctfidf_model = ctfidf_model)
-
+                             vectorizer_model = vectoriser_model, 
+                             ctfidf_model = ctfidf_model)
+  
   return(fitted_model)
   
 }
