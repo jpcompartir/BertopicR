@@ -452,6 +452,8 @@ The methods currently available to us are:
 
 3. **c-TF-IDF:** Calculates the c-TF-IDF cosine similarity for each outlier document and topic and redistributes outliers based on the topic with which it has the highest similarity.
 
+4. **Probabilites:** This strategy uses hdbscan soft-clustering to find the best matching topic for each outlier document. To use this you will need to get the topic-document probability matrix using bt_probability_matrix, this matrix tells you the probability of any document being in any cluster.
+
 We can play with all outlier strategies as, unlike when we merge topics or fit the model, the bt_outlier_* functions do not update the model, they only output a df with each document, their current topic classification and the potential new topics. We must update the model using bt_update_topics to actually change the topics within the model.
 
 ```{r}
@@ -471,6 +473,15 @@ outliers_ctfidf <- bt_outliers_ctfidf(fitted_model = topic_model,
                                       documents = sentences,
                                       topics = topic_model$topics_,
                                       threshold = 0.1)
+
+prob_matrix <- bt_probability_matrix(fitted_model = topic_model,
+                                     hdbscan_model = clusterer)
+
+outliers_probs <- bt_outliers_probs(fitted_model = topic_model,
+                                    documents = sentences,
+                                    topics = topic_model$topics_,
+                                    probability_matrix = prob_matrix,
+                                    threshold = 0.1)
 ```
 
 It would be useful now to look at how each method has redistributed the outlier topics. The graph below shows how outliers have been redistributed to topics below topic 12. You can see how each strategy does not redistribute topics in the same way, the embedding strategy for example, has found that 6 outlier documents are best represented by topic 1, while no other strategy has found any outlier documents that are best represented by topic 1. The embedding method has also redistributed all outlier documents, while the c-TF-IDF and tokenset similarity methods have left certain documents as outliers. This is where playing around with the threshold parameter, to find a good fit for your data and chosen strategy, is important.
@@ -479,15 +490,17 @@ It would be useful now to look at how each method has redistributed the outlier 
 data %>%
   mutate(outliers_ts_sim = outliers_ts_sim$new_topics,
          outliers_embed = outliers_embed$new_topics,
-         outliers_ctfidf = outliers_ctfidf$new_topics) %>%
+         outliers_ctfidf = outliers_ctfidf$new_topics,
+         outliers_probs = outliers_probs$new_topics) %>%
   filter(merged_topics == -1,
          outliers_ctfidf < 12,
          outliers_embed < 12,
-         outliers_ts_sim < 12) %>%
-  select(outliers_ts_sim, outliers_embed, outliers_ctfidf) %>%
+         outliers_ts_sim < 12,
+         outliers_probs < 12) %>%
+  select(outliers_ts_sim, outliers_embed, outliers_ctfidf, outliers_probs) %>%
   pivot_longer(everything(), names_to = "outlier_distribution_strategy", values_to = "topic") %>%
   ggplot(aes(x = as.factor(topic), fill = outlier_distribution_strategy)) +
-  geom_bar(position = position_dodge2()) +
+  geom_bar(position = position_dodge2(preserve = "single")) +
   theme_minimal() + 
   labs(x = "Numbers", 
        y = "Count", 
@@ -495,7 +508,8 @@ data %>%
        fill = "Outlier redistribution strategy") +
   scale_fill_discrete(labels = c(outliers_ctfidf = "c-TF-IDF",
                                outliers_embed = "Embeddings",
-                               outliers_ts_sim = "Tokenset similarity"))
+                               outliers_ts_sim = "Tokenset similarity",
+                               outlier_probs = "Probabilities"))
 
 ```
 
