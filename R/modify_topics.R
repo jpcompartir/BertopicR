@@ -391,119 +391,122 @@ bt_update_topics <- function(fitted_model,
 
 
 #### hide unimplemented functions ####
-#' #' Calculates Topic-Document Probability Matrix
-#' #' 
-#' #' @description
-#' #' Uses hdbscan soft clustering to create a matrix with a row per document and 
-#' #' column per model topic. The intersection of row and column is the probability
-#' #' that that document is part of that topic. This is only applicable for models 
-#' #' created using a hdbscan clustering method (bt_make_clusterer_hdbscan or equivalent) 
-#' #' 
-#' #'
-#' #' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
-#' #'
-#' #' @return topic-document probability matrix
-#' #' @export
-#' #'
-#' bt_probability_matrix <- function(fitted_model){
-#'   
-#'   #### input validation ###
-#'   
-#'   # Check fitted model
-#'   test_is_fitted_model(fitted_model)
-#' 
-#'   # validate hdbscan model used as clusterer
-#'   if(!any(grepl("hdbscan\\.hdbscan_\\.HDBSCAN", methods::S3Class(fitted_model$hdbscan_model)))){
-#'     stop("Clustering method is: ", methods::S3Class(fitted_model$hdbscan_model)[[1]], "\nProbability Matrix required HDBSCAN." )
-#'   }
-#'   
-#'   #### end of input validation ####
-#'   
-#'   # import hdbscan
-#'   hdb <- reticulate::import("hdbscan")
-#'   
-#'   # get probability matrix
-#'   probability_matrix <- hdb$all_points_membership_vectors(fitted_model$hdbscan_model)
-#'   
-#'   # set environment so that py_eval can access local variables
-#'   withr::with_options(c(reticulate.engine.environment = rlang::current_env()), {
-#'     
-#'     # map probabilities to topics incase any topic merging occured before this
-#'     probability_matrix_mapped <- reticulate::py_eval("r.fitted_model._map_probabilities(r.probability_matrix)")
-#'   })
-#' 
-#'   return(probability_matrix_mapped)
-#'   }
+#' Calculates Topic-Document Probability Matrix using hdbscan soft clustering
+#'
+#' @description
+#' Uses hdbscan soft clustering to create a matrix with a row per document and
+#' column per model topic. The intersection of row and column is the probability
+#' that that document is part of that topic. This is only applicable for models
+#' created using a hdbscan clustering method (bt_make_clusterer_hdbscan or equivalent)
+#'
+#'
+#' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
+#' @param hdbscan_model if you passed an empty clustering model to bt_compile_model you will need to pass a hdbscan model here
+#'
+#' @return topic-document probability matrix
+#' @export
+#'
+bt_probability_matrix <- function(fitted_model,
+                                  hdbscan_model = NULL){
 
-#' #' Redistributes outliers based on document-topic probability
-#' #' 
-#' #' @description Uses hdbscan soft clustering calculated probabilities to find 
-#' #' the most appropriate topic for each outlier (topic -1) document. Returns a df containing 
-#' #' the current and potential new topics for each document. Note that the purpose
-#' #' of this function is to obtain a new list of topics that can then be used to 
-#' #' update the model, it does not make any changes to the model itself, the topic 
-#' #' classification the model outputs does not change after running this function. 
-#' #' The bt_update_topics function needs to be used to make the change to the model 
-#' #' itself. 
-#' #' 
-#' #' @details If clustering was performed using hdbscan, you will likely have a 
-#' #' number of topics in the -1 outlier category. Soft clustering is a clustering 
-#' #' method that assigns a probability of being in each cluster to each datum. We
-#' #' can use the hdbscan soft clustering capabilities to reassign the outlier documents
-#' #' to topics based on these probabilities. 
-#' #'
-#' #' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
-#' #' @param documents documents to which the model was fit
-#' #' @param topics current topics associated with the documents
-#' #' @param probability_matrix topic-document probability matrix (probability of each document being a member of each topic). This can be obtained using the bt_probability_matrix function
-#' #' @param threshold minimum probability for outlier to be reassigned
-#' #'
-#' #' @return df with document, old topic, new topic
-#' #' @export
-#' #'
-#' bt_outliers_probs <- function(fitted_model,
-#'                               documents,
-#'                               topics,
-#'                               probability_matrix,
-#'                               threshold = 0.3){
-#'           
-#'           
-#'   
-#'   #Input validation
-#'   
-#'   # check is fitted model
-#'   if(!is.null(fitted_model)) {
-#'     test_is_fitted_model(fitted_model)
-#'   }
-#'   
-#'   # check probability matrix is matrix
-#'   if(!is.null(probability_matrix) & !is.matrix(probability_matrix)){
-#'     stop("topic-document probabilitiy matrix must be a matrix") 
-#'   }
-#'   
-#'   # check inputs
-#'   stopifnot(dim(probability_matrix)[1] == length(documents), # same number of docs 
-#'             dim(probability_matrix)[2] == length(unique(topics)) - 1, # same number of topics
-#'             is.character(documents), 
-#'             is.numeric(threshold))
-#'   
-#'   # check same number topics as docs
-#'   if(!is.null(topics) & !is.null(documents)) {
-#'     test_labels_lengths(documents, topics)
-#'   }
-#'   
-#'   ## validation finished ##
-#'   
-#'   
-#'   new_topics <- fitted_model$reduce_outliers(documents = documents,
-#'                                       topics = topics,
-#'                                       probabilities = probability_matrix,
-#'                                       strategy = "probabilities",
-#'                                       threshold = threshold)
-#' 
-#'   new_topics_matched <- data.frame(message = documents,
-#'                                    current_topics = topics,
-#'                                    new_topics = unlist(new_topics))
-#'   
-#'   return(new_topics_matched)
-#' }
+  #### input validation ###
+
+  # Check fitted model
+  test_is_fitted_model(fitted_model)
+
+  # validate hdbscan model used as clusterer
+  if(!any(grepl("hdbscan\\.hdbscan_\\.HDBSCAN", methods::S3Class(fitted_model$hdbscan_model)))){
+    stop("Clustering method is: ", methods::S3Class(fitted_model$hdbscan_model)[[1]], "\nProbability Matrix required HDBSCAN." )
+  }
+
+  #### end of input validation ####
+
+  # import hdbscan
+  hdb <- reticulate::import("hdbscan")
+
+  # get probability matrix
+  fitted_model$hdbscan_model <- hdbscan_model
+  probability_matrix <- hdb$all_points_membership_vectors(fitted_model$hdbscan_model)
+
+  # set environment so that py_eval can access local variables
+  withr::with_options(c(reticulate.engine.environment = rlang::current_env()), {
+
+    # map probabilities to topics incase any topic merging occured before this
+    probability_matrix_mapped <- reticulate::py_eval("r.fitted_model._map_probabilities(r.probability_matrix)")
+  })
+
+  return(probability_matrix_mapped)
+  }
+
+#' Redistributes outliers based on document-topic probability
+#'
+#' @description Uses hdbscan soft clustering calculated probabilities to find
+#' the most appropriate topic for each outlier (topic -1) document. Returns a df containing
+#' the current and potential new topics for each document. Note that the purpose
+#' of this function is to obtain a new list of topics that can then be used to
+#' update the model, it does not make any changes to the model itself, the topic
+#' classification the model outputs does not change after running this function.
+#' The bt_update_topics function needs to be used to make the change to the model
+#' itself.
+#'
+#' @details If clustering was performed using hdbscan, you will likely have a
+#' number of topics in the -1 outlier category. Soft clustering is a clustering
+#' method that assigns a probability of being in each cluster to each datum. We
+#' can use the hdbscan soft clustering capabilities to reassign the outlier documents
+#' to topics based on these probabilities.
+#'
+#' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
+#' @param documents documents to which the model was fit
+#' @param topics current topics associated with the documents
+#' @param probability_matrix topic-document probability matrix (probability of each document being a member of each topic). This can be obtained using the bt_probability_matrix function
+#' @param threshold minimum probability for outlier to be reassigned
+#'
+#' @return df with document, old topic, new topic
+#' @export
+#'
+bt_outliers_probs <- function(fitted_model,
+                              documents,
+                              topics,
+                              probability_matrix,
+                              threshold = 0.3){
+
+
+
+  #Input validation
+
+  # check is fitted model
+  if(!is.null(fitted_model)) {
+    test_is_fitted_model(fitted_model)
+  }
+
+  # check probability matrix is matrix
+  if(!is.null(probability_matrix) & !is.matrix(probability_matrix)){
+    stop("topic-document probabilitiy matrix must be a matrix")
+  }
+
+  # check inputs
+  stopifnot(dim(probability_matrix)[1] == length(documents), # same number of docs
+            dim(probability_matrix)[2] == length(unique(topics)) - 1, # same number of topics
+            is.character(documents),
+            is.numeric(threshold))
+
+  # check same number topics as docs
+  if(!is.null(topics) & !is.null(documents)) {
+    test_labels_lengths(documents, topics)
+  }
+
+  ## validation finished ##
+
+
+  new_topics <- fitted_model$reduce_outliers(documents = documents,
+                                      topics = topics,
+                                      probabilities = probability_matrix,
+                                      strategy = "probabilities",
+                                      threshold = threshold)
+
+  new_topics_matched <- data.frame(message = documents,
+                                   current_topics = topics,
+                                   new_topics = unlist(new_topics))
+
+  return(new_topics_matched)
+}

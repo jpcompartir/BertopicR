@@ -56,109 +56,109 @@ test_that("bt_merge_topics merges topics", {
                model$get_topic_info() %>% 
                  nrow() + 2)
 }) 
-# 
-# test_that("bt_probability_matrix outputs matrix and errors appropriately", {
-#   
-#   bt <- reticulate::import("bertopic")
-#   skl <- reticulate::import("sklearn.cluster")
-#   
-#   sentences <- stringr::sentences[1:50]
-#   embeddings <- array(runif(100), dim = c(50, 2))
-#   model_hdb <- bt$BERTopic(
-#     embedding_model = bt_base_embedder(),
-#     umap_model = bt_base_reducer(),
-#   )$fit(sentences, embeddings = embeddings)
-#   
-#   model_skl <- bt$BERTopic(
-#     embedding_model = bt_base_embedder(),
-#     umap_model = bt_base_reducer(),
-#     hdbscan_model = skl$KMeans()
-#   )$fit(sentences, embeddings = embeddings)
-#   model_unfitted <- bt$BERTopic()
-#   
-#   # recognises model
-#   expect_error(bt_probability_matrix(fitted_model = model_unfitted),
-#                regexp = "BERTopic model is not fitted, use bt_fit_model to fit.")
-#   
-#   expect_error(bt_probability_matrix(fitted_model = "text"),
-#                regexp = "Model should be a BERTopic model")
-#   
-#   expect_error(bt_probability_matrix(fitted_model = model_skl),
-#                regexp = "^Clustering method is")
-#   
-#   expect_true(is.array(bt_probability_matrix(fitted_model = model_hdb)))
-#   
-# })
 
-# test_that("bt_outlier_probs errors on incorrect input", {
-# 
-#   bt <- reticulate::import("bertopic")
-#   sentences <- stringr::sentences[1:50]
-#   embeddings <- array(runif(100), dim = c(50, 2))
-#   model <- bt$BERTopic(
-#     embedding_model = bt_base_embedder(),
-#     umap_model = bt_base_reducer(),
-#   )$fit(sentences, embeddings = embeddings)
-#   model_unfitted <- bt$BERTopic()
-#   n_topics <- model$get_topic_info() %>% nrow()
-#   prob_matrix <- matrix(data = rep(1, 50*(n_topics-1)), ncol = n_topics-1)
-# 
-#   # model detection is working:
-#   expect_error(bt_outliers_probs(fitted_model = model_unfitted),
-#                regexp = "BERTopic model is not fitted, use bt_fit_model to fit.")
-# 
-#   expect_error(bt_outliers_probs(fitted_model = "text"),
-#                regexp = "Model should be a BERTopic model")
-# 
-#   # matrix detection is working:
-#   expect_error(bt_outliers_probs(fitted_model = model,
-#                                  probability_matrix = list(100)),
-#                regexp = "topic-document probabilitiy matrix must be a matrix")
-# 
-#   # checks correct number of topics in matrix
-#   expect_error(bt_outliers_probs(fitted_model = model,
-#                                  probability_matrix = prob_matrix))
-# 
-#   # checks correct number of documents in matrix
-#   expect_error(bt_outliers_probs(fitted_model = model,
-#                                  probability_matrix = prob_matrix))
-# 
-#   # checks same number of docs and topics
-#   expect_error(bt_outliers_probs(fitted_model = model,
-#                                  documents = sentences,
-#                                  topics = replicate(10, 1),
-#                                  probability_matrix = prob_matrix,
-#                                  threshold = 0.3))
-# })
-# 
-# test_that("bt_outliers_probs returns correct output", {
-# 
-#   # setup
-#   bt <- reticulate::import("bertopic")
-#   sentences <- stringr::sentences[1:50]
-#   embeddings <- array(runif(100), dim = c(50, 2))
-#   model <- bt$BERTopic(
-#     min_topic_size = 2L,
-#     nr_topics = 3L,
-#     embedding_model = bt_base_embedder(),
-#     umap_model = bt_base_reducer(),
-#   )$fit(sentences, embeddings = embeddings)
-#   n_topics <- model$get_topic_info() %>% nrow()
-#   prob_matrix <- matrix(data = rep(1, length(sentences)*(n_topics-1)), ncol = n_topics-1)
-# 
-#   # run function
-#   df <- bt_outliers_probs(fitted_model = model,
-#                     documents = sentences,
-#                     topics = model$get_document_info(sentences)$Topic,
-#                     probability_matrix = prob_matrix,
-#                     threshold = 0.01)
-# 
-#   # returns df with document, old topics, new topics:
-#   expect_true(all(df[2] == model$get_document_info(sentences)$Topic))
-#   expect_true((df %>% dplyr::filter(current_topics == -1) %>% nrow()) >
-#                 (df %>% dplyr::filter(new_topics == -1) %>% nrow()))
-# 
-# })
+test_that("bt_probability_matrix outputs matrix and errors appropriately", {
+
+  bt <- reticulate::import("bertopic")
+  skl <- reticulate::import("sklearn.cluster")
+
+  sentences <- stringr::sentences[1:50]
+  embeddings <- array(runif(100), dim = c(50, 2))
+  model_hdb <- bt$BERTopic(
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+  )$fit(sentences, embeddings = embeddings)
+
+  model_skl <- bt$BERTopic(
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+    hdbscan_model = skl$KMeans()
+  )$fit(sentences, embeddings = embeddings)
+  model_unfitted <- bt$BERTopic()
+
+  # recognises model
+  expect_error(bt_probability_matrix(fitted_model = model_unfitted),
+               regexp = "BERTopic model is not fitted, use bt_fit_model to fit.")
+
+  expect_error(bt_probability_matrix(fitted_model = "text"),
+               regexp = "Model should be a BERTopic model")
+
+  expect_error(bt_probability_matrix(fitted_model = model_skl),
+               regexp = "^Clustering method is")
+
+  expect_true(is.array(bt_probability_matrix(fitted_model = model_hdb)))
+
+})
+
+test_that("bt_outlier_probs errors on incorrect input", {
+
+  bt <- reticulate::import("bertopic")
+  sentences <- stringr::sentences[1:50]
+  embeddings <- array(runif(100), dim = c(50, 2))
+  model <- bt$BERTopic(
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+  )$fit(sentences, embeddings = embeddings)
+  model_unfitted <- bt$BERTopic()
+  n_topics <- model$get_topic_info() %>% nrow()
+  prob_matrix <- matrix(data = rep(1, 50*(n_topics-1)), ncol = n_topics-1)
+
+  # model detection is working:
+  expect_error(bt_outliers_probs(fitted_model = model_unfitted),
+               regexp = "BERTopic model is not fitted, use bt_fit_model to fit.")
+
+  expect_error(bt_outliers_probs(fitted_model = "text"),
+               regexp = "Model should be a BERTopic model")
+
+  # matrix detection is working:
+  expect_error(bt_outliers_probs(fitted_model = model,
+                                 probability_matrix = list(100)),
+               regexp = "topic-document probabilitiy matrix must be a matrix")
+
+  # checks correct number of topics in matrix
+  expect_error(bt_outliers_probs(fitted_model = model,
+                                 probability_matrix = prob_matrix))
+
+  # checks correct number of documents in matrix
+  expect_error(bt_outliers_probs(fitted_model = model,
+                                 probability_matrix = prob_matrix))
+
+  # checks same number of docs and topics
+  expect_error(bt_outliers_probs(fitted_model = model,
+                                 documents = sentences,
+                                 topics = replicate(10, 1),
+                                 probability_matrix = prob_matrix,
+                                 threshold = 0.3))
+})
+
+test_that("bt_outliers_probs returns correct output", {
+
+  # setup
+  bt <- reticulate::import("bertopic")
+  sentences <- stringr::sentences[1:50]
+  embeddings <- array(runif(100), dim = c(50, 2))
+  model <- bt$BERTopic(
+    min_topic_size = 2L,
+    nr_topics = 3L,
+    embedding_model = bt_base_embedder(),
+    umap_model = bt_base_reducer(),
+  )$fit(sentences, embeddings = embeddings)
+  n_topics <- model$get_topic_info() %>% nrow()
+  prob_matrix <- matrix(data = rep(1, length(sentences)*(n_topics-1)), ncol = n_topics-1)
+
+  # run function
+  df <- bt_outliers_probs(fitted_model = model,
+                    documents = sentences,
+                    topics = model$get_document_info(sentences)$Topic,
+                    probability_matrix = prob_matrix,
+                    threshold = 0.01)
+
+  # returns df with document, old topics, new topics:
+  expect_true(all(df[2] == model$get_document_info(sentences)$Topic))
+  expect_true((df %>% dplyr::filter(current_topics == -1) %>% nrow()) >
+                (df %>% dplyr::filter(new_topics == -1) %>% nrow()))
+
+})
 
 test_that("bt_outlier_embeddings errors on incorrect input", {
 
