@@ -93,7 +93,14 @@ bt_probability_matrix <- function(fitted_model){
   # get probability matrix
   probability_matrix <- hdb$all_points_membership_vectors(fitted_model$hdbscan_model)
   
-  return(probability_matrix)
+  # set environment so that py_eval can access local variables
+  withr::with_options(c(reticulate.engine.environment = rlang::current_env()), {
+    
+    # map probabilities to topics incase any topic merging occured before this
+    probability_matrix_mapped <- reticulate::py_eval("r.fitted_model._map_probabilities(r.probability_matrix)")
+  })
+
+  return(probability_matrix_mapped)
   }
 
 #' Redistributes outliers based on document-topic probability
@@ -436,7 +443,7 @@ bt_update_topics <- function(fitted_model,
   }
 
   # If the embedder isn't a sentence transformers object, stop early.
-  if(!grepl("^sentence_tran", class(embedding_model)[[1]])){
+  if(!is.null(embedding_model) & !grepl("^sentence_tran", class(embedding_model)[[1]])){
     stop("This package currently only supports embedding models from the sentence transformer library, embedder should be a sentence transformers model")
   }
   

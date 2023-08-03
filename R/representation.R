@@ -290,7 +290,12 @@ bt_representation_hf <- function(...,
       diversity = as.integer(diversity)
       
       # representative docs
-      representative_docs <- reticulate::py_eval("r.topic_model._extract_representative_docs(r.c_tf_idf, r.docs, r.topic_model.topic_representations_, r.nr_samples, r.nr_repr_docs, r.diversity)")[[1]]
+      # set environment so that py_eval can access local variables
+      withr::with_options(c(reticulate.engine.environment = rlang::current_env()), {
+        
+        # get representative docs
+        representative_docs <- reticulate::py_eval("r.topic_model._extract_representative_docs(r.c_tf_idf, r.docs, r.topic_model.topic_representations_, r.nr_samples, r.nr_repr_docs, r.diversity)")[[1]]
+      })
       format_docs <- paste(empty_string, paste0("- ", substr(representative_docs[[doc]], 1, 255)), "\n")
       join_docs <- paste(format_docs, collapse = "")
 

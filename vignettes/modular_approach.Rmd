@@ -157,7 +157,7 @@ clusterer <- bt_make_clusterer_hdbscan(min_cluster_size = 5L,
 ### Do the clustering
 
 ```{r}
-clusters <- bt_do_clustering(clustering_model = clusterer, embeddings = reduced_embeddings)
+clusters <- bt_do_clustering(clustering_model = clusterer, embeddings = reduced_embeddings) 
 ```
 
 clusters is now a list of cluster labels, we have 720 labels in total - one for each sentence in {Stringr}'s sentences data set. The cluster labels are output as integers, but it's important **not** to assume that they work like regular integers do. It's **not necessarily** the case that cluster 1 is closer to cluster 4 than it is to cluster 15, the ordering of the labels can effectively be considered random.
@@ -187,17 +187,19 @@ data %>%
   count(cluster, sort = TRUE) %>%
   ggplot(aes(x= n)) +
   geom_histogram(fill = "midnightblue", bins = 20) +
-  theme_minimal()
+  theme_minimal() +
+  xlab("Cluster Size") +
+  ylab("Number of Clusters")
 ```
 
-And we can see which clusters have the highest number of posts:
+With the exception of the outlier group, the clusters are labelled in order of size:
 
 ```{r}
 data %>%
   count(cluster, sort = TRUE)
 ```
 
-177/720 (24.6%) of data points were labelled as noise (cluster == -1), and upon a first inspection they do appear to be quite eclectic. 
+213/720 (29.6%) of data points were labelled as noise (cluster == -1), and upon a first inspection they do appear to be quite eclectic. 
 
 ```{r}
 data %>%
@@ -208,45 +210,40 @@ data %>%
 
 But how do our other clusters look?
 
-Our largest cluster, other than the noise cluster, is cluster 40. 
-
 ```{r}
 data %>%
-  filter(cluster == 40) %>%
-  head(10) %>% 
+  filter(cluster == 0) %>%
+  sample_n(10) %>% 
   pull(sentence)
 ```
 
-However, the more clusters we look at, the more difficult it will become to figure out what's happening...
-
-Precious things, things that shine?
-
 ```{r}
 data %>%
-  filter(cluster == 23) %>%
-  head(10) %>%
+  filter(cluster == 1) %>%
+  sample_n(10) %>%
   pull(sentence)
 ```
 
-Wind, air?
-
+The more clusters we look at, the more difficult it will become to figure out what's happening...
 ```{r}
 data %>%
-  filter(cluster ==13) %>%
-  head(10) %>%
+  filter(cluster == 2) %>%
+  sample_n(10) %>%
   pull(sentence)
 ```
-
 
 Inspecting each of these clusters and trying to figure out what each cluster means and how they inter-relate would soon become intractable for humans. Thankfully, within BERTopic there are quantitative methods already in place to aid this procedure.
 
-We'll make a vectoriser and a ctfidf model, then we'll compile a model, fit our model on our data, and finally we'll explore our topics and their representations.
+Instead of looking at the individual posts in each cluster, we'll attempt to summarise their contents with keywords and phrases. In order to this, we'll make a vectoriser and a ctfidf model. After creating these models, we can use everything we've looked at so far to compile a model, fit the model on our data, and finally explore our topics and their representations.
 
+### Make the vectoriser 
 For the vectoriser we'll set the ngram range as c(1, 2) this means our topics can be represented as single words or bigrams. We'll set stop_words to 'english' so that English stop words are removed and we'll tell our vectoriser to only consider words that have a frequency of 3 or higher, so that rare words and chance occurrences don't clog our representations too much. In practice, we will want to set a higher value for min_frequency as we'll be working with significantly more data.
 
 ```{r}
 vectoriser <- bt_make_vectoriser(ngram_range = c(1, 2), stop_words = "english", min_frequency = 3L)
 ```
+
+### Make the ctfidf model
 
 Then we'll create a ctfidf model which will allow us to represent each topic according to the words that are important to that topic (have high frequency) and distinct to that topic (have relatively low frequency in other topics):
 ```{r}
@@ -255,7 +252,7 @@ ctfidf <- bt_make_ctfidf(reduce_frequent_words = TRUE, bm25_weighting = FALSE)
 
 ## Compile the model
 
-We've already made our individual components, or modules, and selected their parameters. We've already performed the embeddings and dimensionality reduction, so bertopic allows us to skip these steps easily (we can also skip clustering, but won't for this task as it adds extra complexity) - we'll feed in empty models to the `bt_compile_model` function for embedding and reducing. 
+We've already made our individual components, or modules, and selected their parameters. We've already performed the embeddings and dimensionality reduction, so bertopic allows us to skip these steps easily by feeding in empty models to the `bt_compile_model` function for embedding and reducing. We can also skip clustering, but won't for this task as it adds extra complexity, the clustering we performed above with bt_do_clustering was just to explore how our clusterer would work in practice.
 
 N.B. In practice you will need to pause and explore your parameters in more depth.
 
@@ -277,28 +274,29 @@ We feed in our reduced embeddings rather than the original embeddings, this allo
 fitted_model <- bt_fit_model(topic_model, data$sentence, embeddings = reduced_embeddings)
 ```
 
-
-We can create a look up table to join our sentences to their topic labels and their topic descriptions:
+We can create a look up table to join our sentences to their topic labels and their topic descriptions and join this information with our original dataframe:
 
 ```{r}
 topic_representations <- fitted_model$get_topic_info()
 topic_rep_lookup <- topic_representations %>%
-  select(topic = Topic, description = Name)
+  select(topic = Topic, description = Name, topic_size = Count)
 
 data <- data %>%
   mutate(topic = fitted_model$topics_) %>%
   left_join(topic_rep_lookup)
 
 (data <- data %>% 
-  relocate(sentence, topic, description)
+  relocate(sentence, topic, topic_size, description)
 )
 ```
+
+The df compiled is a common place for everything we have generated so far, in practice we don't really need the cluster column now that we have the topic column, they provide the same information. Topics and clusters should have largely the same labels, the only discrepancy would be where multiple clusters/topics are the same size.
 
 # Changing the Model Representation
 
 # Creating Representation Models
 
-Once you are happy with the topics/clusters that have been formed, there are a few methods we can use to improve the topic representations. To this, we first create the representation method, and then use this method to update the topic model. 
+Once you are happy with the topics/clusters that have been formed, there are a few methods we can use to improve the topic representations. To do this, we first create the representation method, and then use this method to update the topic model. 
 
 The representation methods currently available are:
 
@@ -309,6 +307,7 @@ The representation methods currently available are:
 3. **OpenAI** allows us to use their available models to generate topic summaries. An OpenAI API key is required to access their api and models.
 
 After creating each of these representation models below we can compile them into a single representation dictionary, this allows us to pass each representation model to the topic model. If we only wish to pass a single representation model, this step is not necessary.
+
 ```{r keybert, eval = FALSE}
 representation_keybert <- bt_representation_keybert(top_n_words = 10,
                                                     nr_docs = 50,
@@ -393,24 +392,59 @@ fitted_model$get_topic_info() %>% select(-Representative_Docs, -Representation) 
 
 ## Merging Topics
 
-Particularly when using hdbscan we can end up with a large number of topics and it can be useful to merge some of these topics which we think are suitably similar. Looking at the topics we have already generated we might think that topic 6, which looks like it is something to do with farming, and topic 7, which looks like it is something to do with nature, could be merged into an "outdoor" category, but we should have a closer look at the data before deciding this.
+Particularly when using hdbscan we can end up with a large number of topics and it can be useful to merge some of these topics which we think are suitably similar. We can get a certain idea about this from the topic descriptions that we have already generated, but it can also be useful to look at the data more closely before merging.
 
 ### Hierarchical Clustering
 
-If you have used a hdbscan clusterer you will be able to make use of its hierarchical clustering here and visualise how topics/clusters were formed.
+Hdbscan clustering forms clusters through a hierarchical processes which you can visualise with a dendrogram. This can be useful when merging topics as you can see how clusters split to become the topics that emerged from our topic modelling process. The x-axis here is a measure of the distance between topic embeddings, so when clusters split at a higher x-value there is a larger distance between their embeddings. We can see that for this particular dataset, the clusters split into their final topics quite early on in the hierarchy and so it might not be appropriate to merge topics based on how they have emerged in the hierarchy. 
 
 ```{r}
-fitted_model$visualize_hierarchy()$show()
+hierarchical_topics <- fitted_model$hierarchical_topics(sentences)
+fitted_model$visualize_hierarchy(hierarchical_topics = hierarchical_topics)$show()
 ```
 
-The dendrogram seems to say that topic 3 (something about books) and 5 (something about children and boats) are two of the later clusters to split from a common parent cluster. This does not necessarily mean that they should be merged but we could look more into these topics to investigate ourselves. This would be a good point to examine bigrams and top terms if the topics were large, but as these topics have only 13-18 posts each, we could just look at some exemplars. 
-
-Maybe I could just say in theory you should do this.... and not actually do anything?
+The hierarchical structure is based on how topics emerge based on the similarity of their embeddings, however, we can often find topics that we think should be merged based on our knowledge. For example, despite their embeddings having a relatively large distance between them, topic 2 and 14 both appear to be about food. 
 
 ```{r}
-data %>% 
-  filter(topic == 3) %>%
-  ParseR::count_ngram(text_var = sentence) %>%
-  purrr::pluck("viz") %>%
-  ParseR::viz_ngram()
+fitted_model$get_topic_info() %>% 
+  filter(Topic %in% c(2,14)) %>% 
+  select(-Representative_Docs, - Representation)
 ```
+
+For larger topics we could use ParseR to analyse topic bigrams here, but since these topics are relatively small, we can just examine exemplars.
+
+```{r}
+data %>%
+  filter(Topic %in% c(2,14)) %>% 
+  arrange(Topic) %>% 
+  select(Document, Topic)
+```
+
+I am pretty happy that these two topics could be merged into a larger "food" topic, to do this we use the bt_merge_topics function:
+
+```{r}
+bt_merge_topics(fitted_model = fitted_model,
+                documents = sentences,
+                topics_to_merge = list(2, 14))
+
+fitted_model$get_topic_info()
+```
+
+
+## Reducing Outliers
+
+One feature of hdbscan is the outlier category, which can be quite large. Sometimes we might want to redistribute these outlier documents so that they fall within one of the existing topics. There are a number of methods to achieve this and it is good practice to look at different parameters and different methods when reducing outliers as it can be quite difficult to redistribute outlier documents while maintaining clarity within your topics. To this end, you should consider what your goal is for your project before perusing any of these methods, it is more important to have concise and coherent topics or to force most/all of your documents into topics, is it a balance of the two? 
+
+The methods curerntly available to us are:
+
+1. **Probabilities:** Uses hdbscan soft-clustering to find the best matching topic for each outlier document. To use this you will need to obtain the document-topic probabilities matrix using bt_probability_matrix.
+
+2. **Topic Distribution:** Divides each documents into tokensets and calculates the c-TF-IDF cosine similarity between each tokenset and each topic. The summation of each cosine similarity score for each topic across each outlier document gives the most similar topic for each outlier document.
+
+3. **Embeddings:** Measures the cosine similarty between embeddings for each outlier document and each topic.
+
+4. **c-TF-IDF:** Calculates the c-TF-IDF cosine similarity for each outlier document and topic and redistributes outliers based on the topic with which it has the highest similarity.
+
+
+
+
