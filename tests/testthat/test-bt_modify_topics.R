@@ -75,6 +75,8 @@ test_that("bt_probability_matrix outputs matrix and errors appropriately", {
     hdbscan_model = skl$KMeans()
   )$fit(sentences, embeddings = embeddings)
   model_unfitted <- bt$BERTopic()
+  
+  clusterer <- bt_make_clusterer_hdbscan(prediction_data = TRUE)$fit(embeddings)
 
   # recognises model
   expect_error(bt_probability_matrix(fitted_model = model_unfitted),
@@ -86,7 +88,8 @@ test_that("bt_probability_matrix outputs matrix and errors appropriately", {
   expect_error(bt_probability_matrix(fitted_model = model_skl),
                regexp = "^Clustering method is")
 
-  expect_true(is.array(bt_probability_matrix(fitted_model = model_hdb)))
+  expect_true(is.array(bt_probability_matrix(fitted_model = model_hdb,
+                                             hdbscan_model = clusterer)))
 
 })
 

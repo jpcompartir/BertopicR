@@ -316,16 +316,16 @@ representation_keybert <- bt_representation_keybert(top_n_words = 10,
 representation_mmr <- bt_representation_mmr(diversity = 0.5)
 
 
-representation_openai <- bt_representation_openai(openai_model = "gpt-3.5-turbo",
-                                                  nr_docs = 5,
-                                                  chat = TRUE,
-                                                  api_key = "sk-")
+# representation_openai <- bt_representation_openai(openai_model = "gpt-3.5-turbo",
+#                                                   nr_docs = 5,
+#                                                   chat = TRUE,
+#                                                   api_key = "sk-")
 
 # compile models
 representation_dict <- c(
   "KeyBERT" = representation_keybert,
-  "MMR" = representation_mmr,
-  "OpenAI" = representation_openai
+  "MMR" = representation_mmr
+  # "OpenAI" = representation_openai
 )
 ```
 
@@ -474,14 +474,14 @@ outliers_ctfidf <- bt_outliers_ctfidf(fitted_model = topic_model,
                                       topics = topic_model$topics_,
                                       threshold = 0.1)
 
-prob_matrix <- bt_probability_matrix(fitted_model = topic_model,
-                                     hdbscan_model = clusterer)
-
-outliers_probs <- bt_outliers_probs(fitted_model = topic_model,
-                                    documents = sentences,
-                                    topics = topic_model$topics_,
-                                    probability_matrix = prob_matrix,
-                                    threshold = 0.1)
+# prob_matrix <- bt_probability_matrix(fitted_model = topic_model,
+#                                      hdbscan_model = clusterer)
+# 
+# outliers_probs <- bt_outliers_probs(fitted_model = topic_model,
+#                                     documents = sentences,
+#                                     topics = topic_model$topics_,
+#                                     probability_matrix = prob_matrix,
+#                                     threshold = 0.1)
 ```
 
 It would be useful now to look at how each method has redistributed the outlier topics. The graph below shows how outliers have been redistributed to topics below topic 12. You can see how each strategy does not redistribute topics in the same way, the embedding strategy for example, has found that 6 outlier documents are best represented by topic 1, while no other strategy has found any outlier documents that are best represented by topic 1. The embedding method has also redistributed all outlier documents, while the c-TF-IDF and tokenset similarity methods have left certain documents as outliers. This is where playing around with the threshold parameter, to find a good fit for your data and chosen strategy, is important.
@@ -502,8 +502,8 @@ data %>%
   ggplot(aes(x = as.factor(topic), fill = outlier_distribution_strategy)) +
   geom_bar(position = position_dodge2(preserve = "single")) +
   theme_minimal() + 
-  labs(x = "Numbers", 
-       y = "Count", 
+  labs(x = "Topic", 
+       y = "Number of redistributed outliers", 
        title = "Number of outliers in each topic after redistribution",
        fill = "Outlier redistribution strategy") +
   scale_fill_discrete(labels = c(outliers_ctfidf = "c-TF-IDF",

@@ -10,7 +10,7 @@
 #' ngram range of the key words / terms.
 #' 
 #' @param top_n_words number of keywords/phrases to be extracted
-#' @param nr_docs number of representative docs to be examined for key words per cluster
+#' @param nr_repr_docs number of representative docs to be examined for key words per cluster
 #' @param nr_samples number of samples to select representative docs from for each cluster
 #' @param nr_candidate_words number of words to examine per topic
 #' @param random_state random state for sampling docs
@@ -18,8 +18,10 @@
 #' @return KeyBERTInspired representation model
 #' @export
 #'
-bt_representation_keybert <- function(top_n_words = 10,
-                                      nr_docs = 50,
+bt_representation_keybert <- function(fitted_model,
+                                      documents,
+                                      top_n_words = 10,
+                                      nr_repr_docs = 50,
                                       nr_samples = 500,
                                       nr_candidate_words = 100,
                                       random_state = 42){
@@ -32,13 +34,33 @@ bt_representation_keybert <- function(top_n_words = 10,
             is.numeric(random_state))
   #### end validation ####
   
-  bt_rep <- reticulate::import("bertopic.representation") # import library
+  # bt_rep <- reticulate::import("bertopic.representation") # import library
+  # 
+  # representation_model <- bt_rep$KeyBERTInspired(top_n_words = as.integer(top_n_words),
+  #                                                nr_repr_docs = as.integer(nr_docs),
+  #                                                nr_samples = as.integer(nr_samples),
+  #                                                nr_candidate_words = as.integer(nr_candidate_words),
+  #                                                random_state = as.integer(random_state))
   
-  representation_model <- bt_rep$KeyBERTInspired(top_n_words = as.integer(top_n_words),
-                                                 nr_repr_docs = as.integer(nr_docs),
-                                                 nr_samples = as.integer(nr_samples),
-                                                 nr_candidate_words = as.integer(nr_candidate_words),
-                                                 random_state = as.integer(random_state))
+  # first we should get the representative docs ----
+  # pandas df with Topic and Document cols for input to _extract_representative_docs()
+  docs_df <- data.frame(Document = documents,
+                     Topic = fitted_model$get_document_info(documents)$Topic) %>% reticulate::r_to_py()  
+  
+  c_tf_idf <- reticulate::py_eval("r.fitted_model.c_tf_idf_") # ctfidf for input to _extract_representative_docs
+  docs_ind <- list()  # initiate list variable for multiple outputs from _extract_representative_docs
+  nr_samples <- as.integer(nr_samples) # integer
+  nr_repr_docs <- as.integer(nr_repr_docs) # integer
+  docs_ind <- reticulate::py_eval("r.fitted_model._extract_representative_docs(r.c_tf_idf, r.docs_df, r.fitted_model.topic_representations_, r.nr_samples, r.nr_repr_docs)")
+  
+  # assign correct list components
+  representative_docs <- docs_ind[[2]]
+  repre_doc_indices <- docs_inds[[3]]
+  
+  # now we extract the candidate words from each topic ----
+  bt <- reticulate::import("bertopic")
+  candidate_words <- reticulate::py_eval("r.bt.representation.KeyBERTInspired._extract_candidate_words(topic_model = r.fitted_model, c_tf_idf = r.c_tf_idf, topics = r.fitted_model.topic_representations_)")
+  
   
   return(representation_model)
 }

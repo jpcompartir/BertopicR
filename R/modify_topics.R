@@ -358,11 +358,13 @@ bt_update_topics <- function(fitted_model,
     embedding_model <- bt_backend$select_backend(embedding_model = embedding_model)
     fitted_model$embedding_model <- embedding_model
   }
-  
   # otherwise use current embedding model
   else if (is.null(embedding_model)){
     message("No embedding model provided, using current sentence embedding model:\n", fitted_model$embedding_model$embedding_model)
   }
+  
+  
+  
   
   # this was causing errors to do with max and min df - will look into this and reimplement
   # # default vectoriser if none given
