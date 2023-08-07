@@ -20,6 +20,7 @@
 #'
 bt_representation_keybert <- function(fitted_model,
                                       documents,
+                                      embeddings,
                                       top_n_words = 10,
                                       nr_repr_docs = 50,
                                       nr_samples = 500,
@@ -42,27 +43,103 @@ bt_representation_keybert <- function(fitted_model,
   #                                                nr_candidate_words = as.integer(nr_candidate_words),
   #                                                random_state = as.integer(random_state))
   
+  
+  # This works by:
+  # 1. extract the top n representative docs per topic
+  # 2. top n words per topic
+  # 3. embeddings for words and representative docs (and topics by averaging representative docs per topic)
+  # 4. similar words extracted by cosine similarity between word and topic embeddings
+  
   # first we should get the representative docs ----
   # pandas df with Topic and Document cols for input to _extract_representative_docs()
   docs_df <- data.frame(Document = documents,
-                     Topic = fitted_model$get_document_info(documents)$Topic) %>% reticulate::r_to_py()  
-  
-  c_tf_idf <- reticulate::py_eval("r.fitted_model.c_tf_idf_") # ctfidf for input to _extract_representative_docs
+                     Topic = fitted_model$get_document_info(documents)$Topic) %>% reticulate::r_to_py()
+
+  c_tf_idf <- fitted_model$c_tf_idf_ # ctfidf for input to _extract_representative_docs
   docs_ind <- list()  # initiate list variable for multiple outputs from _extract_representative_docs
   nr_samples <- as.integer(nr_samples) # integer
   nr_repr_docs <- as.integer(nr_repr_docs) # integer
   docs_ind <- reticulate::py_eval("r.fitted_model._extract_representative_docs(r.c_tf_idf, r.docs_df, r.fitted_model.topic_representations_, r.nr_samples, r.nr_repr_docs)")
-  
   # assign correct list components
   representative_docs <- docs_ind[[2]]
-  repre_doc_indices <- docs_inds[[3]]
+  repr_doc_indices <- docs_ind[[4]]
   
   # now we extract the candidate words from each topic ----
+  
+  # import necessary modules
   bt <- reticulate::import("bertopic")
-  candidate_words <- reticulate::py_eval("r.bt.representation.KeyBERTInspired._extract_candidate_words(topic_model = r.fitted_model, c_tf_idf = r.c_tf_idf, topics = r.fitted_model.topic_representations_)")
+  np <- reticulate::import("numpy")
   
+  words <- fitted_model$vectorizer_model$get_feature_names_out() # get all words used in vectoriser out 
+  nr_candidate_words <- as.integer(nr_candidate_words) # convert to int
   
-  return(representation_model)
+  # extract indices of top n values in c_tf_idf score per word per topic matrix
+  indices <- reticulate::py_eval("r.fitted_model._top_n_idx_sparse(r.c_tf_idf, r.nr_candidate_words)", convert = FALSE)
+  # get the scores of the top n values in c_tf_idf score per word per topic matrix
+  scores <- reticulate::py_eval("r.fitted_model._top_n_values_sparse(r.c_tf_idf, r.indices)")
+  
+  # sort the indices and convert to numpy array of integers
+  sorted_indices <- reticulate::py_eval("r.np.argsort(r.scores, 1)") %>%
+    np$asarray(dtype = np$int16) %>% reticulate::r_to_py()
+  
+  # sort word indices and word scores based on score value
+  indices <- np$take_along_axis(indices, sorted_indices, axis=1L) %>%
+    reticulate::r_to_py()
+  scores <- np$take_along_axis(scores, sorted_indices, axis=1L) %>%
+    reticulate::r_to_py()
+    
+  # Create an empty list to store the topic words
+  topics_list <- list()
+  
+  topics <- fitted_model$topic_representations_
+  
+  for (index in seq_along(names(topics))) {
+    label <- names(topics)[index]
+    
+    # Reverse the indices and scores for the current index
+    py_index <- index - 1 # python indexing starts at 0
+    reversed_indices <- indices[py_index] %>% reticulate::py_to_r() %>% rev() # need to convert back to r format
+    reversed_scores <- scores[py_index] %>% reticulate::py_to_r() %>% rev()
+    
+    # Create an empty list to store info on this topic
+    topic_info <- list()
+    
+    for (i in seq_along(reversed_indices)) {
+      word_index <- reversed_indices[[i]]
+      score <- reversed_scores[[i]]
+      
+      # make a mini sublist for current topic
+    #   if (!is.null(word_index) & score > 0) {
+    #     topic_info[[length(topic_info) + 1]] <- list(words[word_index], score)
+    #   } else {
+    #     topic_info[[length(topic_info) + 1]] <- list("", 0.00001)
+    #   }
+    # }
+      
+      if (!is.null(word_index) & score > 0) {
+        topic_info[[length(topic_info) + 1]] <- words[word_index]
+      } else {
+        topic_info[[length(topic_info) + 1]] <- ""
+      }
+    }
+    
+    # add current topic info to the final topic list
+    topics_list[[label]] <- topic_info
+  }
+  
+  # now compare word and topic embeddings ----
+  repr_doc_embedding <- list()
+  topic_embedding <- list()
+  for (topic in seq_along(repr_doc_indices)){
+    repr_doc_embedding <- embeddings[repr_doc_indices[[topic]] + 1,] %>%
+      data.frame() # python index starts at 0
+    topic_embedding[[topic]] <- colMeans(repr_doc_embedding)
+  }
+
+  vocab <- unique()
+  
+
+  return(topics_list)
 }
 
 #' Create representation model using Maximal Marginal Relevance 
