@@ -76,16 +76,17 @@ bt_representation_keybert <- function(fitted_model,
   # extract indices of top n values in c_tf_idf score per word per topic matrix
   indices <- reticulate::py_eval("r.fitted_model._top_n_idx_sparse(r.c_tf_idf, r.nr_candidate_words)", convert = FALSE)
   # get the scores of the top n values in c_tf_idf score per word per topic matrix
-  scores <- reticulate::py_eval("r.fitted_model._top_n_values_sparse(r.c_tf_idf, r.indices)")
+  scores <- reticulate::py_eval("r.fitted_model._top_n_values_sparse(r.c_tf_idf, r.indices)", convert = FALSE)
   
-  # sort the indices and convert to numpy array of integers
-  sorted_indices <- reticulate::py_eval("r.np.argsort(r.scores, 1)") %>%
-    np$asarray(dtype = np$int16) %>% reticulate::r_to_py()
+  # indices of scores required to sort the scores from smallest to largest
+  # sorted_indices <- reticulate::py_eval("r.np.argsort(r.scores, 1)") %>%
+  #   np$asarray(dtype = np$int16) %>% reticulate::r_to_py()
+  sorted_score_indices <- np$argsort(scores, 1L) %>%
+    np$asarray(dtype = np$int32) %>% reticulate::r_to_py()
   
   # sort word indices and word scores based on score value
-  indices <- np$take_along_axis(indices, sorted_indices, axis=1L) %>%
-    reticulate::r_to_py()
-  scores <- np$take_along_axis(scores, sorted_indices, axis=1L) %>%
+  indices_sorted <- np$take_along_axis(indices, sorted_score_indices, axis=1L) 
+  scores_sorted <- np$take_along_axis(scores, sorted_score_indices, axis=1L) %>%
     reticulate::r_to_py()
     
   # Create an empty list to store the topic words
@@ -96,10 +97,10 @@ bt_representation_keybert <- function(fitted_model,
   for (index in seq_along(names(topics))) {
     label <- names(topics)[index]
     
-    # Reverse the indices and scores for the current index
+    # Reverse the indices and scores for to be decreasing in order of size
     py_index <- index - 1 # python indexing starts at 0
-    reversed_indices <- indices[py_index] %>% reticulate::py_to_r() %>% rev() # need to convert back to r format
-    reversed_scores <- scores[py_index] %>% reticulate::py_to_r() %>% rev()
+    reversed_indices <- indices_sorted[py_index] %>% reticulate::py_to_r() %>% rev() # need to convert back to r format
+    reversed_scores <- scores_sorted[py_index] %>% reticulate::py_to_r() %>% rev()
     
     # Create an empty list to store info on this topic
     topic_info <- list()
@@ -156,7 +157,9 @@ bt_representation_keybert <- function(fitted_model,
 #' @return MaximalMarginalRelevance representation model
 #' @export
 #'
-bt_representation_mmr <- function(diversity = 0.1,
+bt_representation_mmr <- function(fitted_model,
+                                  embedding_model,
+                                  diversity = 0.1,
                                   top_n_words = 10){
   
   #### input validation ####
@@ -166,12 +169,68 @@ bt_representation_mmr <- function(diversity = 0.1,
   
   #### end validation ####
   
-  bt_rep <- reticulate::import("bertopic.representation") # import library
+  # bt_rep <- reticulate::import("bertopic.representation") # import library
   
-  representation_model <- bt_rep$MaximalMarginalRelevance(diversity = diversity,
-                                                          top_n_words = as.integer(top_n_words))
+  # representation_model <- bt_rep$MaximalMarginalRelevance(diversity = diversity,
+  #                                                         top_n_words = as.integer(top_n_words))
   
-  return(representation_model)
+ updated_topics <- list()
+ topics <- fitted_model$topic_representations_
+ np <- reticulate::import("numpy")
+ sk_pair <- reticulate::import("sklearn.metrics.pairwise")
+  
+ for (topic in seq_along(topics)){
+   
+   # extract the words to embed
+   topic_words_list <- topics[[topic]]
+   topic_words <- sapply(topic_words_list, "[", 1)
+   topic_words <- unlist(topic_words)
+   
+   # embed the words
+   word_embeddings <- embedding_model$encode(topic_words)
+   
+   # topic embeddings - don't really like how this is done?
+   topic_words_join <- paste(topic_words, collapse = " ")
+   topic_embeddings <- embedding_model$encode(topic_words_join)
+   
+   # reshape so that cosine_similarity function accepts it as input
+   topic_embeddings_reshaped <- matrix(topic_embeddings, nrow = 1, ncol = length(topic_embeddings))
+   
+   # get topic representation
+   # topic_words = mmr(topic_embedding, word_embeddings, words, self.diversity, self.top_n_words)
+   
+   # cosine similarity between words per topic and between individual words and overall words per topic
+   word_topic_sim <- sk_pair$cosine_similarity(word_embeddings, topic_embeddings_reshaped)
+   intra_word_sim <- sk_pair$cosine_similarity(word_embeddings)
+   
+   # chose best keywords
+   keywords_idx <- which.max(word_topic_sim)
+   candidates_idx <- unlist(sapply(seq_along(topic_words), function(i) if (i != keywords_idx[1]) i))
+   
+   for (i in 0:(top_n_words-1)){
+     # extract similarities within candidates and between candidates and keywords
+     candidate_similarities <- word_topic_sim[candidates_idx]
+     target_similarities <- intra_word_sim[candidates_idx]
+     
+     # calculate mmr
+     mmr <- (1-diversity) * candidate_similarities - diversity * target_similarities #.reshape(-1, 1)
+     mmr_idx <- candidates_idx[which.max(mmr)] # add one because python indexing starts at 0
+     
+     # Update keywords & candidates
+     keywords_idx <- c(keywords_idx, mmr_idx)
+     candidates_idx <- candidates_idx[candidates_idx != mmr_idx]
+    
+     # print(candidates_idx)
+   }
+   
+   selected_words <- topic_words[keywords_idx] # reorder the topic_words
+   updated_topics[[topic]] <- paste(selected_words, collapse = "_")
+   # updated_topics[[topic]] = [(word, value) for word, value in topics[topic] if word in topic_words]
+
+
+ }
+  
+  return(updated_topics)
   
 }
 
