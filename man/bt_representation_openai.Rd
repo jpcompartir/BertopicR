@@ -5,35 +5,37 @@
 \title{Create representation model that uses OpenAI text generation models}
 \usage{
 bt_representation_openai(
-  ...,
+  fitted_model,
+  documents,
   openai_model = "text-ada-001",
-  nr_docs = 10,
+  nr_repr_docs = 10,
+  nr_samples = 500,
   api_key = "sk-",
-  exponential_backoff = FALSE,
   chat = FALSE,
   delay_in_seconds = NULL,
-  prompt = NULL
+  prompt = NULL,
+  diversity = NULL
 )
 }
 \arguments{
-\item{...}{Sent to bertopic.representation OpenAI() function for adding additional arguments}
-
 \item{openai_model}{openai model to use. If using a gpt-3.5 model, set chat = TRUE}
 
-\item{nr_docs}{The number of documents to pass to OpenAI if a prompt with the ["DOCUMENTS"] tag is used.}
-
 \item{api_key}{openai ai api authentication key. This can be found on your openai account.}
-
-\item{exponential_backoff}{Retry requests with a random exponential backoff.
-A short sleep is used when a rate limit error is hit, then the requests is retried.
-Increase the sleep length if errors are hit until 10 unsuccessful requests.
-If True, overrides delay_in_seconds.}
 
 \item{chat}{set to TRUE if using gpt-3.5 model}
 
 \item{delay_in_seconds}{The delay in seconds between consecutive prompts, this is to avoid rate limit errors.}
 
 \item{prompt}{The prompt to be used with the openai model. If NULL, the default prompt is used.}
+
+\item{...}{Sent to bertopic.representation OpenAI() function for adding additional arguments}
+
+\item{nr_docs}{The number of documents to pass to OpenAI if a prompt with the ["DOCUMENTS"] tag is used.}
+
+\item{exponential_backoff}{Retry requests with a random exponential backoff.
+A short sleep is used when a rate limit error is hit, then the requests is retried.
+Increase the sleep length if errors are hit until 10 unsuccessful requests.
+If True, overrides delay_in_seconds.}
 }
 \value{
 OpenAI representation model

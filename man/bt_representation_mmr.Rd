@@ -4,7 +4,12 @@
 \alias{bt_representation_mmr}
 \title{Create representation model using Maximal Marginal Relevance}
 \usage{
-bt_representation_mmr(diversity = 0.1, top_n_words = 10)
+bt_representation_mmr(
+  fitted_model,
+  embedding_model,
+  diversity = 0.1,
+  top_n_words = 10
+)
 }
 \arguments{
 \item{diversity}{How diverse representation words/phrases are. 0 = not diverse, 1 = completely diverse}
