@@ -5,6 +5,7 @@
 #'
 #' Keep `*_model` = NULL to proceed with a model made from default parameters (see each individual `make_*` function for parameters). However, it is not advisable to accept default parameters for each model; you should tune each model according to your dataset and the business question you are answering.
 #'
+#' @param ... Additional arguments sent to bertopic.BERTopic()
 #' @param embedding_model Model for creating embeddings (Python object)
 #' @param reduction_model Model for reducing embeddings' dimensions (Python object)
 #' @param clustering_model Model for clustering (Python object)
@@ -14,7 +15,7 @@
 #' @return a BERTopic model
 #' @export
 #'
-bt_compile_model <- function(embedding_model = NULL, reduction_model = NULL, clustering_model = NULL, vectoriser_model = NULL, ctfidf_model = NULL){
+bt_compile_model <- function(..., embedding_model = NULL, reduction_model = NULL, clustering_model = NULL, vectoriser_model = NULL, ctfidf_model = NULL){
 
   #Check if the inputted arguments are python objects or NULL (in which case we'll make some). This doesn't check they're the right python objects though, will maybe include when full implementation is done and we know all of the embedding models, reduction models etc. and their classes to test with
     stopifnot(test_is_python_object(embedding_model) | is.null(embedding_model),
@@ -22,9 +23,22 @@ bt_compile_model <- function(embedding_model = NULL, reduction_model = NULL, clu
               test_is_python_object(clustering_model) | is.null(clustering_model),
               test_is_python_object(vectoriser_model) | is.null(vectoriser_model),
               test_is_python_object(ctfidf_model) | is.null(ctfidf_model))
+  
+  #Import bertopic inside function scope
+  bertopic <- reticulate::import("bertopic")
 
-    #Import bertopic inside function scope
-    bertopic <- reticulate::import("bertopic")
+  #Convert the `...` (dot-dot-dot or ellipsis) to list for checking purposes
+  dots <- rlang::list2(...)
+  
+  #Instantiate empty model to get valid arguments
+  empty_model <- bertopic$BERTopic()
+  
+  #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad
+  if(any(!names(dots) %in% names(empty_model))){
+    
+    bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
+    stop(paste("Bad argument(s) attempted to be sent to BERTopic():", bad_args, sep = ' '))
+  }
 
   #Provide a default embedding model for: Since MMR is using word embeddings to diversify the topic representations, it is necessary to pass the embedding model to BERTopic if you are using pre-computed embeddings:"
   if(is.null(embedding_model)){
@@ -59,7 +73,8 @@ bt_compile_model <- function(embedding_model = NULL, reduction_model = NULL, clu
     umap_model = reduction_model,
     hdbscan_model = clustering_model,
     vectorizer_model = vectoriser_model,
-    ctfidf_model = ctfidf_model)
+    ctfidf_model = ctfidf_model,
+    ...)
 
   message("\nModel built")
 

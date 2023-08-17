@@ -2,7 +2,7 @@
 #'
 #' This function wraps the UMAP functionality from Python's umap-learn package for use in R via reticulate. It allows you to perform dimension reduction on high-dimensional data, its intended use is in a BertopicR pipeline/
 #'
-#' If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, you should call `reducer <- bt_base_reducer()` 
+#' If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, when compiling your model with bt_compile_model you should call `reducer <- bt_base_reducer()`.
 #'
 #' low_memory = TRUE is currently inadvisable as trial and error suggests the results are not as robust in later clustering.
 #'
@@ -52,7 +52,10 @@ bt_make_reducer_umap <- function( ..., n_neighbors = 15L, n_components = 5L, min
 #' @description  
 #' This function wraps the PCA functionality from Python's sklearn package for 
 #' use in R via reticulate. It allows you to perform dimension reduction on 
-#' high-dimensional data, its intended use is in a BertopicR pipeline.
+#' high-dimensional data, its intended use is in a BertopicR pipeline. If you're 
+#' concerned about processing time, you most likely will only want to reduce the 
+#' dimensions of your dataset once. In this case, when compiling your model with 
+#' bt_compile_model you should call `reducer <- bt_base_reducer()`.
 #'
 #' @param ... Sent to sklearn.decomposition UMAP function for adding additional arguments
 #' @param n_components Number of components to keep
@@ -107,7 +110,10 @@ bt_make_reducer_pca <- function(...,
 #' This function wraps the Truncated SVD (Single Value Decomposition) functionality
 #' from Python's sklearn package for use in R via reticulate. It allows you to 
 #' perform dimension reduction on high-dimensional data. 
-#' Its intended use is in a BertopicR pipeline.
+#' Its intended use is in a BertopicR pipeline. If you're concerned about processing 
+#' time, you most likely will only want to reduce the dimensions of your dataset once. 
+#' In this case, when compiling your model with bt_compile_model you should call 
+#' `reducer <- bt_base_reducer()`.
 #'
 #' @param ... Sent to sklearn.decomposition Truncated SVD function for adding additional arguments
 #' @param n_components Number of components to keep

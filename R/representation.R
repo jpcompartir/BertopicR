@@ -183,6 +183,9 @@ bt_representation_keybert <- function(fitted_model,
   }
  
   names(updated_representation) <- names(topics)
+  if (names(updated_representation)[1] == "-1"){
+    updated_representation[[1]] = "outliers"
+  }
   return(updated_representation)
 
 }
@@ -276,6 +279,10 @@ bt_representation_mmr <- function(fitted_model,
   }
 
   names(updated_topics) <- names(fitted_model$topic_representations_)  # name topic representations
+  
+  if (names(updated_topics)[1] == "-1"){
+    updated_topics[[1]] = "outliers"
+  }
   return(updated_topics)
   
 }
@@ -471,6 +478,10 @@ Topic name:"}
   }
   
   names(updated_representation) <- names(repr_doc_mapping)
+  
+  if (names(updated_representation)[1] == "-1"){
+    updated_representation[[1]] = "outliers"
+  }
   return(updated_representation)
   
 }
@@ -622,6 +633,10 @@ bt_representation_hf <- function(...,
     
   }
   names(updated_representation) <- names(fitted_model$topic_representations_) 
+  
+  if (names(updated_representation)[1] == "-1"){
+    updated_representation[[1]] = "outliers"
+  }
   return(updated_representation)
   
   # return(list("updated_representation" = updated_representation, "prompts" = record_prompt))

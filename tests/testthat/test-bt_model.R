@@ -1,10 +1,23 @@
 test_that("bt_compile_model works with Python objects and doesn't with non-Python objects",{
   expect_error(
-    bt_compile_model(embedding_model = "hello", reduction_model = "goodbye", clustering_model = "why strings?")
-  )
+    bt_compile_model(embedding_model = "hello"), 
+    "test_is_python_object.*is\\.null.*is not TRUE")
+  
+  expect_error(
+    bt_compile_model(reduction_model = "goodbye"),
+    "test_is_python_object.*is\\.null.*is not TRUE")
+  
+  expect_error(
+    bt_compile_model(clustering_model = "why strings?"),
+    "test_is_python_object.*is\\.null.*is not TRUE")
+  
+  expect_error(
+    bt_compile_model(bad_input = 5),
+    "Bad argument.*bad_input")
 
 
   model <- bt_compile_model(
+    calculate_probabilities = FALSE,
     embedding_model = bt_base_embedder(),
     reduction_model = bt_base_reducer(),
     clustering_model = bt_base_clusterer()

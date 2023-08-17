@@ -68,8 +68,7 @@ bt_merge_topics <- function(fitted_model,
 #' 
 #' @description Uses the cosine similarity of the document embeddings to find the
 #' topic closest to each outlier document and reassigns these documents accordingly.
-#' Note that the purpose
-#' of this function is to obtain a new list of topics that can then be used to 
+#' Note that the purpose of this function is to obtain a new list of topics that can then be used to 
 #' update the model, it does not make any changes to the model itself, the topic 
 #' classification the model outputs does not change after running this function. 
 #' The bt_update_topics function needs to be used to make the change to the model 
@@ -303,7 +302,6 @@ bt_outliers_ctfidf <- function(fitted_model,
 #' if topic reduction or topic merging techniques are used afterwards. The reason 
 #' for this is that when you assign a -1 document to topic 1 and another -1 document 
 #' to topic 2, it is unclear how you map the -1 documents. Is it matched to topic 1 or 2.
-#' 
 #'
 #' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
 #' @param documents documents to which the model was fit
@@ -338,30 +336,8 @@ bt_update_topics <- function(fitted_model,
             test_is_python_object(vectoriser_model) | is.null(vectoriser_model),
             test_is_python_object(ctfidf_model) | is.null(ctfidf_model))
   
-  # if (any(grepl("KeyBERT|MaximalMarginalRelevance", methods::S3Class(representation_model))) &
-  #     is.null(fitted_model$embedding_model$embedding_model) & is.null(embedding_model)){
-  #   stop("The current embedding_model instance variable is NULL. Must pass an embedding_model")
-  # }
-  
-  # # If the embedder isn't a sentence transformers object, stop early.
-  # if(!is.null(embedding_model) & !grepl("^sentence_tran", class(embedding_model)[[1]])){
-  #   stop("This package currently only supports embedding models from the sentence transformer library, embedder should be a sentence transformers model")
-  # }
-  
-  #### end of validation ####
-  
-  # # set embedding model to that specified in function input
-  # if (!is.null(embedding_model)){
-  #   bt_backend <- reticulate::import("bertopic.backend._utils")
-  #   embedding_model <- bt_backend$select_backend(embedding_model = embedding_model)
-  #   fitted_model$embedding_model <- embedding_model
-  # }
-  # # otherwise use current embedding model
-  # else if (is.null(embedding_model)){
-  #   message("No embedding model provided, using current sentence embedding model:\n", fitted_model$embedding_model$embedding_model)
-  # }
-  
-  # this was causing errors to do with max and min df - will look into this and reimplement
+
+  # sometimes the ctfidf model can cause issues for smaller datasets so allowing these parameters to be NULL
   # # default vectoriser if none given
   # if(is.null(vectoriser_model)){
   #   vectoriser_model <- bt_make_vectoriser()
@@ -373,11 +349,11 @@ bt_update_topics <- function(fitted_model,
   #   ctfidf_model <- bt_make_ctfidf()
   #   message("\nNo ctfidf model provided, creating model with default parameters")
   # }
+  # 
   
-  
-  
+  new_topics_int <- as.integer(new_topics)
   fitted_model$update_topics(docs = documents, 
-                             topics = new_topics, 
+                             topics = new_topics_int, 
                              representation_model = representation_model,
                              vectorizer_model = vectoriser_model, 
                              ctfidf_model = ctfidf_model)
