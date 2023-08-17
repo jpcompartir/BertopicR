@@ -6,10 +6,10 @@
 \usage{
 bt_representation_hf(
   ...,
+  fitted_model,
+  documents,
   task,
   hf_model,
-  topic_model,
-  documents,
   default_prompt = "keywords",
   custom_prompt = NULL,
   nr_samples = 500,
@@ -20,19 +20,19 @@ bt_representation_hf(
 \arguments{
 \item{...}{arguments sent to the transformers.pipeline function}
 
+\item{fitted_model}{The fitted bertopic model}
+
+\item{documents}{the documents the topic model was fitted to}
+
 \item{task}{Task defining the pipeline that will be returned. See https://huggingface.co/transformers/v3.0.2/main_classes/pipelines.html for more information. Use "text-generation" for gpt-like models and "text2text-generation" for T5-like models}
 
 \item{hf_model}{The model that will be used by the pipeline to make predictions}
-
-\item{topic_model}{The fitted bertopic model}
-
-\item{documents}{the documents the topic model was fitted to}
 
 \item{default_prompt}{Whether to use the "keywords" or "documents" default prompt. Passing a custom_prompt will render this argument NULL. Default is "keywords" prompt.}
 
 \item{custom_prompt}{The custom prompt to be used in the pipeline. If not specified, the "keywords" or "documents" default_prompt will be used. Use "[KEYWORDS]" and "[DOCUMENTS]" in the prompt to decide where the keywords and documents are inserted.}
 
-\item{nr_samples}{When choosing representative documents to be sent to}
+\item{nr_samples}{Number of sample documents from which the representative docs are chosen}
 
 \item{nr_repr_docs}{Number of representative documents to be sent to the huggingface model}
 
@@ -47,7 +47,7 @@ Use Huggingface models to create topic representation
 \details{
 Representative documents are chosen from each topic by sampling (nr_samples)
 a number of documents from the topic and calculating which of those documents are
-most representative of the topic by cosine similarity between the topic and the
+most representative of the topic by c-tf-idf cosine similarity between the topic and the
 individual documents. From this the most representative documents (the number
 is defined by the nr_repr_docs parameter) is extracted and passed to the huggingface
 model and topic description predicted.

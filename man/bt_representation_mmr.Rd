@@ -12,6 +12,10 @@ bt_representation_mmr(
 )
 }
 \arguments{
+\item{fitted_model}{Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.}
+
+\item{embedding_model}{embedding model used to embed keywords selected as potential representative words. Only compatible with sentence transformer models at this point.}
+
 \item{diversity}{How diverse representation words/phrases are. 0 = not diverse, 1 = completely diverse}
 
 \item{top_n_words}{Number of keywords/phrases to be extracted}

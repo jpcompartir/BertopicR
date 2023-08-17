@@ -18,7 +18,15 @@ bt_representation_openai(
 )
 }
 \arguments{
+\item{fitted_model}{Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.}
+
+\item{documents}{documents used to fit the fitted_model}
+
 \item{openai_model}{openai model to use. If using a gpt-3.5 model, set chat = TRUE}
+
+\item{nr_repr_docs}{number of representative documents per topic to send to the openai model}
+
+\item{nr_samples}{Number of sample documents from which the representative docs are chosen}
 
 \item{api_key}{openai ai api authentication key. This can be found on your openai account.}
 
@@ -28,19 +36,17 @@ bt_representation_openai(
 
 \item{prompt}{The prompt to be used with the openai model. If NULL, the default prompt is used.}
 
-\item{...}{Sent to bertopic.representation OpenAI() function for adding additional arguments}
-
-\item{nr_docs}{The number of documents to pass to OpenAI if a prompt with the ["DOCUMENTS"] tag is used.}
-
-\item{exponential_backoff}{Retry requests with a random exponential backoff.
-A short sleep is used when a rate limit error is hit, then the requests is retried.
-Increase the sleep length if errors are hit until 10 unsuccessful requests.
-If True, overrides delay_in_seconds.}
+\item{diversity}{diversity of documents to be sent to the huggingface model. 0 = no diversity, 1 = max diversity.}
 }
 \value{
 OpenAI representation model
 }
 \description{
-Uses the OpenAI API to generate topic labels based on one of their Completion
-(chat = FALSE) or ChatCompletion (chat = TRUE) models.
+Representative documents are chosen from each topic by sampling (nr_samples)
+a number of documents from the topic and calculating which of those documents are
+most representative of the topic by c-tf-idf cosine similarity between the topic and the
+individual documents. From this the most representative documents (the number
+is defined by the nr_repr_docs parameter) is extracted and passed to  the OpenAI API
+to generate topic labels based on one of their Completion (chat = FALSE) or ChatCompletion
+(chat = TRUE) models.
 }

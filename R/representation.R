@@ -16,8 +16,8 @@
 #' @param document_embeddings embeddings used to fit the model, these should have the same dimensions as that specified by the embedder you pass as the embedding model
 #' @param embedding_model The model used to create the embeddings passed. This will be used to create word embeddings that will be compared to topic embeddings using cosine similarity.
 #' @param top_n_words number of keywords/phrases to be extracted
-#' @param nr_repr_docs number of representative docs to be examined for key words per cluster
-#' @param nr_samples number of samples to select representative docs from for each cluster
+#' @param nr_repr_docs number of documents used to create topic embeddings
+#' @param nr_samples number of samples to select representative docs from for each topic
 #' @param nr_candidate_words number of words to examine per topic
 #'
 #' @return KeyBERTInspired representation model
@@ -45,7 +45,7 @@ bt_representation_keybert <- function(fitted_model,
   }
   
   #If the embedder isn't a sentence transformers object, stop early.
-  if(!grepl("^sentence_tran",class(embedder)[[1]])){
+  if(!grepl("^sentence_tran",class(embedding_model)[[1]])){
     stop("This package currently only supports embedding models from the sentence transformer library, embedder should be a sentence transformers model")
   }
   
@@ -173,12 +173,12 @@ bt_representation_keybert <- function(fitted_model,
     # words_sim_score <- similarity_matrix[i, indices_list[[i]]] # get the similarity scores for each word
     join_data <- data.frame(words = vocab[indices_list[[i]]],
                             score = similarity_matrix[i, indices_list[[i]]]) %>%
-      arrange(desc(score)) %>%
+      dplyr::arrange(dplyr::desc(score)) %>%
       # filter(!stringr::str_detect(words, "")) %>%
-      filter(!is.null(words)) %>%
-      head(top_n_words)
+      dplyr::filter(!is.null(words)) %>%
+      utils::head(top_n_words)
       
-    updated_representation[[i]] <- join_data %>% pull(words) %>%
+    updated_representation[[i]] <- join_data %>% dplyr::pull(words) %>%
       paste(collapse = "_")
   }
  
@@ -196,7 +196,7 @@ bt_representation_keybert <- function(fitted_model,
 #' 
 #'
 #' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
-#' @param embedding_model 
+#' @param embedding_model embedding model used to embed keywords selected as potential representative words. Only compatible with sentence transformer models at this point.
 #' @param diversity  How diverse representation words/phrases are. 0 = not diverse, 1 = completely diverse
 #' @param top_n_words Number of keywords/phrases to be extracted
 #'
@@ -213,12 +213,15 @@ bt_representation_mmr <- function(fitted_model,
   stopifnot(is.numeric(diversity), diversity >= 0, diversity <= 1,
             is.numeric(top_n_words))
   
+  if(!is.null(fitted_model)) {
+    test_is_fitted_model(fitted_model) # model fitted
+  }
+  
+  #If the embedder isn't a sentence transformers object, stop early.
+  if(!grepl("^sentence_tran",class(embedding_model)[[1]])){
+    stop("This package currently only supports embedding models from the sentence transformer library, embedder should be a sentence transformers model")
+  }
   #### end validation ####
-  
-  # bt_rep <- reticulate::import("bertopic.representation") # import library
-  
-  # representation_model <- bt_rep$MaximalMarginalRelevance(diversity = diversity,
-  #                                                         top_n_words = as.integer(top_n_words))
   
   updated_topics <- list()
   topics <- fitted_model$topic_representations_
@@ -242,41 +245,37 @@ bt_representation_mmr <- function(fitted_model,
     # reshape so that cosine_similarity function accepts it as input
     topic_embeddings_reshaped <- matrix(topic_embeddings, nrow = 1, ncol = length(topic_embeddings))
     
-    # get topic representation
-    # topic_words = mmr(topic_embedding, word_embeddings, words, self.diversity, self.top_n_words)
-    
-    # cosine similarity between words per topic and between individual words and overall words per topic
+    # cosine similarity between words per topic and between individual words and overall words per topic:
+    # this is to score words based on their similarity to the topic and their similarity to other words that could represent the topic
     word_topic_sim <- sk_pair$cosine_similarity(word_embeddings, topic_embeddings_reshaped)
     intra_word_sim <- sk_pair$cosine_similarity(word_embeddings)
     
     # chose best keywords
-    keywords_idx <- which.max(word_topic_sim)
-    candidates_idx <- unlist(sapply(seq_along(topic_words), function(i) if (i != keywords_idx[1]) i))
+    keywords_idx <- which.max(word_topic_sim) # this is the word with the highest similarity to the topic
+    candidates_idx <- unlist(sapply(seq_along(topic_words), function(i) if (i != keywords_idx[1]) i)) # this is the index of all remaining words
     
     for (i in 0:(top_n_words-1)){
       # extract similarities within candidates and between candidates and keywords
-      candidate_similarities <- word_topic_sim[candidates_idx]
-      target_similarities <- intra_word_sim[candidates_idx]
+      word_topic_similarities <- word_topic_sim[candidates_idx] # this is the scores of all remaining words when compared with the overall group of words for that topic
+      word_word_similarities <- intra_word_sim[candidates_idx] # this is the scores of all if the remaining words when compared to eachother
       
       # calculate mmr
-      mmr <- (1-diversity) * candidate_similarities - diversity * target_similarities #.reshape(-1, 1)
-      mmr_idx <- candidates_idx[which.max(mmr)] # add one because python indexing starts at 0
+      mmr <- (1-diversity) * word_topic_similarities - diversity * word_word_similarities # calculates mmr
+      mmr_idx <- candidates_idx[which.max(mmr)] # index of max mmr score and maps that to the keyword index
       
       # Update keywords & candidates
-      keywords_idx <- c(keywords_idx, mmr_idx)
-      candidates_idx <- candidates_idx[candidates_idx != mmr_idx]
+      keywords_idx <- c(keywords_idx, mmr_idx) # adds index of next representative word to keywords_idx
+      candidates_idx <- candidates_idx[candidates_idx != mmr_idx] # removes the word added to keywords from candidates
       
       # print(candidates_idx)
     }
     
-    selected_words <- topic_words[keywords_idx] # reorder the topic_words
-    updated_topics[[topic]] <- paste(selected_words, collapse = "_")
-    # updated_topics[[topic]] = [(word, value) for word, value in topics[topic] if word in topic_words]
-    
+    selected_words <- topic_words[keywords_idx] # reorder the topic_words in order of selection by mmr
+    updated_topics[[topic]] <- paste(selected_words, collapse = "_") # join for representation
     
   }
 
-  names(updated_topics) <- names(fitted_model$topic_representations_)  
+  names(updated_topics) <- names(fitted_model$topic_representations_)  # name topic representations
   return(updated_topics)
   
 }
@@ -284,21 +283,25 @@ bt_representation_mmr <- function(fitted_model,
 #' Create representation model that uses OpenAI text generation models
 #' 
 #' @description
-#' Uses the OpenAI API to generate topic labels based on one of their Completion
-#' (chat = FALSE) or ChatCompletion (chat = TRUE) models.
+#' Representative documents are chosen from each topic by sampling (nr_samples)
+#' a number of documents from the topic and calculating which of those documents are
+#' most representative of the topic by c-tf-idf cosine similarity between the topic and the
+#' individual documents. From this the most representative documents (the number
+#' is defined by the nr_repr_docs parameter) is extracted and passed to  the OpenAI API 
+#' to generate topic labels based on one of their Completion (chat = FALSE) or ChatCompletion 
+#' (chat = TRUE) models.
 #' 
 #'
-#' @param ... Sent to bertopic.representation OpenAI() function for adding additional arguments
+#' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
+#' @param documents documents used to fit the fitted_model
 #' @param openai_model openai model to use. If using a gpt-3.5 model, set chat = TRUE
-#' @param nr_docs The number of documents to pass to OpenAI if a prompt with the \["DOCUMENTS"\] tag is used.
+#' @param nr_repr_docs number of representative documents per topic to send to the openai model
+#' @param nr_samples Number of sample documents from which the representative docs are chosen
 #' @param api_key openai ai api authentication key. This can be found on your openai account.
-#' @param exponential_backoff Retry requests with a random exponential backoff. 
-#' A short sleep is used when a rate limit error is hit, then the requests is retried. 
-#' Increase the sleep length if errors are hit until 10 unsuccessful requests. 
-#' If True, overrides delay_in_seconds.
 #' @param chat set to TRUE if using gpt-3.5 model
 #' @param delay_in_seconds The delay in seconds between consecutive prompts, this is to avoid rate limit errors.
 #' @param prompt The prompt to be used with the openai model. If NULL, the default prompt is used.
+#' @param diversity diversity of documents to be sent to the huggingface model. 0 = no diversity, 1 = max diversity. 
 #'
 #' @return OpenAI representation model
 #' @export
@@ -316,16 +319,22 @@ bt_representation_openai <- function(fitted_model,
   
   #### input validation ####
   
-  # stopifnot(is.character(openai_model),
-  #           is.logical(chat),
-  #           is.numeric(nr_docs),
-  #           stringr::str_detect(api_key, "^sk-"),
-  #           is.logical(exponential_backoff),
-  #           is.numeric(delay_in_seconds) | is.null(delay_in_seconds),
-  #           is.character(prompt) | is.null(prompt))
-  
+  stopifnot(is.character(documents),
+            is.character(openai_model),
+            is.logical(chat),
+            is.numeric(nr_repr_docs),
+            stringr::str_detect(api_key, "^sk-"),
+            # is.logical(exponential_backoff),
+            is.numeric(delay_in_seconds) | is.null(delay_in_seconds),
+            is.character(prompt) | is.null(prompt),
+            is.numeric(diversity) | is.null(diversity))
+
+  if(!is.null(fitted_model)) {
+    test_is_fitted_model(fitted_model) # model fitted
+  }
+ 
   # if using gpt model, must specify chat = TRUE
-  if (chat == FALSE & stringr::str_detect(openai_model, "^gpt-")){
+  if (chat == FALSE & stringr::str_detect(openai_model, "^gpt")){
     stop("If using a gpt model, you must specify chat = TRUE")
   }
   
@@ -355,15 +364,7 @@ bt_representation_openai <- function(fitted_model,
   #### end of input validation ####
   openai <- reticulate::import("openai")
   openai$api_key <- api_key
-  
-  # representation_model <- bt_rep$OpenAI(model = openai_model, 
-  #                                       chat = chat,
-  #                                       nr_docs = as.integer(nr_docs),
-  #                                       prompt = prompt,
-  #                                       delay_in_seconds = as.integer(delay_in_seconds),
-  #                                       exponential_backoff = as.integer(exponential_backoff),
-  #                                       ...)
-  
+
   # Get representative docs ----
   c_tf_idf <- fitted_model$c_tf_idf_ # ctfidf for input to _extract_representative_docs
   
@@ -482,7 +483,7 @@ Topic name:"}
 #' @details
 #' Representative documents are chosen from each topic by sampling (nr_samples)
 #' a number of documents from the topic and calculating which of those documents are
-#' most representative of the topic by cosine similarity between the topic and the
+#' most representative of the topic by c-tf-idf cosine similarity between the topic and the
 #' individual documents. From this the most representative documents (the number
 #' is defined by the nr_repr_docs parameter) is extracted and passed to the huggingface
 #' model and topic description predicted. 
@@ -490,11 +491,11 @@ Topic name:"}
 #' @param ... arguments sent to the transformers.pipeline function
 #' @param task Task defining the pipeline that will be returned. See https://huggingface.co/transformers/v3.0.2/main_classes/pipelines.html for more information. Use "text-generation" for gpt-like models and "text2text-generation" for T5-like models
 #' @param hf_model The model that will be used by the pipeline to make predictions 
-#' @param topic_model The fitted bertopic model
+#' @param fitted_model The fitted bertopic model
 #' @param documents the documents the topic model was fitted to
 #' @param default_prompt Whether to use the "keywords" or "documents" default prompt. Passing a custom_prompt will render this argument NULL. Default is "keywords" prompt.
 #' @param custom_prompt The custom prompt to be used in the pipeline. If not specified, the "keywords" or "documents" default_prompt will be used. Use "\[KEYWORDS\]" and "\[DOCUMENTS\]" in the prompt to decide where the keywords and documents are inserted.
-#' @param nr_samples When choosing representative documents to be sent to 
+#' @param nr_samples Number of sample documents from which the representative docs are chosen
 #' @param nr_repr_docs Number of representative documents to be sent to the huggingface model
 #' @param diversity diversity of documents to be sent to the huggingface model. 0 = no diversity, 1 = max diversity. 
 
@@ -503,10 +504,10 @@ Topic name:"}
 #' @export
 #'
 bt_representation_hf <- function(...,
+                                 fitted_model,
+                                 documents,
                                  task,
                                  hf_model,
-                                 topic_model,
-                                 documents,
                                  default_prompt = "keywords",
                                  custom_prompt = NULL,
                                  nr_samples = 500,
@@ -525,8 +526,8 @@ bt_representation_hf <- function(...,
             is.numeric(diversity))
   
   # Check fitted model
-  if(!is.null(topic_model)) {
-    test_is_fitted_model(topic_model)
+  if(!is.null(fitted_model)) {
+    test_is_fitted_model(fitted_model)
   }
   
   # check extra arguments passed
@@ -562,14 +563,14 @@ bt_representation_hf <- function(...,
   empty_string <- ""
   updated_representation <- list()
   # record_prompt <- list()
-  for (doc in seq_along(topic_model$get_topic_info()$Topic)) {
+  for (doc in seq_along(fitted_model$get_topic_info()$Topic)) {
     
     updated_prompt <- prompt # don't want to overwrite prompt
     
     if (stringr::str_detect(prompt, "\\[KEYWORDS\\]")){
       
       # representative keywords
-      topic_representation <- topic_model$topic_representations_
+      topic_representation <- fitted_model$topic_representations_
       
       # concatenate keywords into single string per topic
       keywords <- list()
@@ -592,11 +593,11 @@ bt_representation_hf <- function(...,
     if (stringr::str_detect(prompt, "\\[DOCUMENTS\\]")){
       
       # first get representative docs and keywords
-      c_tf_idf <- reticulate::py_eval("r.topic_model.c_tf_idf_") # ctfidf for input to _extract_representative_docs
+      c_tf_idf <- reticulate::py_eval("r.fitted_model.c_tf_idf_") # ctfidf for input to _extract_representative_docs
       
       # _extract_representative_docs requires df with Document and Topic columns
       docs <- data.frame(Document = documents,
-                         Topic = topic_model$get_document_info(documents)$Topic) %>% reticulate::r_to_py() # pandas df with Topic and Document cols
+                         Topic = fitted_model$get_document_info(documents)$Topic) %>% reticulate::r_to_py() # pandas df with Topic and Document cols
       
       # convert to integers
       nr_samples <- as.integer(nr_samples)
@@ -608,7 +609,7 @@ bt_representation_hf <- function(...,
       withr::with_options(c(reticulate.engine.environment = rlang::current_env()), {
         
         # get representative docs
-        representative_docs <- reticulate::py_eval("r.topic_model._extract_representative_docs(r.c_tf_idf, r.docs, r.topic_model.topic_representations_, r.nr_samples, r.nr_repr_docs, r.diversity)")[[1]]
+        representative_docs <- reticulate::py_eval("r.fitted_model._extract_representative_docs(r.c_tf_idf, r.docs, r.fitted_model.topic_representations_, r.nr_samples, r.nr_repr_docs, r.diversity)")[[1]]
       })
       format_docs <- paste(empty_string, paste0("- ", substr(representative_docs[[doc]], 1, 255)), "\n")
       join_docs <- paste(format_docs, collapse = "")
@@ -620,7 +621,7 @@ bt_representation_hf <- function(...,
     # record_prompt[[doc]] <- updated_prompt
     
   }
-  
+  names(updated_representation) <- names(fitted_model$topic_representations_) 
   return(updated_representation)
   
   # return(list("updated_representation" = updated_representation, "prompts" = record_prompt))

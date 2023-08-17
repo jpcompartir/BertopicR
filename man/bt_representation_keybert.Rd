@@ -7,7 +7,7 @@
 bt_representation_keybert(
   fitted_model,
   documents,
-  embeddings,
+  document_embeddings,
   embedding_model,
   top_n_words = 10,
   nr_repr_docs = 50,
@@ -20,15 +20,15 @@ bt_representation_keybert(
 
 \item{documents}{The documents the fitted_model has been fitted to}
 
-\item{embeddings}{embeddings used to fit the model, these should have the same dimensions as that specified by the embedder you pass as the embedding model}
+\item{document_embeddings}{embeddings used to fit the model, these should have the same dimensions as that specified by the embedder you pass as the embedding model}
 
 \item{embedding_model}{The model used to create the embeddings passed. This will be used to create word embeddings that will be compared to topic embeddings using cosine similarity.}
 
 \item{top_n_words}{number of keywords/phrases to be extracted}
 
-\item{nr_repr_docs}{number of representative docs to be examined for key words per cluster}
+\item{nr_repr_docs}{number of documents used to create topic embeddings}
 
-\item{nr_samples}{number of samples to select representative docs from for each cluster}
+\item{nr_samples}{number of samples to select representative docs from for each topic}
 
 \item{nr_candidate_words}{number of words to examine per topic}
 }
