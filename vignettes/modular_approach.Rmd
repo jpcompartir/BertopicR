@@ -43,6 +43,11 @@ In the [Bertopic Python Library](https://maartengr.github.io/BERTopic/getting_st
     c-TF-IDF - create topic-level (rather than document) bag of words matrices for representing topics
 
     Fine-tuning topic representations - other tools for topic representations (includes generative AI/LLMs)
+    
+```{r, echo = FALSE}
+knitr::include_graphics("../man/figures/schematic_of_modules.png")
+# ![BertopicR Modules]("vignettes/viz/schematic_of_modules.png")
+```
 
 This vignette will show you how to use {BertopicR} to tune each module when creating your topic models.
 
@@ -352,12 +357,12 @@ representation_mmr <- bt_representation_mmr(fitted_model = topic_model,
                                             diversity = 0.5)
 
 
-representation_openai <- bt_representation_openai(fitted_model = topic_model,
-                                                  documents = sentences,
-                                                  openai_model = "gpt-3.5-turbo",
-                                                  nr_repr_docs = 10,
-                                                  chat = TRUE,
-                                                  api_key = Sys.getenv("OPENAI_API_KEY"))
+# representation_openai <- bt_representation_openai(fitted_model = topic_model,
+#                                                   documents = sentences,
+#                                                   openai_model = "gpt-3.5-turbo",
+#                                                   nr_repr_docs = 10,
+#                                                   chat = TRUE,
+#                                                   api_key = Sys.getenv("OPENAI_API_KEY"))
 
 
 representation_hf <- bt_representation_hf(fitted_model = topic_model,
@@ -373,11 +378,11 @@ Now that we have trialed a few representation methods, we can look at how they c
 topic_representations <- topic_model$get_topic_info() %>%
   mutate(keybert = representation_keybert,
          mmr = representation_mmr,
-         openai = representation_openai,
+         # openai = representation_openai,
          flanT5 = representation_hf) %>%
   select(-Representative_Docs)
 
-topic_representations %>% DT::datatable()
+topic_representations %>% DT::datatable(options = list(scrollX = TRUE))
 ```
 
 # Modifying Topics
@@ -395,7 +400,7 @@ hierarchical_topics <- topic_model$hierarchical_topics(sentences)
 topic_model$visualize_hierarchy(hierarchical_topics = hierarchical_topics)$show()
 ```
 
-```{python, echo = FALSE}
+```{python, echo = FALSE, out.width = 4}
 hierarchical_topics = r.topic_model.hierarchical_topics(r.sentences)
 r.topic_model.visualize_hierarchy(hierarchical_topics = hierarchical_topics).show()
 ```

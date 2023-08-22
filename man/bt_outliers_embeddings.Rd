@@ -32,8 +32,7 @@ df with document, old topic, new topic
 \description{
 Uses the cosine similarity of the document embeddings to find the
 topic closest to each outlier document and reassigns these documents accordingly.
-Note that the purpose
-of this function is to obtain a new list of topics that can then be used to
+Note that the purpose of this function is to obtain a new list of topics that can then be used to
 update the model, it does not make any changes to the model itself, the topic
 classification the model outputs does not change after running this function.
 The bt_update_topics function needs to be used to make the change to the model

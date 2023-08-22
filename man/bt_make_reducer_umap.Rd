@@ -40,7 +40,7 @@ A UMAP Model that can be input to bt_do_reducing to reduce dimensions of data
 This function wraps the UMAP functionality from Python's umap-learn package for use in R via reticulate. It allows you to perform dimension reduction on high-dimensional data, its intended use is in a BertopicR pipeline/
 }
 \details{
-If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, you should call \code{reducer <- bt_base_reducer()}
+If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, when compiling your model with bt_compile_model you should call \code{reducer <- bt_base_reducer()}.
 
 low_memory = TRUE is currently inadvisable as trial and error suggests the results are not as robust in later clustering.
 }

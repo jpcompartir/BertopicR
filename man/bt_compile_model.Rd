@@ -5,6 +5,7 @@
 \title{Build a BERTopic model}
 \usage{
 bt_compile_model(
+  ...,
   embedding_model = NULL,
   reduction_model = NULL,
   clustering_model = NULL,
@@ -13,6 +14,8 @@ bt_compile_model(
 )
 }
 \arguments{
+\item{...}{Additional arguments sent to bertopic.BERTopic()}
+
 \item{embedding_model}{Model for creating embeddings (Python object)}
 
 \item{reduction_model}{Model for reducing embeddings' dimensions (Python object)}

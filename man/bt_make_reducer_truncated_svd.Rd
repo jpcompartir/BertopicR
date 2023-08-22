@@ -27,5 +27,8 @@ Truncated SVD Model that can be input to bt_do_reducing to reduce dimensions of 
 This function wraps the Truncated SVD (Single Value Decomposition) functionality
 from Python's sklearn package for use in R via reticulate. It allows you to
 perform dimension reduction on high-dimensional data.
-Its intended use is in a BertopicR pipeline.
+Its intended use is in a BertopicR pipeline. If you're concerned about processing
+time, you most likely will only want to reduce the dimensions of your dataset once.
+In this case, when compiling your model with bt_compile_model you should call
+\code{reducer <- bt_base_reducer()}.
 }

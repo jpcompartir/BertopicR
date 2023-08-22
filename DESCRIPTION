@@ -39,4 +39,5 @@ VignetteBuilder: knitr
 Depends: 
     R (>= 4.1.0)
 LazyData: true
-URL: https://jpcompartir.github.io/BertopicR/
+URL: https://jpcompartir.github.io/BertopicR/,
+    https://aoiferyan-sc.github.io/BertopicR/
