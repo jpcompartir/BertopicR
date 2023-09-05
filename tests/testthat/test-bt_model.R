@@ -18,9 +18,9 @@ test_that("bt_compile_model works with Python objects and doesn't with non-Pytho
 
   model <- bt_compile_model(
     calculate_probabilities = FALSE,
-    embedding_model = bt_base_embedder(),
-    reduction_model = bt_base_reducer(),
-    clustering_model = bt_base_clusterer()
+    embedding_model = bt_empty_embedder(),
+    reduction_model = bt_empty_reducer(),
+    clustering_model = bt_empty_clusterer()
   )
 
   expect_true(test_is_python_object(model))

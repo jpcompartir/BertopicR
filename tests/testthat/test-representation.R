@@ -2,8 +2,8 @@ test_that("bt_representation_keybert errors on bad input", {
 
   bt <- reticulate::import("bertopic")
   docs <- stringr::sentences[1:10]
-  model <- bt$BERTopic(embedding_model = bt_base_embedder(),
-                       umap_model = bt_base_reducer())$fit(docs, array(runif(10), dim = c(10, 1)))
+  model <- bt$BERTopic(embedding_model = bt_empty_embedder(),
+                       umap_model = bt_empty_reducer())$fit(docs, array(runif(10), dim = c(10, 1)))
   
   expect_error(bt_representation_keybert(top_n_words = "test"), "is.numeric.*top_n_words")
   expect_error(bt_representation_keybert(nr_repr_docs = "test"), "is.numeric.*nr_repr_docs")
@@ -39,8 +39,8 @@ test_that("bt_representation_keybert returns correct output on correct input", {
   bt <- reticulate::import("bertopic")
   docs <- stringr::sentences[1:10]
   embeddings <- array(runif(3840), dim = c(10, 384))
-  model <- bt$BERTopic(embedding_model = bt_base_embedder(),
-                       umap_model = bt_base_reducer())$fit(docs, embeddings)
+  model <- bt$BERTopic(embedding_model = bt_empty_embedder(),
+                       umap_model = bt_empty_reducer())$fit(docs, embeddings)
   embedder <- bt_make_embedder("all-MiniLM-L6-v2")
   
   representation_keybert <- bt_representation_keybert(fitted_model = model,
@@ -62,8 +62,8 @@ test_that("bt_representation_mmr errors on bad input", {
   bt <- reticulate::import("bertopic")
   docs <- stringr::sentences[1:10]
   embeddings <- array(runif(10), dim = c(10,1))
-  model <- bt$BERTopic(embedding_model = bt_base_embedder(),
-                       umap_model = bt_base_reducer())$fit(docs, embeddings)
+  model <- bt$BERTopic(embedding_model = bt_empty_embedder(),
+                       umap_model = bt_empty_reducer())$fit(docs, embeddings)
   
   expect_error(bt_representation_mmr(diversity = "test"), "is.numeric.*diversity")
   expect_error(bt_representation_mmr(diversity = 1.2), "diversity <=")
@@ -80,8 +80,8 @@ test_that("bt_representation_mmr returns correct output on correct input", {
   bt <- reticulate::import("bertopic")
   docs <- stringr::sentences[1:10]
   embeddings <- array(runif(3840), dim = c(10,384))
-  model <- bt$BERTopic(embedding_model = bt_base_embedder(),
-                       umap_model = bt_base_reducer())$fit(docs, embeddings)
+  model <- bt$BERTopic(embedding_model = bt_empty_embedder(),
+                       umap_model = bt_empty_reducer())$fit(docs, embeddings)
   
   representation_mmr <- bt_representation_mmr(fitted_model = model,
                                               embedding_model = bt_make_embedder("all-MiniLM-L6-v2"))
@@ -96,8 +96,8 @@ test_that("bt_representation_openai errors on bad input", {
   unfitted_model <- bt$BERTopic()
   docs <- stringr::sentences[1:10]
   embeddings <- array(runif(10), dim = c(10,1))
-  model <- bt$BERTopic(embedding_model = bt_base_embedder(),
-                       umap_model = bt_base_reducer())$fit(docs, embeddings)
+  model <- bt$BERTopic(embedding_model = bt_empty_embedder(),
+                       umap_model = bt_empty_reducer())$fit(docs, embeddings)
   
   expect_error(bt_representation_openai(documents = 5), "is.character.*documents.")
   expect_error(bt_representation_openai(documents = "test",
@@ -139,8 +139,8 @@ test_that("bt_representation_openai returns correct output on correct input", {
   bt <- reticulate::import("bertopic")
   docs <- stringr::sentences[1:10]
   embeddings <- array(runif(3840), dim = c(10,384))
-  model <- bt$BERTopic(embedding_model = bt_base_embedder(),
-                       umap_model = bt_base_reducer())$fit(docs, embeddings)
+  model <- bt$BERTopic(embedding_model = bt_empty_embedder(),
+                       umap_model = bt_empty_reducer())$fit(docs, embeddings)
   nr_topics <- model$get_topic_info() %>% nrow()
   
   representation_openai <- bt_representation_openai(fitted_model = model,
@@ -160,8 +160,8 @@ test_that("bt_representation_hf errors on bad input", {
   sentences <- stringr::sentences[1:50] # docs
   embeddings <- array(runif(100), dim = c(50, 2))
   model <- bt$BERTopic(
-    embedding_model = bt_base_embedder(),
-    umap_model = bt_base_reducer(),
+    embedding_model = bt_empty_embedder(),
+    umap_model = bt_empty_reducer(),
   )$fit(sentences, embeddings = embeddings) 
   
   # standard inputs
@@ -244,8 +244,8 @@ test_that("bt_representation_hf returns correct output on correct input", {
   sentences <- stringr::sentences[1:150] # docs
   embeddings <- array(runif(300), dim = c(150, 2))
   model <- bt$BERTopic(
-    embedding_model = bt_base_embedder(),
-    umap_model = bt_base_reducer(),
+    embedding_model = bt_empty_embedder(),
+    umap_model = bt_empty_reducer(),
     nr_topics = 2L
   )$fit(sentences, embeddings = embeddings) 
   # model$get_topic_info()
@@ -267,8 +267,8 @@ test_that("bt_representation_hf returns correct output on correct input", {
 # for (i in 1:100){
 #  
 #   model <- bt$BERTopic(
-#     embedding_model = bt_base_embedder(),
-#     umap_model = bt_base_reducer(),
+#     embedding_model = bt_empty_embedder(),
+#     umap_model = bt_empty_reducer(),
 #     nr_topics = 2L
 #   )$fit(sentences, embeddings = embeddings) 
 #   

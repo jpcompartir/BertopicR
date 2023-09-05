@@ -4,8 +4,8 @@ test_that("bt_merge_topics errors on unpermitted input", {
   sentences <- stringr::sentences[1:50]
   embeddings <- array(runif(100), dim = c(50, 2))
   model <- bt$BERTopic(
-    embedding_model = bt_base_embedder(),
-    umap_model = bt_base_reducer(),
+    embedding_model = bt_empty_embedder(),
+    umap_model = bt_empty_reducer(),
   )$fit(sentences, embeddings = embeddings)
   model_unfitted <- bt$BERTopic()
 
@@ -42,8 +42,8 @@ test_that("bt_merge_topics merges topics", {
   model <- bt$BERTopic(
     min_topic_size = 2L,
     nr_topics = 4L,
-    embedding_model = bt_base_embedder(),
-    umap_model = bt_base_reducer(),
+    embedding_model = bt_empty_embedder(),
+    umap_model = bt_empty_reducer(),
   )$fit(sentences, embeddings = embeddings)
   n_topics <- model$get_topic_info() %>% nrow()
   bt_merge_topics(fitted_model = model,
@@ -97,8 +97,8 @@ test_that("bt_outliers_embeddings returns correct output", {
   model <- bt$BERTopic(
     min_topic_size = 2L,
     nr_topics = 3L,
-    embedding_model = bt_base_embedder(),
-    umap_model = bt_base_reducer(),
+    embedding_model = bt_empty_embedder(),
+    umap_model = bt_empty_reducer(),
   )$fit(sentences, embeddings = embeddings)
   n_topics <- model$get_topic_info() %>% nrow()
 
@@ -122,8 +122,8 @@ test_that("bt_outlier_tokenset_similarity errors on incorrect input", {
   sentences <- stringr::sentences[1:50] # docs
   embeddings <- array(runif(100), dim = c(50, 2))
   model <- bt$BERTopic(
-    embedding_model = bt_base_embedder(),
-    umap_model = bt_base_reducer(),
+    embedding_model = bt_empty_embedder(),
+    umap_model = bt_empty_reducer(),
   )$fit(sentences, embeddings = embeddings)
   model_unfitted <- bt$BERTopic() # unfitted model
   n_topics <- model$get_topic_info() %>% length() # number topics
@@ -175,8 +175,8 @@ test_that("bt_outlier_ctfidf only accepts correct objects", {
   sentences <- stringr::sentences[1:50] # docs
   embeddings <- array(runif(100), dim = c(50, 2))
   model <- bt$BERTopic(
-    embedding_model = bt_base_embedder(),
-    umap_model = bt_base_reducer(),
+    embedding_model = bt_empty_embedder(),
+    umap_model = bt_empty_reducer(),
   )$fit(sentences, embeddings = embeddings)  
   model_unfitted <- bt$BERTopic() # unfitted model
   n_topics <- model$get_topic_info() %>% length() # number topics
@@ -224,8 +224,8 @@ test_that("bt_update_topics errors on incorrect input", {
   sentences <- stringr::sentences[1:50]
   embeddings <- array(runif(100), dim = c(50, 2))
   model <- bt$BERTopic(
-    embedding_model = bt_base_embedder(),
-    umap_model = bt_base_reducer(),
+    embedding_model = bt_empty_embedder(),
+    umap_model = bt_empty_reducer(),
   )$fit(sentences, embeddings = embeddings)
   model_unfitted = bt$BERTopic()
   vectoriser_model <- bt_make_vectoriser(ngram_range = c(1, 3))
@@ -257,8 +257,8 @@ test_that("bt_update_topics updates topics", {
   new_topics <- sample(1:5, 50, replace = TRUE)
   embeddings <- array(runif(100), dim = c(50, 2))
   model <- bt$BERTopic(
-    embedding_model = bt_base_embedder(),
-    umap_model = bt_base_reducer(),
+    embedding_model = bt_empty_embedder(),
+    umap_model = bt_empty_reducer(),
   )$fit(sentences, embeddings = embeddings)
   vectoriser_model <- bt_make_vectoriser(ngram_range = c(1, 3), min_frequency = 1)
   
@@ -285,13 +285,13 @@ test_that("bt_update_topics updates topics", {
 #   sentences <- stringr::sentences[1:50]
 #   embeddings <- array(runif(100), dim = c(50, 2))
 #   model_hdb <- bt$BERTopic(
-#     embedding_model = bt_base_embedder(),
-#     umap_model = bt_base_reducer(),
+#     embedding_model = bt_empty_embedder(),
+#     umap_model = bt_empty_reducer(),
 #   )$fit(sentences, embeddings = embeddings)
 #   
 #   model_skl <- bt$BERTopic(
-#     embedding_model = bt_base_embedder(),
-#     umap_model = bt_base_reducer(),
+#     embedding_model = bt_empty_embedder(),
+#     umap_model = bt_empty_reducer(),
 #     hdbscan_model = skl$KMeans()
 #   )$fit(sentences, embeddings = embeddings)
 #   model_unfitted <- bt$BERTopic()
@@ -319,8 +319,8 @@ test_that("bt_update_topics updates topics", {
 #   sentences <- stringr::sentences[1:50]
 #   embeddings <- array(runif(100), dim = c(50, 2))
 #   model <- bt$BERTopic(
-#     embedding_model = bt_base_embedder(),
-#     umap_model = bt_base_reducer(),
+#     embedding_model = bt_empty_embedder(),
+#     umap_model = bt_empty_reducer(),
 #   )$fit(sentences, embeddings = embeddings)
 #   model_unfitted <- bt$BERTopic()
 #   n_topics <- model$get_topic_info() %>% nrow()
@@ -363,8 +363,8 @@ test_that("bt_update_topics updates topics", {
 #   model <- bt$BERTopic(
 #     min_topic_size = 2L,
 #     nr_topics = 3L,
-#     embedding_model = bt_base_embedder(),
-#     umap_model = bt_base_reducer(),
+#     embedding_model = bt_empty_embedder(),
+#     umap_model = bt_empty_reducer(),
 #   )$fit(sentences, embeddings = embeddings)
 #   n_topics <- model$get_topic_info() %>% nrow()
 #   prob_matrix <- matrix(data = rep(1, length(sentences)*(n_topics-1)), ncol = n_topics-1)

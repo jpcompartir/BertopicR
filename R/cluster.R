@@ -28,7 +28,7 @@ bt_make_clusterer <- function(..., clustering_method = c("hdbscan", "kmeans", "a
                              "kmeans" = bt_make_clusterer_kmeans(...),
                              "hdbscan" = bt_make_clusterer_hdbscan(...),
                              "agglomerative" = bt_make_clusterer_agglomerative(...),
-                             "base" = bt_base_clusterer())
+                             "base" = bt_empty_clusterer())
 
   return(clustering_model)
 }
