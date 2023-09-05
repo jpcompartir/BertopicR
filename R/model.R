@@ -49,7 +49,7 @@ bt_compile_model <- function(..., embedding_model = NULL, reduction_model = NULL
   #If no UMAP model given, provide empty
   if(is.null(reduction_model)){
     reduction_model <- bt_make_reducer_umap()
-    message("\nNo umap_model provided, using default parameters.")
+    message("\nNo reduction_model provided, using default 'bt_reducer_umap' parameters.")
   }
 
   if(is.null(clustering_model)){
@@ -94,13 +94,13 @@ bt_compile_model <- function(..., embedding_model = NULL, reduction_model = NULL
 #'
 #' @param model Output of bt_compile_model() or another bertopic topic model
 #' @param documents Your documents to topic model on
-#' @param embeddings Your embeddings, can be reduced dimensionality or not
+#' @param embeddings Your embeddings, can be reduced dimensionality or not. If no embeddings provided, embedding model used reduction_model in bt_compile_model is used to calculate and reduce dimensionality of embeddings.
 #' @param topic_labels Pre-existing labels, for supervised topic modelling
 #'
 #' @return a fitted BERTopic model
 #' @export
 #'
-bt_fit_model <- function(model, documents, embeddings, topic_labels = NULL){
+bt_fit_model <- function(model, documents, embeddings = NULL, topic_labels = NULL){
 
   #Input validation
   stopifnot(
@@ -116,6 +116,7 @@ bt_fit_model <- function(model, documents, embeddings, topic_labels = NULL){
 
     embeddings <- convert_to_np_array(embeddings)
   }
+
 
   if(!is.null(topic_labels)){
     #Check the length of documents is equal to the number of embeddings, and if not, stop.

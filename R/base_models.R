@@ -7,7 +7,7 @@
 #' base_reducer <- bt_base_reducer()
 #'
 #' reducer <- bt_base_reducer()
-bt_base_reducer <- function() {
+bt_empty_reducer <- function() {
 
   #Import appropriate library
   btd <- reticulate::import("bertopic.dimensionality")
@@ -28,7 +28,7 @@ bt_base_reducer <- function() {
 #' base_emebdder <- bt_base_embedder()
 #'
 #' embedder <- bt_base_embedder()
-bt_base_embedder <- function()  {
+bt_empty_embedder <- function()  {
 
   #Import appropriate library
   bte <- reticulate::import("bertopic.backend")
@@ -50,7 +50,7 @@ bt_base_embedder <- function()  {
 #' base_clusterer <- bt_base_clusterer()
 #'
 #' clusterer <- bt_base_clusterer()
-bt_base_clusterer <- function() {
+bt_empty_clusterer <- function() {
 
   #Instantiate empty cluster model to skip the step in the pipeline:
   btc <- reticulate::import("bertopic.cluster")

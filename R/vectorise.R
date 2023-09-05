@@ -19,7 +19,7 @@
 #' @return An sklearn CountVectorizer object configured with the provided parameters
 #' @export
 #'
-bt_make_vectoriser <- function(..., ngram_range = c(1, 2), stop_words = "english", min_frequency = 10L, max_features = NULL) {
+bt_make_vectoriser <- function(..., ngram_range = c(1, 2), stop_words = "english", min_frequency = 1, max_features = NULL) {
 
   stopifnot(is.vector(ngram_range),
             length(ngram_range) == 2,

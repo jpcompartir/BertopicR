@@ -22,10 +22,7 @@ knitr::opts_chunk$set(
 
 ```{r setup, message = FALSE}
 library(BertopicR)
-
 library(dplyr)
-library(stringr)
-library(tidyr)
 ```
 
 # Modules
@@ -262,8 +259,8 @@ N.B. In practice you will need to pause and explore your parameters in more dept
 
 ```{r}
 topic_model <- bt_compile_model(
-  embedding_model = bt_base_embedder(),
-  reduction_model = bt_base_reducer(),
+  embedding_model = bt_empty_embedder(),
+  reduction_model = bt_empty_reducer(),
   clustering_model = clusterer,
   vectoriser_model = vectoriser,
   ctfidf_model = ctfidf
@@ -273,6 +270,11 @@ topic_model <- bt_compile_model(
 ## Fit the model
 
 We feed in our reduced embeddings rather than the original embeddings, this allows us to skip steps in the workflow; this can save us a lot of time, particularly when we have many documents.
+
+**NOTE:** The bertopic model you are working with is a pointer to a python object 
+at a point in memory. This means that the input and the output model cannot be
+differentiated between without explicitly saving the model before performing
+this operation. A model is not returned as the function changes the input model.
 
 ```{r}
 bt_fit_model(topic_model, data$sentence, embeddings = reduced_embeddings)
@@ -294,225 +296,7 @@ data <- data %>%
 )
 ```
 
-The df compiled is a common place for everything we have generated so far, in practice we don't really need the cluster column now that we have the topic column, they provide the same information. Topics and clusters should have largely the same labels, the only discrepancy would be where multiple clusters/topics are the same size.
+The df compiled is a common place for everything we have generated so far, in practice we don't really need the cluster column now that we have the topic column, similarly, they provide the same information. Topics and clusters should have largely the same labels, the only discrepancy would be where multiple clusters/topics are the same size. 
 
-# Changing the Model Representation
+Now tht you have your model up and running, you could look at the [Manipulating the Model](vignettes/manipulating-the-model.Rmd) vignette to see how you could investigate and alter the topics that have been identified.
 
-Once you are happy with the topics/clusters that have been formed, there are a few methods we can use to improve the topic representations and get a better understanding of what each topic is about.
-
-The representation methods currently available are:
-
-1. **KeyBERT** is a keyword extraction technique that uses BERT embeddings to represent our topics with appropriate keywords and phrases.
-
-2. **MaximalMarginalRelevance** is a concept used to select the most relevant keywords or phrases while promoting diversity in keywords. It balances relevance to the topic with distinctiveness from previously chosen keywords or phrases using a trade-off parameter called lambda.
-
-3. **OpenAI** allows us to use their available models to generate topic summaries. An OpenAI API key is required to access their api and models.
-
-4. **HuggingFace** allows us to use their available models to generate topic summaries. Unlike with OpenAI, you will not need an API key and this is completely free. However, the models are not as sophisticated as some of OpenAI's.
-
-
-```{r keybert, eval = FALSE}
-representation_keybert <- bt_representation_keybert(fitted_model = topic_model,
-                                                    documents = sentences,
-                                                    document_embeddings = embeddings,
-                                                    embedding_model = embedder,
-                                                    top_n_words = 10,
-                                                    nr_repr_docs = 50,
-                                                    nr_samples = 500,
-                                                    nr_candidate_words = 100)
-
-representation_mmr <- bt_representation_mmr(fitted_model = topic_model,
-                                            embedding_model = embedder,
-                                            diversity = 0.5)
-
-
-representation_openai <- bt_representation_openai(fitted_model = topic_model,
-                                                  documents = sentences,
-                                                  openai_model = "gpt-3.5-turbo",
-                                                  nr_repr_docs = 10,
-                                                  chat = TRUE,
-                                                  api_key = "sk-")
-
-representation_hf <- bt_representation_hf(fitted_model = topic_model,
-                                          documents = sentences,
-                                          task = "text2text-generation",
-                                          hf_model = "google/flan-t5-base",
-                                          default_prompt = "keywords")
-
-
-```
-
-```{r keybert_echo_false, echo = FALSE}
-representation_keybert <- bt_representation_keybert(fitted_model = topic_model,
-                                                    documents = sentences,
-                                                    document_embeddings = embeddings,
-                                                    embedding_model = embedder,
-                                                    top_n_words = 10,
-                                                    nr_repr_docs = 50,
-                                                    nr_samples = 500,
-                                                    nr_candidate_words = 100)
-
-representation_mmr <- bt_representation_mmr(fitted_model = topic_model,
-                                            embedding_model = embedder,
-                                            diversity = 0.5)
-
-
-# representation_openai <- bt_representation_openai(fitted_model = topic_model,
-#                                                   documents = sentences,
-#                                                   openai_model = "gpt-3.5-turbo",
-#                                                   nr_repr_docs = 10,
-#                                                   chat = TRUE,
-#                                                   api_key = Sys.getenv("OPENAI_API_KEY"))
-
-
-representation_hf <- bt_representation_hf(fitted_model = topic_model,
-                                          documents = sentences,
-                                          task = "text2text-generation",
-                                          hf_model = "google/flan-t5-base",
-                                          default_prompt = "keywords")
-```
-
-Now that we have trialed a few representation methods, we can look at how they compare to default representations and we should be able to get a good idea of what each topic is about. You will notice that the gpt-3.5 model gives the most coherent topic representation and it would be easy to just take that as gospel and chose a topic title based on that. It is important to remember, like with the other representation methods, only the number you input for nr_repr_docs in bt_representation_openai has been sent to the model and for a large topic, these documents may not represent the topic as a whole.
-
-```{r update_keybert}
-topic_representations <- topic_model$get_topic_info() %>%
-  mutate(keybert = representation_keybert,
-         mmr = representation_mmr,
-         # openai = representation_openai,
-         flanT5 = representation_hf) %>%
-  select(-Representative_Docs)
-
-topic_representations %>% DT::datatable(options = list(scrollX = TRUE))
-```
-
-# Modifying Topics
-
-## Merging Topics
-
-Particularly when using hdbscan we can end up with a large number of topics and it can be useful to merge some of these topics which we think are suitably similar. We can get a certain idea about this from the topic descriptions that we have already generated, but it can also be useful to look at the data more closely before merging.
-
-### Hierarchical Clustering
-
-Hdbscan clustering forms clusters through a hierarchical processes which you can visualise with a dendrogram. This can be useful when merging topics as you can see how clusters split to become the topics that emerged from our topic modelling process. The x-axis here is a measure of the distance between topic embeddings, so when clusters split at a higher x-value there is a larger distance between their embeddings. We can see that for this particular dataset, the clusters split into their final topics quite early on in the hierarchy and so it might not be appropriate to merge topics based on how they have emerged in the hierarchy. 
-
-```{r, eval = FALSE}
-hierarchical_topics <- topic_model$hierarchical_topics(sentences)
-topic_model$visualize_hierarchy(hierarchical_topics = hierarchical_topics)$show()
-```
-
-```{python, echo = FALSE, out.width = 4}
-hierarchical_topics = r.topic_model.hierarchical_topics(r.sentences)
-r.topic_model.visualize_hierarchy(hierarchical_topics = hierarchical_topics).show()
-```
-
-The hierarchical structure is based on how topics emerge based on the similarity of their embeddings, however, we can often find topics that we think should be merged based on our own knowledge. For example, despite their embeddings having a relatively large distance between them, topic 2 and 14 both appear to be about food. 
-
-```{r}
-topic_representations %>% 
-  filter(Topic %in% c(2,14))
-```
-
-For larger topics we could use ParseR to analyse topic bigrams here, but since these topics are relatively small, we can just examine exemplars.
-
-```{r}
-data %>%
-  filter(topic %in% c(2,14)) %>% 
-  select(sentence, topic)
-```
-
-I am pretty happy that these two topics could be merged into a larger "food" topic, to do this we use the bt_merge_topics function:
-
-```{r}
-bt_merge_topics(fitted_model = topic_model,
-                documents = sentences,
-                topics_to_merge = list(2, 14))
-```
-
-We have been maintaining a dataframe all along that is tracking each step we've completed, it would be good to now update that dataframe with our new topics.
-
-```{r}
-data <- data %>%
-  mutate(merged_topics = topic_model$topics_)
-```
-
-## Reducing Outliers
-
-One feature of hdbscan is the outlier category, which can be quite large. Sometimes we might want to redistribute these outlier documents so that they fall within one of the existing topics. There are a number of methods to achieve this and it is good practice to look at different parameters and different methods when reducing outliers as it can be quite difficult to redistribute outlier documents while maintaining clarity within your topics. To this end, you should consider project goal is before implementing any of these methods, it is more important to have concise and coherent topics or to force most/all of your documents into topics, is it a balance of the two? 
-
-The methods currently available to us are:
-
-1. **Tokenset Similarity:** Divides each documents into tokensets and calculates the c-TF-IDF cosine similarity between each tokenset and each topic. The summation of each cosine similarity score for each topic across each outlier document gives the most similar topic for each outlier document.
-
-2. **Embeddings:** Measures the cosine similarty between embeddings for each outlier document and each topic. If we have passed an empty embedding model to bt_compile_model (which we did), we must specify an embedding model to be used with this function.
-
-3. **c-TF-IDF:** Calculates the c-TF-IDF cosine similarity for each outlier document and topic and redistributes outliers based on the topic with which it has the highest similarity.
-
-We can play with all outlier strategies as, unlike when we merge topics or fit the model, the bt_outlier_* functions do not update the model, they only output a df with each document, their current topic classification and the potential new topics. We must update the model using bt_update_topics to actually change the topics within the model.
-
-```{r}
-outliers_ts_sim <- bt_outliers_tokenset_similarity(fitted_model = topic_model,
-                                                   documents = sentences,
-                                                   topics = topic_model$topics_,
-                                                   threshold = 0.1)
-
-outliers_embed <- bt_outliers_embeddings(fitted_model = topic_model,
-                                         documents = sentences,
-                                         topics = topic_model$topics_,
-                                         embeddings = reduced_embeddings,
-                                         embedding_model = embedder,
-                                         threshold = 0.1)
-
-outliers_ctfidf <- bt_outliers_ctfidf(fitted_model = topic_model,
-                                      documents = sentences,
-                                      topics = topic_model$topics_,
-                                      threshold = 0.1)
-```
-
-It would be useful now to look at how each method has redistributed the outlier topics. The graph below shows how outliers have been redistributed to topics below topic 12. You can see how each strategy does not redistribute topics in the same way, the embedding strategy for example, has found that 6 outlier documents are best represented by topic 1, while no other strategy has found any outlier documents that are best represented by topic 1. The embedding method has also redistributed all outlier documents, while the c-TF-IDF and tokenset similarity methods have left certain documents as outliers. This is where playing around with the threshold parameter, to find a good fit for your data and chosen strategy, is important.
-
-```{r}
-data %>%
-  mutate(outliers_ts_sim = outliers_ts_sim$new_topics,
-         outliers_embed = outliers_embed$new_topics,
-         outliers_ctfidf = outliers_ctfidf$new_topics) %>%
-  filter(merged_topics == -1,
-         outliers_ctfidf < 12,
-         outliers_embed < 12,
-         outliers_ts_sim < 12) %>%
-  select(outliers_ts_sim, outliers_embed, outliers_ctfidf) %>%
-  pivot_longer(everything(), names_to = "outlier_distribution_strategy", values_to = "topic") %>%
-  ggplot(aes(x = as.factor(topic), fill = outlier_distribution_strategy)) +
-  geom_bar(position = position_dodge2(preserve = "single")) +
-  theme_minimal() + 
-  labs(x = "Numbers", 
-       y = "Count", 
-       title = "Number of outliers in each topic after redistribution",
-       fill = "Outlier redistribution strategy") +
-  scale_fill_discrete(labels = c(outliers_ctfidf = "c-TF-IDF",
-                               outliers_embed = "Embeddings",
-                               outliers_ts_sim = "Tokenset similarity"))
-
-```
-
-You should take a look at some of the documents which have been redistributed and the topic which they have been redistributed to before deciding on the best strategy for your data. This can be quite laborious for large amounts of data with many topics. As this dataset is relatively small it may not be appropriate, but you can use things like bigrams and top terms on outlier documents that have been redistributed to investigate if they line up with the topics they have been moved to.
-
-Once you have settled on a new list of topics that you are happy with, we can update the dataframe we have been keeping. For example, if after looking at the data we decided that the Tokenset Similarity method was the most appropriate:
-
-```{r}
-data <- data %>%
-  mutate(new_topics = outliers_ts_sim$new_topics)
-
-data %>%
-  filter(merged_topics == -1) %>%
-  select(merged_topics, new_topics)
-```
-
-If you will be using your model in the future, you can also update your model with those new topics.
-
-```{r}
-bt_update_topics(fitted_model = topic_model,
-                 documents = sentences,
-                 new_topics = outliers_ts_sim$new_topics)
-```
-
-And that's it! You've completed a basic topic modelling pipeline using bertopic! If you would like to have a deeper look at what else we can do using bertopic, refer to the BertopicR function documentation and the BERTopic python library, https://maartengr.github.io/BERTopic/index.html.

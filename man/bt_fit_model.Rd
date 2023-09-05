@@ -4,14 +4,14 @@
 \alias{bt_fit_model}
 \title{Fit a topic model on your documents & embeddings}
 \usage{
-bt_fit_model(model, documents, embeddings, topic_labels = NULL)
+bt_fit_model(model, documents, embeddings = NULL, topic_labels = NULL)
 }
 \arguments{
 \item{model}{Output of bt_compile_model() or another bertopic topic model}
 
 \item{documents}{Your documents to topic model on}
 
-\item{embeddings}{Your embeddings, can be reduced dimensionality or not}
+\item{embeddings}{Your embeddings, can be reduced dimensionality or not. If no embeddings provided, embedding model used reduction_model in bt_compile_model is used to calculate and reduce dimensionality of embeddings.}
 
 \item{topic_labels}{Pre-existing labels, for supervised topic modelling}
 }
