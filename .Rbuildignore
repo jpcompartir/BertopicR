@@ -3,11 +3,11 @@
 ^LICENSE\.md$
 ^README\.Rmd$
 ^cran-comments\.md$
-^_pkgdown\.yml$
 ^docs$
-^pkgdown$
 ^\.github$
 ^doc$
 ^Meta$
 ^working_docs$
 ^vignettes/bertopic.Rmd$
+^_pkgdown\.yml$
+^pkgdown$
