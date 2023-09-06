@@ -25,6 +25,13 @@ library(BertopicR)
 library(dplyr)
 ```
 
+```{r}
+# test_embed <- bt_empty_embedder()
+# test_cluster <- bt_empty_clusterer()
+test_reduce <- BertopicR::bt_empty_reducer()
+
+```
+
 # Modules
 
 In the [Bertopic Python Library](https://maartengr.github.io/BERTopic/getting_started/quickstart/quickstart.html) by Maarten Grootendorst there are 6 sub-modules:
@@ -39,7 +46,7 @@ In the [Bertopic Python Library](https://maartengr.github.io/BERTopic/getting_st
 
     c-TF-IDF - create topic-level (rather than document) bag of words matrices for representing topics
 
-    Fine-tuning topic representations - other tools for topic representations (includes generative AI/LLMs)
+    Fine-tuning topic representations - other tools for topic representations (includes generative AI/LLMs), you can read more about this in the [Manipulating the Model](vignettes/manipulating-the-model.Rmd) vignette.
     
 ```{r, echo = FALSE}
 knitr::include_graphics("../man/figures/schematic_of_modules.png")
@@ -117,7 +124,7 @@ reducer <- bt_make_reducer_umap(
   n_neighbors = 10L, 
   n_components = 10L,
   min_dist = 0L,
-  metric = "euclidean"
+  metric = "cosine"
   )
 ```
 
@@ -258,6 +265,7 @@ We've already made our individual components, or modules, and selected their par
 N.B. In practice you will need to pause and explore your parameters in more depth.
 
 ```{r}
+
 topic_model <- bt_compile_model(
   embedding_model = bt_empty_embedder(),
   reduction_model = bt_empty_reducer(),

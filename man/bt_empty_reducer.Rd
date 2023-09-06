@@ -2,7 +2,7 @@
 % Please edit documentation in R/base_models.R
 \name{bt_empty_reducer}
 \alias{bt_empty_reducer}
-\title{Create a base reducer for skipping dimensionality reduction step of bertopic pipeline}
+\title{Create an empty reducer for skipping dimensionality reduction step of bertopic pipeline}
 \usage{
 bt_empty_reducer()
 }
@@ -10,10 +10,10 @@ bt_empty_reducer()
 an empty dimensionality reduction model (Python class)
 }
 \description{
-Create a base reducer for skipping dimensionality reduction step of bertopic pipeline
+Create an empty reducer for skipping dimensionality reduction step of bertopic pipeline
 }
 \examples{
-base_reducer <- bt_base_reducer()
+empty_reducer <- bt_empty_reducer()
 
-reducer <- bt_base_reducer()
+reducer <- bt_empty_reducer()
 }

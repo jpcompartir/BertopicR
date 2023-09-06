@@ -2,7 +2,7 @@
 % Please edit documentation in R/base_models.R
 \name{bt_empty_embedder}
 \alias{bt_empty_embedder}
-\title{Create a base embedder for skipping embedding step of bertopic pipeline}
+\title{Create an empty embedder for skipping embedding step of bertopic pipeline}
 \usage{
 bt_empty_embedder()
 }
@@ -10,10 +10,10 @@ bt_empty_embedder()
 an empty embedding model (Python class)
 }
 \description{
-Create a base embedder for skipping embedding step of bertopic pipeline
+Create an empty embedder for skipping embedding step of bertopic pipeline
 }
 \examples{
-base_emebdder <- bt_base_embedder()
+empty_emebdder <- bt_empty_embedder()
 
-embedder <- bt_base_embedder()
+embedder <- bt_empty_embedder()
 }

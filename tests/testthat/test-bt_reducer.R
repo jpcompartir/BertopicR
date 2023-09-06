@@ -72,9 +72,9 @@ test_that("bt_make_reducer_truncated_svd's arguments are working as expected", {
   
 })
 
-test_that("bt_base_reducer's is working as intended - returns a base model", {
+test_that("bt_empty_reducer's is working as intended - returns a base model", {
 
-  reducer <- bt_base_reducer()
+  reducer <- bt_empty_reducer()
   #Now check our base model has fit and transform
   expect_true(all(names(reducer) == c("fit", "transform")))
 

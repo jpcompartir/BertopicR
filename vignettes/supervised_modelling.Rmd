@@ -1,0 +1,23 @@
+---
+title: "Supervised and Semi-Supervised Modelling"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{supervised_modelling}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+# Supervised Topic Modelling
+If you have read the [Modular Approach](vignettes/modular_approach.Rmd) vignette you will be familiar with the modules
+
+```{r setup}
+library(BertopicR)
+```
