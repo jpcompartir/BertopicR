@@ -304,7 +304,6 @@ bt_representation_mmr <- function(fitted_model,
 #' @param openai_model openai model to use. If using a gpt-3.5 model, set chat = TRUE
 #' @param nr_repr_docs number of representative documents per topic to send to the openai model
 #' @param nr_samples Number of sample documents from which the representative docs are chosen
-#' @param api_key openai ai api authentication key. This can be found on your openai account.
 #' @param chat set to TRUE if using gpt-3.5 model
 #' @param delay_in_seconds The delay in seconds between consecutive prompts, this is to avoid rate limit errors.
 #' @param prompt The prompt to be used with the openai model. If NULL, the default prompt is used.
@@ -318,7 +317,6 @@ bt_representation_openai <- function(fitted_model,
                                      openai_model = "text-ada-001",
                                      nr_repr_docs = 10,
                                      nr_samples = 500,
-                                     api_key = "sk-",
                                      chat = FALSE,
                                      delay_in_seconds = NULL,
                                      prompt = NULL,
@@ -330,7 +328,7 @@ bt_representation_openai <- function(fitted_model,
             is.character(openai_model),
             is.logical(chat),
             is.numeric(nr_repr_docs),
-            stringr::str_detect(api_key, "^sk-"),
+            # stringr::str_detect(api_key, "^sk-"),
             # is.logical(exponential_backoff),
             is.numeric(delay_in_seconds) | is.null(delay_in_seconds),
             is.character(prompt) | is.null(prompt),
@@ -346,31 +344,14 @@ bt_representation_openai <- function(fitted_model,
   }
   
   # get list of available openai models
-  openai <- reticulate::import("openai")
-  openai$api_key <- api_key
-  openai_models <- openai$Model$list()$data %>% # list of all available openai models
-    lapply(function(sublist) sublist$id) %>%
-    unlist()
+  openai_models <- openai::list_models()$data$root
   
   # Is the input model available?
   if (!openai_model %in% openai_models){
     stop("The input model, ", openai_model, ", is not an available OpenAI model.")
   }
   
-  #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad
-  # bt_rep <- reticulate::import("bertopic.representation")
-  # empty_model <- bt_rep$OpenAI() # empty model
-  # dots <- rlang::list2(...) # put extra args into list
-  
-  # check extra arguments available to OpenAI function
-  # if(any(!names(dots) %in% names(empty_model))){
-  #   bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
-  #   stop(paste("Bad argument(s) attempted to be sent to OpenAI():", bad_args, sep = ' '))
-  # }
-  
   #### end of input validation ####
-  openai <- reticulate::import("openai")
-  openai$api_key <- api_key
 
   # Get representative docs ----
   c_tf_idf <- fitted_model$c_tf_idf_ # ctfidf for input to _extract_representative_docs
@@ -381,7 +362,7 @@ bt_representation_openai <- function(fitted_model,
   
   topic_representations <- fitted_model$topic_representations_ # for input to function
   
-  # convert relavent numbers to integers
+  # convert relevant numbers to integers
   nr_samples <- as.integer(nr_samples)
   nr_repr_docs <- as.integer(nr_repr_docs)
   
@@ -429,53 +410,23 @@ Topic:
 Sample texts from this topic:
 [DOCUMENTS]
 Keywords: [KEYWORDS]
-Topic name:"}
+Topic name:"
+    }
   
   
   updated_representation <- list()
+  updated_prompt = list()
   for (topic in seq_along(repr_doc_mapping)){
-    topic_docs <- repr_doc_mapping[[topic]] #
-    updated_prompt <- prompt # don't want to overwrite prompt
     
-    # Create the prompt ----
-    if (stringr::str_detect(prompt, "\\[DOCUMENTS\\]")){
-      format_topic_docs <- paste0("- ", substr(topic_docs, 1, 255))
-      topic_docs_joined <- paste(format_topic_docs, collapse = "\n")
-      updated_prompt <- gsub("\\[DOCUMENTS\\]", topic_docs_joined, updated_prompt)
-    }
+    updated_prompt <- update_prompt(prompt,
+                                    repr_doc_mapping[[topic]],
+                                    fitted_model)
     
-    topic_keywords <- unlist(sapply(fitted_model$topic_representations_[[topic]], "[", 1)) # extract keywords for topic
-    
-    if (stringr::str_detect(prompt, "\\[KEYWORDS\\]")){
-      keywords_joined <- paste(topic_keywords, collapse = ", ")
-      updated_prompt <- gsub("\\[KEYWORDS\\]", keywords_joined, updated_prompt)
-    }
-    
-    # send prompt to openai ----
-    if (!is.null(delay_in_seconds)){
-      time <- reticulate::import("time")
-      time$sleep(delay_in_seconds)
-    }
-    
-    if (chat){
-      
-      messages = list(
-        list(role = "system", content = "You are a helpful assistant."),
-        list(role = "user", content = updated_prompt)
-      )
-      
-      updated_representation[[topic]] <- openai::create_chat_completion(
-        model = openai_model,
-        messages = messages
-      )$choices$message.content
-      
-    } else{
-      updated_representation[[topic]] <- openai::create_completion(
-        model = openai_model,
-        prompt = updated_prompt
-      )$choices$text
-    }
-  }
+    updated_representation[[topic]] <- openai_api_call(updated_prompt,
+                                                        delay_in_seconds,
+                                                        chat,
+                                                        openai_model)
+  } 
   
   names(updated_representation) <- names(repr_doc_mapping)
   

@@ -15,7 +15,12 @@ knitr::opts_chunk$set(
 ```
 
 
+# What is Supervised Topic Modelling?
+
+While topic modelling is typically used to find undiscovered topics, sometimes we will already be aware of some or all of the topics within our data and we may like to point our model in that direction. We can use Supervised modelling to dictate the precise topics we would like our documents to fall into and Semi-supervised modelling to suggest the topics to which we  think our documents could fit into, this allows the topic models to find those predefined topics while also discovering new topics. You can look at how these and other alternate uses of BERTopic are implemented on Maarten Grootendorst's website [(Semi-)Supervised Topic Modelling](https://maartengr.github.io/BERTopic/getting_started/semisupervised/semisupervised.html).
+
 # Supervised Topic Modelling
+
 If you have read the [Modular Approach](vignettes/modular_approach.Rmd) vignette you will be familiar with the modules
 
 ```{r setup}

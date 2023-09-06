@@ -1,10 +1,10 @@
-#' Create an empty reducer for skipping dimensionality reduction step of bertopic pipeline
+#' Create a base reducer for skipping dimensionality reduction step of bertopic pipeline
 #'
 #' @return an empty dimensionality reduction model (Python class)
 #' @export
 #'
 #' @examples
-#' empty_reducer <- bt_empty_reducer()
+#' base_reducer <- bt_empty_reducer()
 #'
 #' reducer <- bt_empty_reducer()
 bt_empty_reducer <- function() {
@@ -19,13 +19,13 @@ bt_empty_reducer <- function() {
   return(base_reducer)
 
 }
-#' Create an empty embedder for skipping embedding step of bertopic pipeline
+#' Create a base embedder for skipping embedding step of bertopic pipeline
 #'
 #' @return an empty embedding model (Python class)
 #' @export
 #'
 #' @examples
-#' empty_emebdder <- bt_empty_embedder()
+#' base_emebdder <- bt_empty_embedder()
 #'
 #' embedder <- bt_empty_embedder()
 bt_empty_embedder <- function()  {
@@ -41,13 +41,13 @@ bt_empty_embedder <- function()  {
 
 }
 
-#' Create an empty clusterer for skipping clustering step of bertopic pipeline
+#' Create a base clusterer for skipping clustering step of bertopic pipeline
 #'
 #' @return an empty clustering model (Python class)
 #' @export
 #'
 #' @examples
-#' empty_clusterer <- bt_empty_clusterer()
+#' base_clusterer <- bt_empty_clusterer()
 #'
 #' clusterer <- bt_empty_clusterer()
 bt_empty_clusterer <- function() {
@@ -69,12 +69,12 @@ bt_empty_clusterer <- function() {
 # #' @export
 # #'
 # #' @examples
-# #' base_ctf <- bt_base_ctfidf()
+# #' base_ctf <- bt_empty_ctfidf()
 # #'
-# #' base_ctfidf <- bt_base_ctfidf()
+# #' base_ctfidf <- bt_empty_ctfidf()
 # #'
-# #' ctfidfer <- bt_base_ctfidf()
-# bt_base_ctfidf <- function() {
+# #' ctfidfer <- bt_empty_ctfidf()
+# bt_empty_ctfidf <- function() {
 #
 #   #Import appropriate library
 #   btv <- reticulate::import("bertopic.vectorizers")

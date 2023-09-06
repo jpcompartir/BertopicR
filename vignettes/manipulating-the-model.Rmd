@@ -28,7 +28,7 @@ The representation methods currently available are:
 
 2. **MaximalMarginalRelevance** is a concept used to select the most relevant keywords or phrases while promoting diversity in keywords. It balances relevance to the topic with distinctiveness from previously chosen keywords or phrases using a trade-off parameter called lambda.
 
-3. **OpenAI** allows us to use their available models to generate topic summaries. An OpenAI API key is required to access their api and models.
+3. **OpenAI** allows us to use their available models to generate topic summaries. An OpenAI API key is required to access their api and models (to set this you should use Sys.setenv("OPENAI_API_KEY" = "sk-")).
 
 4. **HuggingFace** allows us to use their available models to generate topic summaries. Unlike with OpenAI, you will not need an API key and this is completely free. However, the models are not as sophisticated as some of OpenAI's.
 
@@ -47,6 +47,8 @@ representation_mmr <- bt_representation_mmr(fitted_model = topic_model,
                                             embedding_model = embedder,
                                             diversity = 0.5)
 
+
+Sys.setenv("OPENAI_API_KEY" = "sk-") # set openai key
 
 representation_openai <- bt_representation_openai(fitted_model = topic_model,
                                                   documents = sentences,

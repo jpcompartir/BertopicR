@@ -44,11 +44,60 @@ convert_to_np_array <- function(x, ...){
 
   return(x)
 }
-# do I need this function?
-# create_prompt <- function(docs,
-#                           topic,
-#                           topics){
-#   
-#   keywords <- paste(list(unlist(topics[[topic]])[, 1]), collapse = ", ")
-#   
-# }
+
+
+update_prompt <- function(prompt,
+                           repr_doc_mapping,
+                           fitted_model){
+  
+  topic_docs <- repr_doc_mapping #
+  updated_prompt <- prompt # don't want to overwrite prompt
+  
+  # Create the prompt ----
+  if (stringr::str_detect(prompt, "\\[DOCUMENTS\\]")){
+    format_topic_docs <- paste0("- ", substr(topic_docs, 1, 255))
+    topic_docs_joined <- paste(format_topic_docs, collapse = "\n")
+    updated_prompt <- gsub("\\[DOCUMENTS\\]", topic_docs_joined, updated_prompt)
+  }
+  
+  topic_keywords <- unlist(sapply(fitted_model$topic_representations_[[topic]], "[", 1)) # extract keywords for topic
+  
+  if (stringr::str_detect(prompt, "\\[KEYWORDS\\]")){
+    keywords_joined <- paste(topic_keywords, collapse = ", ")
+    updated_prompt <- gsub("\\[KEYWORDS\\]", keywords_joined, updated_prompt)
+  }
+  return(updated_prompt)
+  
+}
+
+openai_api_call <- function(updated_prompt,
+                            delay_in_seconds,
+                            chat,
+                            openai_model){
+  
+  if (!is.null(delay_in_seconds)){
+    time <- reticulate::import("time")
+    time$sleep(delay_in_seconds)
+  }
+  
+  if (chat){
+    
+    messages = list(
+      list(role = "system", content = "You are a helpful assistant."),
+      list(role = "user", content = updated_prompt)
+    )
+    
+    updated_representation <- openai::create_chat_completion(
+      model = openai_model,
+      messages = messages
+    )$choices$message.content
+    
+  } else{
+    updated_representation <- openai::create_completion(
+      model = openai_model,
+      prompt = updated_prompt
+    )$choices$text
+  }
+  
+  return(updated_representation)
+}
