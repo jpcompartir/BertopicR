@@ -10,7 +10,6 @@ bt_representation_openai(
   openai_model = "text-ada-001",
   nr_repr_docs = 10,
   nr_samples = 500,
-  api_key = "sk-",
   chat = FALSE,
   delay_in_seconds = NULL,
   prompt = NULL,
@@ -27,8 +26,6 @@ bt_representation_openai(
 \item{nr_repr_docs}{number of representative documents per topic to send to the openai model}
 
 \item{nr_samples}{Number of sample documents from which the representative docs are chosen}
-
-\item{api_key}{openai ai api authentication key. This can be found on your openai account.}
 
 \item{chat}{set to TRUE if using gpt-3.5 model}
 

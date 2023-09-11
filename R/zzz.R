@@ -60,7 +60,7 @@ update_prompt <- function(prompt,
     updated_prompt <- gsub("\\[DOCUMENTS\\]", topic_docs_joined, updated_prompt)
   }
   
-  topic_keywords <- unlist(sapply(fitted_model$topic_representations_[[topic]], "[", 1)) # extract keywords for topic
+  topic_keywords <- unlist(sapply(fitted_model$topic_representations_, "[", 1)) # extract keywords for topic
   
   if (stringr::str_detect(prompt, "\\[KEYWORDS\\]")){
     keywords_joined <- paste(topic_keywords, collapse = ", ")

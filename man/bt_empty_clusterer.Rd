@@ -2,7 +2,7 @@
 % Please edit documentation in R/base_models.R
 \name{bt_empty_clusterer}
 \alias{bt_empty_clusterer}
-\title{Create an empty clusterer for skipping clustering step of bertopic pipeline}
+\title{Create a base clusterer for skipping clustering step of bertopic pipeline}
 \usage{
 bt_empty_clusterer()
 }
@@ -10,10 +10,10 @@ bt_empty_clusterer()
 an empty clustering model (Python class)
 }
 \description{
-Create an empty clusterer for skipping clustering step of bertopic pipeline
+Create a base clusterer for skipping clustering step of bertopic pipeline
 }
 \examples{
-empty_clusterer <- bt_empty_clusterer()
+base_clusterer <- bt_empty_clusterer()
 
 clusterer <- bt_empty_clusterer()
 }
