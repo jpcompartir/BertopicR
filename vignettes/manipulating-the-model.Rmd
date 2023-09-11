@@ -1,6 +1,12 @@
 ---
 title: "Manipulating the Model"
-output: rmarkdown::html_vignette
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    highlight: tango
+    code_folding: show
 vignette: >
   %\VignetteIndexEntry{manipulating-the-model}
   %\VignetteEngine{knitr::rmarkdown}
@@ -16,9 +22,46 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(BertopicR)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
 ```
 
 # Changing the Model Representation
+
+```{r echo = FALSE}
+sentences <- stringr::sentences
+embedder <- bt_make_embedder("all-mpnet-base-v2")
+embeddings <- bt_do_embedding(embedder, sentences)
+reducer <- bt_make_reducer_umap(
+  n_neighbors = 10L,
+  n_components = 10L,
+  min_dist = 0L,
+  metric = "cosine"
+  )
+reduced_embeddings <- bt_do_reducing(reducer, embeddings)
+clusterer <-  bt_make_clusterer_hdbscan(min_cluster_size = 5L,
+                          metric = "euclidean",
+                          cluster_selection_method = "leaf",
+                          min_samples = 3L)
+vectoriser <- bt_make_vectoriser(ngram_range = c(1, 2), stop_words = "english", min_frequency = 3L)
+ctfidf <- bt_make_ctfidf(reduce_frequent_words = TRUE, bm25_weighting = FALSE)
+
+topic_model <- bt_compile_model(
+  embedding_model = bt_empty_embedder(),
+  reduction_model = bt_empty_reducer(),
+  clustering_model = clusterer,
+  vectoriser_model = vectoriser,
+  ctfidf_model = ctfidf
+)
+
+bt_fit_model(topic_model, sentences, reduced_embeddings)
+
+data <- dplyr::tibble(sentence = tolower(sentences)) %>%
+  mutate(embeddings = list(embeddings),
+         reduced_embeddings = list(reduced_embeddings),
+         topic = topic_model$topics_)
+```
 
 Once you are happy with the topics/clusters that have been formed, there are a few methods we can use to improve the topic representations and get a better understanding of what each topic is about.
 
@@ -54,8 +97,7 @@ representation_openai <- bt_representation_openai(fitted_model = topic_model,
                                                   documents = sentences,
                                                   openai_model = "gpt-3.5-turbo",
                                                   nr_repr_docs = 10,
-                                                  chat = TRUE,
-                                                  api_key = "sk-")
+                                                  chat = TRUE)
 
 representation_hf <- bt_representation_hf(fitted_model = topic_model,
                                           documents = sentences,
@@ -80,13 +122,12 @@ representation_mmr <- bt_representation_mmr(fitted_model = topic_model,
                                             embedding_model = embedder,
                                             diversity = 0.5)
 
-
-# representation_openai <- bt_representation_openai(fitted_model = topic_model,
-#                                                   documents = sentences,
-#                                                   openai_model = "gpt-3.5-turbo",
-#                                                   nr_repr_docs = 10,
-#                                                   chat = TRUE,
-#                                                   api_key = Sys.getenv("OPENAI_API_KEY"))
+# Sys.setenv("OPENAI_API_KEY" = x)
+representation_openai <- bt_representation_openai(fitted_model = topic_model,
+                                                  documents = sentences,
+                                                  openai_model = "gpt-3.5-turbo",
+                                                  nr_repr_docs = 10,
+                                                  chat = TRUE)
 
 
 representation_hf <- bt_representation_hf(fitted_model = topic_model,
@@ -102,7 +143,7 @@ Now that we have trialed a few representation methods, we can look at how they c
 topic_representations <- topic_model$get_topic_info() %>%
   mutate(keybert = representation_keybert,
          mmr = representation_mmr,
-         # openai = representation_openai,
+         openai = representation_openai,
          flanT5 = representation_hf) %>%
   select(-Representative_Docs)
 
@@ -117,7 +158,7 @@ Particularly when using hdbscan we can end up with a large number of topics and 
 
 ### Hierarchical Clustering
 
-Hdbscan clustering forms clusters through a hierarchical processes which you can visualise with a dendrogram. This can be useful when merging topics as you can see how clusters split to become the topics that emerged from our topic modelling process. The x-axis here is a measure of the distance between topic embeddings, so when clusters split at a higher x-value there is a larger distance between their embeddings. We can see that for this particular dataset, the clusters split into their final topics quite early on in the hierarchy and so it might not be appropriate to merge topics based on how they have emerged in the hierarchy. 
+Hdbscan clustering forms clusters through a hierarchical processes which you can visualise with a dendrogram. This can be useful when merging topics as you can see how clusters split to become the topics that emerged from our topic modelling process. The x-axis here is a measure of the distance between topic embeddings, so when clusters split at a higher x-value there is a larger distance between their embeddings. We can see that for this particular dataset, the clusters split into their final topics quite early on in the hierarchy and so it might not be appropriate to merge topics based on how they have emerged in the hierarchy.
 
 ```{r, eval = FALSE}
 hierarchical_topics <- topic_model$hierarchical_topics(sentences)
@@ -129,10 +170,10 @@ hierarchical_topics = r.topic_model.hierarchical_topics(r.sentences)
 r.topic_model.visualize_hierarchy(hierarchical_topics = hierarchical_topics).show()
 ```
 
-The hierarchical structure is based on how topics emerge based on the similarity of their embeddings, however, we can often find topics that we think should be merged based on our own knowledge. For example, despite their embeddings having a relatively large distance between them, topic 2 and 14 both appear to be about food. 
+The hierarchical structure is based on how topics emerge based on the similarity of their embeddings, however, we can often find topics that we think should be merged based on our own knowledge. For example, despite their embeddings having a relatively large distance between them, topic 2 and 14 both appear to be about food.
 
 ```{r}
-topic_representations %>% 
+topic_representations %>%
   filter(Topic %in% c(2,14))
 ```
 
@@ -140,7 +181,7 @@ For larger topics we could use ParseR to analyse topic bigrams here, but since t
 
 ```{r}
 data %>%
-  filter(topic %in% c(2,14)) %>% 
+  filter(topic %in% c(2,14)) %>%
   select(sentence, topic)
 ```
 
@@ -161,7 +202,7 @@ data <- data %>%
 
 ## Reducing Outliers
 
-One feature of hdbscan is the outlier category, which can be quite large. Sometimes we might want to redistribute these outlier documents so that they fall within one of the existing topics. There are a number of methods to achieve this and it is good practice to look at different parameters and different methods when reducing outliers as it can be quite difficult to redistribute outlier documents while maintaining clarity within your topics. To this end, you should consider project goal is before implementing any of these methods, it is more important to have concise and coherent topics or to force most/all of your documents into topics, is it a balance of the two? 
+One feature of hdbscan is the outlier category, which can be quite large. Sometimes we might want to redistribute these outlier documents so that they fall within one of the existing topics. There are a number of methods to achieve this and it is good practice to look at different parameters and different methods when reducing outliers as it can be quite difficult to redistribute outlier documents while maintaining clarity within your topics. To this end, you should consider project goal is before implementing any of these methods, it is more important to have concise and coherent topics or to force most/all of your documents into topics, is it a balance of the two?
 
 The methods currently available to us are:
 
@@ -207,9 +248,9 @@ data %>%
   pivot_longer(everything(), names_to = "outlier_distribution_strategy", values_to = "topic") %>%
   ggplot(aes(x = as.factor(topic), fill = outlier_distribution_strategy)) +
   geom_bar(position = position_dodge2(preserve = "single")) +
-  theme_minimal() + 
-  labs(x = "Numbers", 
-       y = "Count", 
+  theme_minimal() +
+  labs(x = "Numbers",
+       y = "Count",
        title = "Number of outliers in each topic after redistribution",
        fill = "Outlier redistribution strategy") +
   scale_fill_discrete(labels = c(outliers_ctfidf = "c-TF-IDF",

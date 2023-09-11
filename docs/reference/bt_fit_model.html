@@ -32,7 +32,9 @@ this operation. A model is not returned as the function changes the input model.
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/manipulating-the-model.html">Manipulating the Model</a>
     <a class="dropdown-item" href="../articles/modular_approach.html">Interacting with individaul modules</a>
+    <a class="dropdown-item" href="../articles/quick_start.html">Quick Start</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -51,7 +53,7 @@ this operation. A model is not returned as the function changes the input model.
     </div>
 
     <div class="ref-description section level2">
-    <p>If you've already performed dimensionality reduction on your embeddings, you can feed in the reduced dimension embeddings to the embeddings argument, make sure to supply <code>bt_compile_model</code> with a base reducer (the output of <code><a href="bt_base_reducer.html">bt_base_reducer()</a></code>)</p>
+    <p>If you've already performed dimensionality reduction on your embeddings, you can feed in the reduced dimension embeddings to the embeddings argument, make sure to supply <code>bt_compile_model</code> with a base reducer (the output of <code>bt_base_reducer()</code>)</p>
 <p>NOTE: The bertopic model you are working with is a pointer to a python object
 at a point in memory. This means that the input and the output model cannot be
 differentiated between without explicitly saving the model before performing
@@ -60,7 +62,7 @@ this operation. A model is not returned as the function changes the input model.
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">bt_fit_model</span><span class="op">(</span><span class="va">model</span>, <span class="va">documents</span>, <span class="va">embeddings</span>, topic_labels <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">bt_fit_model</span><span class="op">(</span><span class="va">model</span>, <span class="va">documents</span>, embeddings <span class="op">=</span> <span class="cn">NULL</span>, topic_labels <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -74,7 +76,7 @@ this operation. A model is not returned as the function changes the input model.
 
 
 <dt>embeddings</dt>
-<dd><p>Your embeddings, can be reduced dimensionality or not</p></dd>
+<dd><p>Your embeddings, can be reduced dimensionality or not. If no embeddings provided, embedding model used reduction_model in bt_compile_model is used to calculate and reduce dimensionality of embeddings.</p></dd>
 
 
 <dt>topic_labels</dt>

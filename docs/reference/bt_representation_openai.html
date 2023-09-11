@@ -36,7 +36,9 @@ to generate topic labels based on one of their Completion (chat = FALSE) or Chat
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/manipulating-the-model.html">Manipulating the Model</a>
     <a class="dropdown-item" href="../articles/modular_approach.html">Interacting with individaul modules</a>
+    <a class="dropdown-item" href="../articles/quick_start.html">Quick Start</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -72,7 +74,6 @@ to generate topic labels based on one of their Completion (chat = FALSE) or Chat
 <span>  openai_model <span class="op">=</span> <span class="st">"text-ada-001"</span>,</span>
 <span>  nr_repr_docs <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  nr_samples <span class="op">=</span> <span class="fl">500</span>,</span>
-<span>  api_key <span class="op">=</span> <span class="st">"sk-"</span>,</span>
 <span>  chat <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  delay_in_seconds <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  prompt <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -100,10 +101,6 @@ to generate topic labels based on one of their Completion (chat = FALSE) or Chat
 
 <dt>nr_samples</dt>
 <dd><p>Number of sample documents from which the representative docs are chosen</p></dd>
-
-
-<dt>api_key</dt>
-<dd><p>openai ai api authentication key. This can be found on your openai account.</p></dd>
 
 
 <dt>chat</dt>

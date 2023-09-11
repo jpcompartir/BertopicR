@@ -2,6 +2,11 @@ pandoc: 3.1.1
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
+  manipulating-the-model: manipulating-the-model.html
   modular_approach: modular_approach.html
-last_built: 2023-09-04T14:12Z
+  quick_start: quick_start.html
+last_built: 2023-09-11T10:43Z
+urls:
+  reference: https://aoiferyan-sc.github.io/BertopicR/reference
+  article: https://aoiferyan-sc.github.io/BertopicR/articles
 

@@ -153,8 +153,7 @@ We'll also set cluster_selection_method = "leaf", this means we'll tend to find 
 clusterer <- bt_make_clusterer_hdbscan(min_cluster_size = 5L,
                           metric = "euclidean",
                           cluster_selection_method = "leaf",
-                          min_samples = 3L,
-                          prediction_data = TRUE)
+                          min_samples = 3L)
 ```
 
 ### Do the clustering
