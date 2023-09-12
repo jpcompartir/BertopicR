@@ -23,7 +23,6 @@ Imports:
     ellipsis (>= 0.3.2),
     magrittr (>= 2.0.3),
     methods,
-    openai,
     reticulate (>= 1.26),
     rlang (>= 1.1.1),
     stats,

@@ -305,6 +305,7 @@ bt_representation_mmr <- function(fitted_model,
 #' @param nr_repr_docs number of representative documents per topic to send to the openai model
 #' @param nr_samples Number of sample documents from which the representative docs are chosen
 #' @param chat set to TRUE if using gpt-3.5 model
+#' @param api_key OpenAI API key is required to use the OpenAI API and can be found on the OpenAI website
 #' @param delay_in_seconds The delay in seconds between consecutive prompts, this is to avoid rate limit errors.
 #' @param prompt The prompt to be used with the openai model. If NULL, the default prompt is used.
 #' @param diversity diversity of documents to be sent to the huggingface model. 0 = no diversity, 1 = max diversity. 
@@ -318,6 +319,7 @@ bt_representation_openai <- function(fitted_model,
                                      nr_repr_docs = 10,
                                      nr_samples = 500,
                                      chat = FALSE,
+                                     api_key = "sk-",
                                      delay_in_seconds = NULL,
                                      prompt = NULL,
                                      diversity = NULL){
@@ -328,7 +330,7 @@ bt_representation_openai <- function(fitted_model,
             is.character(openai_model),
             is.logical(chat),
             is.numeric(nr_repr_docs),
-            # stringr::str_detect(api_key, "^sk-"),
+            stringr::str_detect(api_key, "^sk-"),
             # is.logical(exponential_backoff),
             is.numeric(delay_in_seconds) | is.null(delay_in_seconds),
             is.character(prompt) | is.null(prompt),
@@ -344,7 +346,10 @@ bt_representation_openai <- function(fitted_model,
   }
   
   # get list of available openai models
-  openai_models <- openai::list_models()$data$root
+  openai <- reticulate::import("openai")
+  openai_models <- openai$Model$list()$data %>% 
+    lapply(function(sublist) sublist$id) %>% 
+    unlist()
   
   # Is the input model available?
   if (!openai_model %in% openai_models){
@@ -415,17 +420,20 @@ Topic name:"
   
   
   updated_representation <- list()
-  updated_prompt = list()
+  updated_prompt <- list()
   for (topic in seq_along(repr_doc_mapping)){
     
+    topic_keywords <- unlist(sapply(fitted_model$topic_representations_[[topic]], "[", 1)) # extract keywords for topic
     updated_prompt <- update_prompt(prompt,
                                     repr_doc_mapping[[topic]],
+                                    topic_keywords,
                                     fitted_model)
     
     updated_representation[[topic]] <- openai_api_call(updated_prompt,
-                                                        delay_in_seconds,
-                                                        chat,
-                                                        openai_model)
+                                                       delay_in_seconds,
+                                                       chat,
+                                                       openai_model,
+                                                       api_key)
   } 
   
   names(updated_representation) <- names(repr_doc_mapping)

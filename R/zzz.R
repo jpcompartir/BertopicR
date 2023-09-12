@@ -48,6 +48,7 @@ convert_to_np_array <- function(x, ...){
 
 update_prompt <- function(prompt,
                            repr_doc_mapping,
+                          topic_keywords,
                            fitted_model){
   
   topic_docs <- repr_doc_mapping #
@@ -60,8 +61,6 @@ update_prompt <- function(prompt,
     updated_prompt <- gsub("\\[DOCUMENTS\\]", topic_docs_joined, updated_prompt)
   }
   
-  topic_keywords <- unlist(sapply(fitted_model$topic_representations_, "[", 1)) # extract keywords for topic
-  
   if (stringr::str_detect(prompt, "\\[KEYWORDS\\]")){
     keywords_joined <- paste(topic_keywords, collapse = ", ")
     updated_prompt <- gsub("\\[KEYWORDS\\]", keywords_joined, updated_prompt)
@@ -73,7 +72,11 @@ update_prompt <- function(prompt,
 openai_api_call <- function(updated_prompt,
                             delay_in_seconds,
                             chat,
-                            openai_model){
+                            openai_model,
+                            api_key){
+  
+  openai <- reticulate::import("openai")
+  openai$api_key <- api_key
   
   if (!is.null(delay_in_seconds)){
     time <- reticulate::import("time")
@@ -87,16 +90,23 @@ openai_api_call <- function(updated_prompt,
       list(role = "user", content = updated_prompt)
     )
     
-    updated_representation <- openai::create_chat_completion(
+    # updated_representation <- openai::create_chat_completion(
+    #   model = openai_model,
+    #   messages = messages
+    # )$choices$message.content
+    
+    updated_representation <- openai$ChatCompletion$create(
       model = openai_model,
       messages = messages
-    )$choices$message.content
+    )$choices[[1]]$message$content
+    
+    updated_representation <- stringr::str_remove_all(updated_representation, "^topic: ")
     
   } else{
-    updated_representation <- openai::create_completion(
+    updated_representation <- openai$Completion$create(
       model = openai_model,
-      prompt = updated_prompt
-    )$choices$text
+      prompt = updated_prompt[[1]]
+    )$choices[[1]]$text
   }
   
   return(updated_representation)

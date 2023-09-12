@@ -106,8 +106,8 @@ test_that("bt_representation_openai errors on bad input", {
                                         chat = "test"), "is.logical.*chat")
   expect_error(bt_representation_openai(documents = "test",
                                         nr_repr_docs = "test"), "is.numeric.*nr_repr_docs")
-  # expect_error(bt_representation_openai(documents = "test",
-  #                                       api_key = "test"), "str_detect.*api_key")
+  expect_error(bt_representation_openai(documents = "test",
+                                        api_key = "test"), "str_detect.*api_key")
   expect_error(bt_representation_openai(documents = "test",
                                         delay_in_seconds = "test"), "is.numeric.*delay_in_seconds")
   expect_error(bt_representation_openai(documents = "test",
@@ -125,7 +125,7 @@ test_that("bt_representation_openai errors on bad input", {
   expect_error(bt_representation_openai(fitted_model = model,
                                         documents = "test",
                                         openai_model = "test",
-                                        # api_key = Sys.getenv("OPENAI_API_KEY")
+                                        api_key = Sys.getenv("OPENAI_API_KEY")
                                         ),
                "The input model, test, is not an available OpenAI model.")
   
@@ -145,8 +145,8 @@ test_that("bt_representation_openai returns correct output on correct input", {
   nr_topics <- model$get_topic_info() %>% nrow()
   
   representation_openai <- bt_representation_openai(fitted_model = model,
-                                                 documents = docs
-                                                 # api_key = Sys.getenv("OPENAI_API_KEY")
+                                                 documents = docs,
+                                                 api_key = Sys.getenv("OPENAI_API_KEY")
                                                  )
   
   expect_true("-1" %in% names(representation_openai))

@@ -11,6 +11,7 @@ bt_representation_openai(
   nr_repr_docs = 10,
   nr_samples = 500,
   chat = FALSE,
+  api_key = "sk-",
   delay_in_seconds = NULL,
   prompt = NULL,
   diversity = NULL
@@ -28,6 +29,8 @@ bt_representation_openai(
 \item{nr_samples}{Number of sample documents from which the representative docs are chosen}
 
 \item{chat}{set to TRUE if using gpt-3.5 model}
+
+\item{api_key}{OpenAI API key is required to use the OpenAI API and can be found on the OpenAI website}
 
 \item{delay_in_seconds}{The delay in seconds between consecutive prompts, this is to avoid rate limit errors.}
 
