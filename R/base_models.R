@@ -4,10 +4,10 @@
 #' @export
 #'
 #' @examples
-#' base_reducer <- bt_base_reducer()
+#' base_reducer <- bt_empty_reducer()
 #'
-#' reducer <- bt_base_reducer()
-bt_base_reducer <- function() {
+#' reducer <- bt_empty_reducer()
+bt_empty_reducer <- function() {
 
   #Import appropriate library
   btd <- reticulate::import("bertopic.dimensionality")
@@ -25,10 +25,10 @@ bt_base_reducer <- function() {
 #' @export
 #'
 #' @examples
-#' base_emebdder <- bt_base_embedder()
+#' base_emebdder <- bt_empty_embedder()
 #'
-#' embedder <- bt_base_embedder()
-bt_base_embedder <- function()  {
+#' embedder <- bt_empty_embedder()
+bt_empty_embedder <- function()  {
 
   #Import appropriate library
   bte <- reticulate::import("bertopic.backend")
@@ -47,10 +47,10 @@ bt_base_embedder <- function()  {
 #' @export
 #'
 #' @examples
-#' base_clusterer <- bt_base_clusterer()
+#' base_clusterer <- bt_empty_clusterer()
 #'
-#' clusterer <- bt_base_clusterer()
-bt_base_clusterer <- function() {
+#' clusterer <- bt_empty_clusterer()
+bt_empty_clusterer <- function() {
 
   #Instantiate empty cluster model to skip the step in the pipeline:
   btc <- reticulate::import("bertopic.cluster")
@@ -69,12 +69,12 @@ bt_base_clusterer <- function() {
 # #' @export
 # #'
 # #' @examples
-# #' base_ctf <- bt_base_ctfidf()
+# #' base_ctf <- bt_empty_ctfidf()
 # #'
-# #' base_ctfidf <- bt_base_ctfidf()
+# #' base_ctfidf <- bt_empty_ctfidf()
 # #'
-# #' ctfidfer <- bt_base_ctfidf()
-# bt_base_ctfidf <- function() {
+# #' ctfidfer <- bt_empty_ctfidf()
+# bt_empty_ctfidf <- function() {
 #
 #   #Import appropriate library
 #   btv <- reticulate::import("bertopic.vectorizers")

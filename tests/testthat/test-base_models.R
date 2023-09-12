@@ -1,30 +1,30 @@
-test_that("bt_base_embedder returns the right object", {
+test_that("bt_empty_embedder returns the right object", {
 
-  expect_silent(bt_base_embedder())
-  embedder <- bt_base_embedder()
+  expect_silent(bt_empty_embedder())
+  embedder <- bt_empty_embedder()
   expect_true(grepl("BaseEmbedder", class(embedder)[[1]]))
   expect_true(all("embed" %in% names(embedder)))
 
 })
 
-test_that("bt_base_reducer returns the right object", {
-  expect_silent(bt_base_reducer())
-  reducer <- bt_base_reducer()
+test_that("bt_empty_reducer returns the right object", {
+  expect_silent(bt_empty_reducer())
+  reducer <- bt_empty_reducer()
   expect_true(grepl("BaseDimension", reducer))
 })
 
 
-test_that("bt_base_clusterer returns the right object", {
-  expect_silent(bt_base_clusterer())
-  clusterer <- bt_base_clusterer()
+test_that("bt_empty_clusterer returns the right object", {
+  expect_silent(bt_empty_clusterer())
+  clusterer <- bt_empty_clusterer()
   expect_true(grepl("BaseCluster", clusterer))
 })
 
 #Misread the docs, don't need this
 
-# test_that("bt_base_ctfidf returns the right object", {
-#   expect_silent(bt_base_ctfidf())
-#   ctfidf <- bt_base_ctfidf()
+# test_that("bt_empty_ctfidf returns the right object", {
+#   expect_silent(bt_empty_ctfidf())
+#   ctfidf <- bt_empty_ctfidf()
 #   expect_true(grepl("bertopic.*ClassTf", class(ctfidf)[[1]]))
 #
 #

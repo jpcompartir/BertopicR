@@ -1,0 +1,62 @@
+---
+title: "Quick Start"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    highlight: tango
+    code_folding: show
+vignette: >
+  %\VignetteIndexEntry{modular_approach}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette will show you how to get a topic model up and running using BertopicR relatively quickly. It should be noted that this approach significantly simplifies and generalises certain steps, and will rarely produce an optimised topic model. To get the most out of your topic modelling, you should refer to the [Modular Approach](vignettes/modular_approach.Rmd) vignette.
+
+# Preparing the Data
+```{r setup, message = FALSE}
+library(BertopicR)
+library(dplyr)
+library(stringr)
+library(tidyr)
+```
+
+First we should load the data to which we would like to fit the model.
+```{r load data}
+sentences <- stringr::sentences
+```
+
+# Compiling the Model
+
+If you have read the [Modular Approach](vignettes/modular_approach.Rmd) vignette, you will have seen that we specified each individual component of our topic model (embedding_model, ctfidf_model etc.) and fed those to bt_compile_model. If we wish, we can use entirely default parameters (or a combination of default parameters and specified components) with the same function.
+
+```{r compile model}
+model <- bt_compile_model()
+```
+
+# Fitting the Model
+
+Now that we have created a model that uses all default parameters, we can simply use the bt_fit_model function to fit the model to our sentences data. It is important to note that as we have not created document embeddings or reduced those embeddings, this will be done internally which can be quite a time consuming process if you choose to run the topic modelling process multiple times. 
+
+**NOTE:** The bertopic model you are working with is a pointer to a python object 
+at a point in memory. This means that the input and the output model cannot be 
+differentiated between without explicitly saving the model before performing 
+this operation. A model is not returned as the function changes the input model.
+
+```{r fit the model}
+bt_fit_model(model, sentences)
+
+model$get_topic_info() %>% select(-Representative_Docs)
+```
+
+That's it, you have a topic model up and running! If you decided that you wanted to adjust factors, like the minimum size of a topic, or the number of topics you want, you should refer to the [Modular Approach](vignettes/modular_approach.Rmd) vignette. You can also refer to the [Manipulating the Model](vignettes/manipulating-the-model.Rmd) vignette to see how you can interpret the topics and reduce the number of outliers identified (if using hdbscan (default) clustering).
+

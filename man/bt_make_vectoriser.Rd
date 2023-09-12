@@ -8,7 +8,7 @@ bt_make_vectoriser(
   ...,
   ngram_range = c(1, 2),
   stop_words = "english",
-  min_frequency = 10L,
+  min_frequency = 1,
   max_features = NULL
 )
 }

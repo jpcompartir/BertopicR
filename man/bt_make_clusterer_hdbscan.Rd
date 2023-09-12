@@ -18,13 +18,13 @@ bt_make_clusterer_hdbscan(
 
 \item{min_cluster_size}{Minimum number of data points for each cluster, enter as integer by adding L to number}
 
-\item{min_samples}{Controls the number of outliers generated, lower value = fewer outliers. Defaults to min_cluster_size}
+\item{min_samples}{Controls the number of outliers generated, lower value = fewer outliers.}
 
 \item{metric}{Distance metric to calculate clusters with}
 
 \item{cluster_selection_method}{The method used to select clusters. Default is "eom".}
 
-\item{prediction_data}{Logical}
+\item{prediction_data}{Set to TRUE if you intend on using model with any functions from hdbscan.prediction eg. if using bt_outliers_probabilities}
 }
 \value{
 An instance of the HDBSCAN clustering model (Python object.

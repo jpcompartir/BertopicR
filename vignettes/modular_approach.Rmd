@@ -23,15 +23,15 @@ knitr::opts_chunk$set(
 ```{r setup, message = FALSE}
 library(BertopicR)
 library(dplyr)
-library(stringr)
-library(tidyr)
 ```
 
 # Modules
 
 In the [Bertopic Python Library](https://maartengr.github.io/BERTopic/getting_started/quickstart/quickstart.html) by Maarten Grootendorst there are 6 sub-modules:
 
-:   Embeddings - for transforming your documents into a numerical representation
+:   
+
+    Embeddings - for transforming your documents into a numerical representation
 
     Dimensionality Reduction - for reducing the number of features of the embeddings output
 
@@ -41,7 +41,12 @@ In the [Bertopic Python Library](https://maartengr.github.io/BERTopic/getting_st
 
     c-TF-IDF - create topic-level (rather than document) bag of words matrices for representing topics
 
-    Fine-tuning topic representations - other tools for topic representations (includes generative AI/LLMs)
+    Fine-tuning topic representations - other tools for topic representations (includes generative AI/LLMs), you can read more about this in the [Manipulating the Model](vignettes/manipulating-the-model.Rmd) vignette.
+
+```{r, echo = FALSE}
+knitr::include_graphics("../man/figures/schematic_of_modules.png")
+# ![BertopicR Modules]("vignettes/viz/schematic_of_modules.png")
+```
 
 This vignette will show you how to use {BertopicR} to tune each module when creating your topic models.
 
@@ -82,7 +87,7 @@ embedder <- bt_make_embedder(
 
 ```{r}
 embeddings <- bt_do_embedding(
-  embedder, 
+  embedder,
   df$sentences
   )
 
@@ -91,19 +96,17 @@ embeddings[1, 1:10]
 
 Each row of our embeddings output represents one of our original sentences, and each column represents a different embedding dimension; there are 768 dimensions outputted by the 'all-mpnet-base-v2' mode
 
-We take a peek at the first 10 columns (dimensions), of the first row of our embeddings and we see 10 floating point numbers. 
+We take a peek at the first 10 columns (dimensions), of the first row of our embeddings and we see 10 floating point numbers.
 
 ## Reducing Dimensions
 
 The next step in the pipeline is to reduce the dimensions of our embeddings, we do this for two reasons:
 
-In the bertopic pipeline we perform dimensionality reduction for two reasons
-
 1.  to allow our clustering algorithm to run smoothly
 
 2.  to visualise our clusters on a plane (we will eventually reduce to 2 dimensions)
 
-In machine learning more generally, dimensionality reduction is often an important step to avoid overfitting and the curse of dimensionality. For more information on the UMAP algorithm - uniform manifold approximation and projection for dimension reduction - *catchy*, see [UMAP Docs](https://umap-learn.readthedocs.io/en/latest/).
+In machine learning more generally, dimensionality reduction is often an important step to avoid overfitting and the curse of dimensionality. In this example we will use the UMAP algorithm (however dimensionality reduction using PCA and truncatedSVD are also currently available) for more information on the UMAP algorithm - uniform manifold approximation and projection for dimension reduction - *catchy*, see [UMAP Docs](https://umap-learn.readthedocs.io/en/latest/).
 
 TIP: Like with embeddings, it's a good idea to save your reduced embeddings, as reducing dimensions can be a costly process.
 
@@ -112,11 +115,11 @@ TIP: Like with embeddings, it's a good idea to save your reduced embeddings, as 
 We'll use a low-ish value for n_neighbours (we have a small dataset) and an output with 5 dimensions (n_components = 5L). We'll set the min_distance to 0, so that our dimensionality reduction model can place very similar documents *very* close together. We'll set the metric to "Euclidean" see [Embedding to non-Euclidean Spaces](https://umap-learn.readthedocs.io/en/latest/embedding_space.html) for alternatives.
 
 ```{r}
-reducer <- bt_make_reducer(
-  n_neighbors = 10L, 
+reducer <- bt_make_reducer_umap(
+  n_neighbors = 10L,
   n_components = 10L,
   min_dist = 0L,
-  metric = "euclidean"
+  metric = "cosine"
   )
 ```
 
@@ -186,66 +189,63 @@ data %>%
   count(cluster, sort = TRUE) %>%
   ggplot(aes(x= n)) +
   geom_histogram(fill = "midnightblue", bins = 20) +
-  theme_minimal()
+  theme_minimal() +
+  xlab("Cluster Size") +
+  ylab("Number of Clusters")
 ```
 
-And we can see which clusters have the highest number of posts:
+With the exception of the outlier group, the clusters are labelled in order of size:
 
 ```{r}
 data %>%
   count(cluster, sort = TRUE)
 ```
 
-177/720 (24.6%) of data points were labelled as noise (cluster == -1), and upon a first inspection they do appear to be quite eclectic. 
+213/720 (29.6%) of data points were labelled as noise (cluster == -1), and upon a first inspection they do appear to be quite eclectic.
 
 ```{r}
 data %>%
-  filter(cluster == -1) %>% 
+  filter(cluster == -1) %>%
   slice(30:40) %>%
   pull(sentence)
 ```
 
 But how do our other clusters look?
 
-Our largest cluster, other than the noise cluster, is cluster 40. 
-
 ```{r}
 data %>%
-  filter(cluster == 40) %>%
-  head(10) %>% 
+  filter(cluster == 0) %>%
+  sample_n(5) %>%
   pull(sentence)
 ```
 
-However, the more clusters we look at, the more difficult it will become to figure out what's happening...
-
-Precious things, things that shine?
-
 ```{r}
 data %>%
-  filter(cluster == 23) %>%
-  head(10) %>%
+  filter(cluster == 1) %>%
+  sample_n(5) %>%
   pull(sentence)
 ```
 
-Wind, air?
-
+The more clusters we look at, the more difficult it will become to figure out what's happening...
 ```{r}
 data %>%
-  filter(cluster ==13) %>%
-  head(10) %>%
+  filter(cluster == 2) %>%
+  sample_n(5) %>%
   pull(sentence)
 ```
-
 
 Inspecting each of these clusters and trying to figure out what each cluster means and how they inter-relate would soon become intractable for humans. Thankfully, within BERTopic there are quantitative methods already in place to aid this procedure.
 
-We'll make a vectoriser and a ctfidf model, then we'll compile a model, fit our model on our data, and finally we'll explore our topics and their representations.
+Instead of looking at the individual posts in each cluster, we'll attempt to summarise their contents with keywords and phrases. In order to this, we'll make a vectoriser and a ctfidf model. After creating these models, we can use everything we've looked at so far to compile a model, fit the model on our data, and finally explore our topics and their representations.
 
+### Make the vectoriser
 For the vectoriser we'll set the ngram range as c(1, 2) this means our topics can be represented as single words or bigrams. We'll set stop_words to 'english' so that English stop words are removed and we'll tell our vectoriser to only consider words that have a frequency of 3 or higher, so that rare words and chance occurrences don't clog our representations too much. In practice, we will want to set a higher value for min_frequency as we'll be working with significantly more data.
 
 ```{r}
 vectoriser <- bt_make_vectoriser(ngram_range = c(1, 2), stop_words = "english", min_frequency = 3L)
 ```
+
+### Make the ctfidf model
 
 Then we'll create a ctfidf model which will allow us to represent each topic according to the words that are important to that topic (have high frequency) and distinct to that topic (have relatively low frequency in other topics):
 ```{r}
@@ -254,14 +254,15 @@ ctfidf <- bt_make_ctfidf(reduce_frequent_words = TRUE, bm25_weighting = FALSE)
 
 ## Compile the model
 
-We've already made our individual components, or modules, and selected their parameters. We've already performed the embeddings and dimensionality reduction, so bertopic allows us to skip these steps easily (we can also skip clustering, but won't for this task as it adds extra complexity) - we'll feed in empty models to the `bt_compile_model` function for embedding and reducing. 
+We've already made our individual components, or modules, and selected their parameters. We've already performed the embeddings and dimensionality reduction, so bertopic allows us to skip these steps easily by feeding in empty models to the `bt_compile_model` function for embedding and reducing. We can also skip clustering, but won't for this task as it adds extra complexity, the clustering we performed above with bt_do_clustering was just to explore how our clusterer would work in practice.
 
 N.B. In practice you will need to pause and explore your parameters in more depth.
 
 ```{r}
+
 topic_model <- bt_compile_model(
-  embedding_model = bt_base_embedder(),
-  reduction_model = bt_base_reducer(),
+  embedding_model = bt_empty_embedder(),
+  reduction_model = bt_empty_reducer(),
   clustering_model = clusterer,
   vectoriser_model = vectoriser,
   ctfidf_model = ctfidf
@@ -272,25 +273,32 @@ topic_model <- bt_compile_model(
 
 We feed in our reduced embeddings rather than the original embeddings, this allows us to skip steps in the workflow; this can save us a lot of time, particularly when we have many documents.
 
+**NOTE:** The bertopic model you are working with is a pointer to a python object
+at a point in memory. This means that the input and the output model cannot be
+differentiated between without explicitly saving the model before performing
+this operation. A model is not returned as the function changes the input model.
+
 ```{r}
-fitted_model <- bt_fit_model(topic_model, data$sentence, embeddings = reduced_embeddings)
+bt_fit_model(topic_model, data$sentence, embeddings = reduced_embeddings)
 ```
 
-
-We can create a look up table to join our sentences to their topic labels and their topic descriptions:
+We can create a look up table to join our sentences to their topic labels and their topic descriptions and join this information with our original dataframe:
 
 ```{r}
-topic_representations <- fitted_model$get_topic_info()
+topic_representations <- topic_model$get_topic_info()
 topic_rep_lookup <- topic_representations %>%
-  select(topic = Topic, description = Name)
+  select(topic = Topic, description = Name, topic_size = Count)
 
 data <- data %>%
-  mutate(topic = fitted_model$topics_) %>%
+  mutate(topic = topic_model$topics_) %>%
   left_join(topic_rep_lookup)
 
-(data <- data %>% 
-  relocate(sentence, topic, description)
+(data <- data %>%
+  relocate(sentence, topic, topic_size, description)
 )
 ```
 
+The df compiled is a common place for everything we have generated so far, in practice we don't really need the cluster column now that we have the topic column, similarly, they provide the same information. Topics and clusters should have largely the same labels, the only discrepancy would be where multiple clusters/topics are the same size.
+
+Now tht you have your model up and running, you could look at the [Manipulating the Model](vignettes/manipulating-the-model.Rmd) vignette to see how you could investigate and alter the topics that have been identified.
 

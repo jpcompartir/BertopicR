@@ -1,0 +1,73 @@
+---
+title: "testing-outlier-reduction"
+output: html_document
+date: "2023-09-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# libraries
+```{r}
+library(BertopicR)
+library(dplyr)
+```
+
+```{r}
+
+# install.packages("tm.corpus.Reuters21578", repos = "http://datacube.wu.ac.at")
+library(tm.corpus.Reuters21578)
+data(Reuters21578)
+
+news_data <- textdata::dataset_ag_news()
+news_data_clean <- news_data %>%
+  mutate(description_clean = description,
+         description_clean = tolower(description)) %>%
+  sample_n(4000)
+
+embedder <- bt_make_embedder("all-mpnet-base-v2")
+embeddings <- bt_do_embedding(embedder, news_data_clean$description_clean)
+
+reducer <- bt_make_reducer_umap()
+reduced_embeddings <- bt_do_reducing(reducer, embeddings)
+
+clusterer <- bt_make_clusterer_hdbscan()
+
+model <- bt_compile_model(embedding_model = bt_empty_embedder(),
+                          reduction_model = bt_empty_reducer(),
+                          clustering_model = clusterer)
+
+bt_fit_model(model, 
+             news_data_clean$description_clean,
+             embeddings = reduced_embeddings)
+
+# model$nr_topics <- 5L
+# docs_df <- data.frame(Document = news_data_clean$description_clean,
+#                       Topic = model$topics_)
+# 
+# data <- reticulate::py_eval("r.model._reduce_topics(r.docs_df)")
+# data
+
+data <- news_data_clean %>%
+  mutate(bert_topics = model$topics_)
+
+contingency_table <- table(data$class, data$bert_topics)
+
+cluster_percentages <- as.data.frame(prop.table(contingency_table,
+                                                margin = 2) * 100) %>%
+  mutate(Freq = as.numeric(Freq)) %>% 
+  group_by(Var2) %>%
+  filter(Freq == max(Freq),
+         Freq > 80) %>%
+  mutate(Var2 = as.numeric(Var2)) %>%
+  ungroup()
+
+data <- data %>%
+  left_join(cluster_percentages, by = join_by(bert_topics == Var2))
+
+# accuracy 
+data %>%
+  filter(data$class == data$Var1) %>% select(class, Var1)
+  nrow/nrow(data)
+```

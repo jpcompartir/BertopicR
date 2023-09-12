@@ -28,7 +28,7 @@ bt_make_clusterer <- function(..., clustering_method = c("hdbscan", "kmeans", "a
                              "kmeans" = bt_make_clusterer_kmeans(...),
                              "hdbscan" = bt_make_clusterer_hdbscan(...),
                              "agglomerative" = bt_make_clusterer_agglomerative(...),
-                             "base" = bt_base_clusterer())
+                             "base" = bt_empty_clusterer())
 
   return(clustering_model)
 }
@@ -83,10 +83,10 @@ bt_make_clusterer_agglomerative <- function(n_clusters = 20L) {
 #'
 #' @param ... Additional arguments sent to hdbscan.HDBSCAN()
 #' @param min_cluster_size Minimum number of data points for each cluster, enter as integer by adding L to number
-#' @param min_samples Controls the number of outliers generated, lower value = fewer outliers. Defaults to min_cluster_size
+#' @param min_samples Controls the number of outliers generated, lower value = fewer outliers. 
 #' @param metric Distance metric to calculate clusters with
 #' @param cluster_selection_method The method used to select clusters. Default is "eom".
-#' @param prediction_data Logical
+#' @param prediction_data Set to TRUE if you intend on using model with any functions from hdbscan.prediction eg. if using bt_outliers_probabilities
 #'
 #' @return An instance of the HDBSCAN clustering model (Python object.
 
@@ -143,11 +143,16 @@ bt_do_clustering <- function(clustering_model, embeddings) {
 
   # Early stopping
   stopifnot(is.array(embeddings) | is.data.frame(embeddings))
-
-  #use fit method as agglomerative doesn't have all the same methods(?) check this
+  
   fitted_model <- clustering_model$fit(embeddings)
-
+  
   labels <- fitted_model$labels_ #Should we add attributes? Would need to be model specific, so have to extract the model type with class() and then use switch or separate functions or adding attributes for each model?
+  
+  sort_index <- order(-table(labels[labels != -1])) # want to label groups in order of size - get correct index
+  
+  label_mapping <- stats::setNames(-1:(length(sort_index) - 1), c(-1, names(table(labels[labels != -1]))[sort_index])) # map previous labels to ordered labels
+  
+  ordered_labels <- label_mapping[as.character(labels)] # reassign labels
 
-  return(labels) #Should we return the model and the labels?
+  return(ordered_labels) #Should we return the model and the labels?
 }

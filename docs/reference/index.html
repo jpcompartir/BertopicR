@@ -24,19 +24,15 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/manipulating-the-model.html">Manipulating the Model</a>
     <a class="dropdown-item" href="../articles/modular_approach.html">Interacting with individaul modules</a>
+    <a class="dropdown-item" href="../articles/quick_start.html">Quick Start</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
-      <ul class="navbar-nav"><li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/jpcompartir/BertopicR" aria-label="github">
-    <span class="fab fa fab fa-github fa-lg"></span>
-     
-  </a>
-</li>
-      </ul></div>
+      <ul class="navbar-nav"></ul></div>
 
     
   </div>
@@ -64,21 +60,6 @@
         <dd>Detach bertopic from the python session</dd>
       </dl><dl><dt>
           
-          <code><a href="bt_base_clusterer.html">bt_base_clusterer()</a></code> 
-        </dt>
-        <dd>Create a base clusterer for skipping clustering step of bertopic pipeline</dd>
-      </dl><dl><dt>
-          
-          <code><a href="bt_base_embedder.html">bt_base_embedder()</a></code> 
-        </dt>
-        <dd>Create a base embedder for skipping embedding step of bertopic pipeline</dd>
-      </dl><dl><dt>
-          
-          <code><a href="bt_base_reducer.html">bt_base_reducer()</a></code> 
-        </dt>
-        <dd>Create a base reducer for skipping dimensionality reduction step of bertopic pipeline</dd>
-      </dl><dl><dt>
-          
           <code><a href="bt_compile_model.html">bt_compile_model()</a></code> 
         </dt>
         <dd>Build a BERTopic model</dd>
@@ -97,6 +78,21 @@
           <code><a href="bt_do_reducing.html">bt_do_reducing()</a></code> 
         </dt>
         <dd>Perform dimensionality reduction on your embeddings</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_empty_clusterer.html">bt_empty_clusterer()</a></code> 
+        </dt>
+        <dd>Create a base clusterer for skipping clustering step of bertopic pipeline</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_empty_embedder.html">bt_empty_embedder()</a></code> 
+        </dt>
+        <dd>Create a base embedder for skipping embedding step of bertopic pipeline</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_empty_reducer.html">bt_empty_reducer()</a></code> 
+        </dt>
+        <dd>Create a base reducer for skipping dimensionality reduction step of bertopic pipeline</dd>
       </dl><dl><dt>
           
           <code><a href="bt_fit_model.html">bt_fit_model()</a></code> 
@@ -134,19 +130,24 @@
         <dd>Create an instance of the ClassTfidfTransformer from the bertopic.vectorizers module</dd>
       </dl><dl><dt>
           
-          <code><a href="bt_make_df.html">bt_make_df()</a></code> 
-        </dt>
-        <dd>make a df combining bertopic output with columns in original data export</dd>
-      </dl><dl><dt>
-          
           <code><a href="bt_make_embedder.html">bt_make_embedder()</a></code> 
         </dt>
         <dd>Create an embedding model</dd>
       </dl><dl><dt>
           
-          <code><a href="bt_make_reducer.html">bt_make_reducer()</a></code> 
+          <code><a href="bt_make_reducer_pca.html">bt_make_reducer_pca()</a></code> 
         </dt>
-        <dd>Create dimensionality reduction model</dd>
+        <dd>Create pca dimensionality reduction model</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_make_reducer_truncated_svd.html">bt_make_reducer_truncated_svd()</a></code> 
+        </dt>
+        <dd>Created Truncated SVD dimensionality reduction model</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_make_reducer_umap.html">bt_make_reducer_umap()</a></code> 
+        </dt>
+        <dd>Create umap dimensionality reduction model</dd>
       </dl><dl><dt>
           
           <code><a href="bt_make_vectoriser.html">bt_make_vectoriser()</a></code> 
@@ -154,14 +155,49 @@
         <dd>Create a text vectoriser</dd>
       </dl><dl><dt>
           
-          <code><a href="bt_viz_diff_terms.html">bt_viz_diff_terms()</a></code> 
+          <code><a href="bt_merge_topics.html">bt_merge_topics()</a></code> 
         </dt>
-        <dd>Function to find terms with the greatest difference between topics</dd>
+        <dd>Merges list(s) of topics together</dd>
       </dl><dl><dt>
           
-          <code><a href="bt_viz_top_terms.html">bt_viz_top_terms()</a></code> 
+          <code><a href="bt_outliers_ctfidf.html">bt_outliers_ctfidf()</a></code> 
         </dt>
-        <dd>create top terms charts for topic modelling completed using bertopic</dd>
+        <dd>Redistributes outliers using c-TF-IDF scores</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_outliers_embeddings.html">bt_outliers_embeddings()</a></code> 
+        </dt>
+        <dd>Redistributes outliers using embeddings</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_outliers_tokenset_similarity.html">bt_outliers_tokenset_similarity()</a></code> 
+        </dt>
+        <dd>Redistributes outliers using tokenset c-TF-IDF scores</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_representation_hf.html">bt_representation_hf()</a></code> 
+        </dt>
+        <dd>Use Huggingface models to create topic representation</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_representation_keybert.html">bt_representation_keybert()</a></code> 
+        </dt>
+        <dd>Create representation model using keybert</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_representation_mmr.html">bt_representation_mmr()</a></code> 
+        </dt>
+        <dd>Create representation model using Maximal Marginal Relevance</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_representation_openai.html">bt_representation_openai()</a></code> 
+        </dt>
+        <dd>Create representation model that uses OpenAI text generation models</dd>
+      </dl><dl><dt>
+          
+          <code><a href="bt_update_topics.html">bt_update_topics()</a></code> 
+        </dt>
+        <dd>Update Topic Representations</dd>
       </dl><dl><dt>
           
           <code><a href="check_python_dependencies.html">check_python_dependencies()</a></code> 

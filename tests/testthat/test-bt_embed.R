@@ -29,7 +29,7 @@ test_that("bt_do_embedding function is raising errors when it should", {
       embedder = 1L,
       documents = "text",
       ),
-    regexp = 'embedder should be a sentence transformers model'
+    regexp = '.*embedder should be a sentence transformers model.*'
     )
 
   expect_error(

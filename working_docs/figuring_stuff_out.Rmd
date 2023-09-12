@@ -1,0 +1,134 @@
+---
+title: "figuring_stuff_out"
+output: html_document
+date: "2023-07-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Aoife messing about:
+
+```{r}
+bt <- reticulate::import("bertopic") 
+  sentences <- stringr::sentences[1:200]
+  model <- bt$BERTopic()
+  model$fit(sentences)
+  model_unfitted <- bt$BERTopic()
+  
+  
+probsr <- model$get_document_info(sentences)$Probability
+topicsr <- model$get_document_info(sentences)$Topic
+
+new_topics <- model$reduce_outliers(documents = sentences, 
+                                    topics = topicsr,
+                                    strategy="embeddings",
+                                    threshold = 0.3)
+
+
+model_prob = bt$BERTopic(calculate_probabilities = TRUE)
+model_prob$fit(sentences)
+probsr <- model_prob$get_document_info(sentences)$Probability
+topicsr <- model_prob$get_document_info(sentences)$Topic
+model_prob$reduce_outliers(sentences, topics = topicsr, probabilities = probsr, strategy = "probabilities")
+
+
+# Train your BERTopic model and calculate the document-topic probabilities
+topic_model = BERTopic(calculate_probabilities=True)
+topics, probs = topic_model.fit_transform(r.sentences)
+
+# Reduce outliers using the `probabilities` strategy
+new_topics = topic_model.reduce_outliers(r.sentences, topics, probabilities=probs, strategy="probabilities")
+
+
+```
+
+```{python}
+
+probs = r.model.get_document_info(r.sentences).Probability
+topics = r.model.get_document_info(r.sentences).Topic
+# Reduce outliers using the `probabilities` strategy
+new_topics = r.model.reduce_outliers(r.sentences, list(topics), probabilities=list(probs), strategy="probabilities")
+
+new_tops = r.model.reduce_outliers(r.sentences, list(topics),  strategy="distribution")
+
+new_topics = r.model.reduce_outliers(documents = r.sentences, topics = topics, probabilities = list(probs), strategy="probabilities", threshold = 0.3)
+
+
+from bertopic import BERTopic
+
+# Train your BERTopic model and calculate the document-topic probabilities
+topic_model = BERTopic(calculate_probabilities= False)
+topics, probs = topic_model.fit_transform(r.sentences)
+
+# Reduce outliers using the `probabilities` strategy
+new_topics = topic_model.reduce_outliers(r.sentences, topics, probabilities=probs, strategy="probabilities")
+
+import hdbscan
+test = hdbscan.all_points_membership_vectors(topic_model.hdbscan_model)
+test2 = topic_model._map_probabilities(test, original_topics=True)
+
+
+topic_distr, _ = topic_model.approximate_distribution(r.sentences)
+topic_model.visualize_distribution(topic_model.probabilities_[3]).show()
+
+```
+
+Difference between probs matrix when simple list vs topic-document matrix
+
+```{r}
+model1 <- bt$BERTopic(calculate_probabilities = TRUE)
+output1 <- model1$fit_transform(sentences)
+probs1 <- output1[[2]]
+topics1 <- model1$get_document_info(sentences)$Topic
+
+model2 <- bt$BERTopic()
+output2 <- model2$fit_transform(sentences)
+probs2 <- output2[[2]]
+
+
+model1$reduce_outliers(sentences, topics = topics1, probabilities = list(probs1), strategy = "probabilities")
+
+```
+
+
+```{python}
+!pip install xformers
+!pip install bertopic
+!pip show bertopic 
+
+
+from bertopic import bertopic.representation
+from bertopic import BERTopic
+
+representation <- bertopic
+
+bertopic.representation.PartOfSpeech(model = "en_core_web_sm")
+```
+
+```{r}
+transformers <- reticulate::import("transformers")
+bt_rep <- reticulate::import("bertopic.representation")
+
+representation_gpt2<- bt_rep$TextGeneration('gpt2',
+                                        pipeline_kwargs = 
+                                        reticulate::py_dict(
+                                          keys = "max_length",
+                                          values = 150L, 
+                                          convert = TRUE))
+
+generator <- transformers$pipeline('text2text-generation', model='google/flan-t5-base')
+generator_gpt2 <- transformers$pipeline('text-generation', model='gpt2')
+representation_flan <- bt_rep$TextGeneration(generator)
+# representation_flan <- bt_rep$TextGeneration('google/flan-t5-base')
+representation_gpt2 <- bt_rep$TextGeneration(generator_gpt2)
+
+
+model_gpt2 <- bt$BERTopic(representation_model = representation_gpt2, nr_topics = 4L)$fit(sentences)
+model_flan <- bt$BERTopic(representation_model = representation_flan, nr_topics = 4L)$fit(sentences)
+model_gpt2$get_topic_info() %>% select(Topic, Name)
+model_flan$get_topic_info() %>% select(Topic, Name)
+```
+
+
+
