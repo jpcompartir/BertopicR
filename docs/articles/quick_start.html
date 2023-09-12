@@ -41,8 +41,8 @@
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/modular_approach.html">Interacting with Individual Modules</a>
     <a class="dropdown-item" href="../articles/manipulating-the-model.html">Manipulating the Model</a>
-    <a class="dropdown-item" href="../articles/modular_approach.html">Interacting with individaul modules</a>
     <a class="dropdown-item" href="../articles/quick_start.html">Quick Start</a>
   </div>
 </li>
@@ -66,7 +66,7 @@
       <img src="" class="logo" alt=""><h1>Quick Start</h1>
             
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/AoifeRyan-sc/BertopicR/tree/review_updates_12sep2023vignettes/quick_start.Rmd" class="external-link"><code>vignettes/quick_start.Rmd</code></a></small>
       <div class="d-none name"><code>quick_start.Rmd</code></div>
     </div>
 
@@ -76,7 +76,7 @@
 using BertopicR relatively quickly. It should be noted that this
 approach significantly simplifies and generalises certain steps, and
 will rarely produce an optimised topic model. To get the most out of
-your topic modelling, you should refer to the <a href="vignettes/modular_approach.Rmd">Modular Approach</a> vignette.</p>
+your topic modelling, you should refer to the <a href="modular_approach.Rmd">Modular Approach</a> vignette.</p>
 <div class="section level2">
 <h2 id="preparing-the-data">Preparing the Data<a class="anchor" aria-label="anchor" href="#preparing-the-data"></a>
 </h2>
@@ -93,7 +93,7 @@ model.</p>
 <div class="section level2">
 <h2 id="compiling-the-model">Compiling the Model<a class="anchor" aria-label="anchor" href="#compiling-the-model"></a>
 </h2>
-<p>If you have read the <a href="vignettes/modular_approach.Rmd">Modular
+<p>If you have read the <a href="modular_approach.Rmd">Modular
 Approach</a> vignette, you will have seen that we specified each
 individual component of our topic model (embedding_model, ctfidf_model
 etc.) and fed those to bt_compile_model. If we wish, we can use entirely
@@ -131,11 +131,11 @@ not returned as the function changes the input model.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/bt_fit_model.html">bt_fit_model</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">sentences</span><span class="op">)</span></span>
 <span><span class="co">#&gt; UMAP(low_memory=False, min_dist=0.0, n_components=5, random_state=42, verbose=True)</span></span>
-<span><span class="co">#&gt; Tue Sep 12 11:46:13 2023 Construct fuzzy simplicial set</span></span>
-<span><span class="co">#&gt; Tue Sep 12 11:46:14 2023 Finding Nearest Neighbors</span></span>
-<span><span class="co">#&gt; Tue Sep 12 11:46:15 2023 Finished Nearest Neighbor Search</span></span>
-<span><span class="co">#&gt; Tue Sep 12 11:46:16 2023 Construct embedding</span></span>
-<span><span class="co">#&gt; Tue Sep 12 11:46:17 2023 Finished embedding</span></span>
+<span><span class="co">#&gt; Tue Sep 12 17:26:44 2023 Construct fuzzy simplicial set</span></span>
+<span><span class="co">#&gt; Tue Sep 12 17:26:44 2023 Finding Nearest Neighbors</span></span>
+<span><span class="co">#&gt; Tue Sep 12 17:26:45 2023 Finished Nearest Neighbor Search</span></span>
+<span><span class="co">#&gt; Tue Sep 12 17:26:46 2023 Construct embedding</span></span>
+<span><span class="co">#&gt; Tue Sep 12 17:26:47 2023 Finished embedding</span></span>
 <span></span>
 <span><span class="va">model</span><span class="op">$</span><span class="fu">get_topic_info</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">Representative_Docs</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    Topic Count                       Name</span></span>
@@ -170,10 +170,11 @@ not returned as the function changes the input model.</p>
 <span><span class="co">#&gt; 14         funds, debt, tried, aim, great fund, rush funds, raise great, replace coin, plea funds, plea</span></span></code></pre></div>
 <p>That’s it, you have a topic model up and running! If you decided that
 you wanted to adjust factors, like the minimum size of a topic, or the
-number of topics you want, you should refer to the <a href="vignettes/modular_approach.Rmd">Modular Approach</a> vignette. You
-can also refer to the <a href="vignettes/manipulating-the-model.Rmd">Manipulating the Model</a>
-vignette to see how you can interpret the topics and reduce the number
-of outliers identified (if using hdbscan (default) clustering).</p>
+number of topics you want, you should refer to the <a href="modular_approach.Rmd">Modular Approach</a> vignette. You can also
+refer to the <a href="manipulating-the-model.Rmd">Manipulating the
+Model</a> vignette to see how you can interpret the topics and reduce
+the number of outliers identified (if using hdbscan (default)
+clustering).</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

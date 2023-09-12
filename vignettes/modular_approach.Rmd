@@ -1,5 +1,5 @@
 ---
-title: "Interacting with individaul modules"
+title: "Interacting with Individual Modules"
 output:
   html_document:
     toc: true
@@ -41,7 +41,7 @@ In the [Bertopic Python Library](https://maartengr.github.io/BERTopic/getting_st
 
     c-TF-IDF - create topic-level (rather than document) bag of words matrices for representing topics
 
-    Fine-tuning topic representations - other tools for topic representations (includes generative AI/LLMs), you can read more about this in the [Manipulating the Model](vignettes/manipulating-the-model.Rmd) vignette.
+    Fine-tuning topic representations - other tools for topic representations (includes generative AI/LLMs), you can read more about this in the [Manipulating the Model](manipulating-the-model.Rmd) vignette.
 
 ```{r, echo = FALSE}
 knitr::include_graphics("../man/figures/schematic_of_modules.png")
@@ -117,9 +117,9 @@ We'll use a low-ish value for n_neighbours (we have a small dataset) and an outp
 ```{r}
 reducer <- bt_make_reducer_umap(
   n_neighbors = 10L,
-  n_components = 10L,
+  n_components = 5L,
   min_dist = 0L,
-  metric = "cosine"
+  metric = "euclidean"
   )
 ```
 
@@ -139,7 +139,7 @@ The next step is to cluster our data. On a first pass, bertopic considers each d
 
 ## Clustering
 
-There is a lot to learn when it comes to clustering, and selecting the correct parameters is notoriously difficult - especially when clustering without pre-assigned labels, as *most* clustering tends to be. For this run we'll use the hdbscan clustering algorithm, because we don't know how many clusters we should look for in advance (which we should if using kMeans clustering for exampel).[hdbscan documentation](https://hdbscan.readthedocs.io/en/latest/basic_hdbscan.html)
+There is a lot to learn when it comes to clustering, and selecting the correct parameters is notoriously difficult - especially when clustering without pre-assigned labels, as *most* clustering tends to be. For this run we'll use the hdbscan clustering algorithm, because we don't know how many clusters we should look for in advance (which we should if using kMeans clustering for example).[hdbscan documentation](https://hdbscan.readthedocs.io/en/latest/basic_hdbscan.html)
 
 It's important to know that until you get down to the level of updating topic representations, in the bertopic pipeline 1 topic = 1 cluster. It's therefore crucial to gather what information you can about your data to inform your clustering process.
 
@@ -300,5 +300,5 @@ data <- data %>%
 
 The df compiled is a common place for everything we have generated so far, in practice we don't really need the cluster column now that we have the topic column, similarly, they provide the same information. Topics and clusters should have largely the same labels, the only discrepancy would be where multiple clusters/topics are the same size.
 
-Now tht you have your model up and running, you could look at the [Manipulating the Model](vignettes/manipulating-the-model.Rmd) vignette to see how you could investigate and alter the topics that have been identified.
+Now that you have your model up and running, you could look at the [Manipulating the Model](manipulating-the-model.Rmd) vignette to see how you could investigate and alter the topics that have been identified.
 
