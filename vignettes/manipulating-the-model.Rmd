@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, message = FALSE}
 library(BertopicR)
 library(dplyr)
 library(tidyr)
@@ -90,14 +90,12 @@ representation_mmr <- bt_representation_mmr(fitted_model = topic_model,
                                             embedding_model = embedder,
                                             diversity = 0.5)
 
-
-Sys.setenv("OPENAI_API_KEY" = "sk-") # set openai key
-
 representation_openai <- bt_representation_openai(fitted_model = topic_model,
                                                   documents = sentences,
                                                   openai_model = "gpt-3.5-turbo",
                                                   nr_repr_docs = 10,
-                                                  chat = TRUE)
+                                                  chat = TRUE,
+                                                  api_key = "sk-")
 
 representation_hf <- bt_representation_hf(fitted_model = topic_model,
                                           documents = sentences,
@@ -122,12 +120,12 @@ representation_mmr <- bt_representation_mmr(fitted_model = topic_model,
                                             embedding_model = embedder,
                                             diversity = 0.5)
 
-# Sys.setenv("OPENAI_API_KEY" = x)
 representation_openai <- bt_representation_openai(fitted_model = topic_model,
                                                   documents = sentences,
                                                   openai_model = "gpt-3.5-turbo",
                                                   nr_repr_docs = 10,
-                                                  chat = TRUE)
+                                                  chat = TRUE,
+                                                  api_key = Sys.getenv("OPENAI_API_KEY"))
 
 
 representation_hf <- bt_representation_hf(fitted_model = topic_model,
