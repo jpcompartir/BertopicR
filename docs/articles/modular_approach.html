@@ -22,7 +22,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    <nav class="navbar fixed-top navbar-dark navbar-expand-lg bg-primary"><div class="container">
     
     <a class="navbar-brand me-2" href="../index.html">BertopicR</a>
 
@@ -43,7 +43,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/modular_approach.html">Interacting with Individual Modules</a>
     <a class="dropdown-item" href="../articles/manipulating-the-model.html">Manipulating the Model</a>
-    <a class="dropdown-item" href="../articles/quick_start.html">Quick Start</a>
+    <a class="dropdown-item" href="../articles/quick_start.html">Topic Modelling without Optimisation</a>
   </div>
 </li>
       </ul>
@@ -78,25 +78,25 @@
 <div class="section level2">
 <h2 id="modules">Modules<a class="anchor" aria-label="anchor" href="#modules"></a>
 </h2>
-<dl>
-<dt>In the <a href="https://maartengr.github.io/BERTopic/getting_started/quickstart/quickstart.html" class="external-link">Bertopic
-Python Library</a> by Maarten Grootendorst there are 6 sub-modules:</dt>
-<dd>
-<p>Embeddings - for transforming your documents into a numerical
-representation</p>
-<p>Dimensionality Reduction - for reducing the number of features of the
-embeddings output</p>
-<p>Clustering - finding groups of similar documents to represent as
-topics</p>
-<p>Vectorisers - find the n-grams to describe each topic</p>
-<p>c-TF-IDF - create topic-level (rather than document) bag of words
-matrices for representing topics</p>
-<p>Fine-tuning topic representations - other tools for topic
+<p>In the <a href="https://maartengr.github.io/BERTopic/getting_started/quickstart/quickstart.html" class="external-link">Bertopic
+Python Library</a> by Maarten Grootendorst there are 6 sub-modules:</p>
+<ol style="list-style-type: decimal">
+<li><p><span style="color:#4472C4">Embeddings</span> - for transforming
+your documents into a numerical representation</p></li>
+<li><p><span style="color:#4472C4">Dimensionality Reduction</span> - for
+reducing the number of features of the embeddings output</p></li>
+<li><p><span style="color:#ED7D31">Clustering</span> - finding groups of
+similar documents to represent as topics</p></li>
+<li><p><span style="color:#FFC000">Vectorisers</span> - find the n-grams
+to describe each topic</p></li>
+<li><p><span style="color:#FFC000">c-TF-IDF</span> - create topic-level
+(rather than document) bag of words matrices for representing
+topics</p></li>
+<li><p>Fine-tuning topic representations - other tools for topic
 representations (includes generative AI/LLMs), you can read more about
 this in the <a href="manipulating-the-model.Rmd">Manipulating the
-Model</a> vignette.</p>
-</dd>
-</dl>
+Model</a> vignette.</p></li>
+</ol>
 <p><img src="../reference/figures/schematic_of_modules.png" width="773"></p>
 <p>This vignette will show you how to use {BertopicR} to tune each
 module when creating your topic models.</p>
@@ -212,11 +212,11 @@ to non-Euclidean Spaces</a> for alternatives.</p>
 <span>  <span class="va">reducer</span>, embeddings <span class="op">=</span> <span class="va">embeddings</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; UMAP(low_memory=False, min_dist=0, n_components=5, n_neighbors=10, random_state=42, verbose=True)</span></span>
-<span><span class="co">#&gt; Tue Sep 12 17:26:13 2023 Construct fuzzy simplicial set</span></span>
-<span><span class="co">#&gt; Tue Sep 12 17:26:13 2023 Finding Nearest Neighbors</span></span>
-<span><span class="co">#&gt; Tue Sep 12 17:26:14 2023 Finished Nearest Neighbor Search</span></span>
-<span><span class="co">#&gt; Tue Sep 12 17:26:15 2023 Construct embedding</span></span>
-<span><span class="co">#&gt; Tue Sep 12 17:26:16 2023 Finished embedding</span></span>
+<span><span class="co">#&gt; Wed Sep 13 12:10:11 2023 Construct fuzzy simplicial set</span></span>
+<span><span class="co">#&gt; Wed Sep 13 12:10:11 2023 Finding Nearest Neighbors</span></span>
+<span><span class="co">#&gt; Wed Sep 13 12:10:13 2023 Finished Nearest Neighbor Search</span></span>
+<span><span class="co">#&gt; Wed Sep 13 12:10:14 2023 Construct embedding</span></span>
+<span><span class="co">#&gt; Wed Sep 13 12:10:16 2023 Finished embedding</span></span>
 <span></span>
 <span><span class="va">reduced_embeddings</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt;          [,1]     [,2]     [,3]     [,4]     [,5]</span></span>
@@ -366,21 +366,21 @@ eclectic.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cluster</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html" class="external-link">sample_n</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">sentence</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "the baby puts his right foot in his mouth."</span></span>
-<span><span class="co">#&gt; [2] "the young kid jumped the rusty gate."      </span></span>
-<span><span class="co">#&gt; [3] "the stray cat gave birth to kittens."      </span></span>
-<span><span class="co">#&gt; [4] "the quick fox jumped on the sleeping cat." </span></span>
-<span><span class="co">#&gt; [5] "the cleat sank deeply into the soft turf."</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "see the cat glaring at the scared mouse."  </span></span>
+<span><span class="co">#&gt; [2] "the baby puts his right foot in his mouth."</span></span>
+<span><span class="co">#&gt; [3] "she saw a cat in the neighbor's house."    </span></span>
+<span><span class="co">#&gt; [4] "a tame squirrel makes a nice pet."         </span></span>
+<span><span class="co">#&gt; [5] "the young kid jumped the rusty gate."</span></span></code></pre></div>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cluster</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html" class="external-link">sample_n</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">sentence</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "a ripe plum is fit for a king's palate."        </span></span>
-<span><span class="co">#&gt; [2] "dill pickles are sour but taste fine."          </span></span>
-<span><span class="co">#&gt; [3] "canned pears lack full flavor."                 </span></span>
-<span><span class="co">#&gt; [4] "the barrel of beer was a brew of malt and hops."</span></span>
-<span><span class="co">#&gt; [5] "the fruit of a fig tree is apple shaped."</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "canned pears lack full flavor."           </span></span>
+<span><span class="co">#&gt; [2] "he ordered peach pie with ice cream."     </span></span>
+<span><span class="co">#&gt; [3] "port is a strong wine with a smoky taste."</span></span>
+<span><span class="co">#&gt; [4] "cut the pie into large parts."            </span></span>
+<span><span class="co">#&gt; [5] "bottles hold four kinds of rum."</span></span></code></pre></div>
 <p>The more clusters we look at, the more difficult it will become to
 figure out what’s happening…</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -388,11 +388,11 @@ figure out what’s happening…</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cluster</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html" class="external-link">sample_n</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">sentence</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "split the log with a quick, sharp blow."          </span></span>
-<span><span class="co">#&gt; [2] "the best method is to fix it in place with clips."</span></span>
-<span><span class="co">#&gt; [3] "a stiff cord will do to fasten your shoe."        </span></span>
-<span><span class="co">#&gt; [4] "sever the twine with a quick snip of the knife."  </span></span>
-<span><span class="co">#&gt; [5] "just hoist it up and take it away."</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "press the pedal with your left foot."             </span></span>
+<span><span class="co">#&gt; [2] "split the log with a quick, sharp blow."          </span></span>
+<span><span class="co">#&gt; [3] "take the match and strike it against your shoe."  </span></span>
+<span><span class="co">#&gt; [4] "crack the walnut with your sharp side teeth."     </span></span>
+<span><span class="co">#&gt; [5] "the best method is to fix it in place with clips."</span></span></code></pre></div>
 <p>Inspecting each of these clusters and trying to figure out what each
 cluster means and how they inter-relate would soon become intractable
 for humans. Thankfully, within BERTopic there are quantitative methods
@@ -503,8 +503,8 @@ have the topic column, similarly, they provide the same information.
 Topics and clusters should have largely the same labels, the only
 discrepancy would be where multiple clusters/topics are the same
 size.</p>
-<p>Now that you have your model up and running, you could look at the <a href="manipulating-the-model.Rmd">Manipulating the Model</a> vignette to
-see how you could investigate and alter the topics that have been
+<p>Now that you have your model up and running, you could look at the <a href="manipulating-the-model.html">Manipulating the Model</a> vignette
+to see how you could investigate and alter the topics that have been
 identified.</p>
 </div>
 </div>

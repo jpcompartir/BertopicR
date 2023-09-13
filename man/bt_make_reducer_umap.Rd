@@ -6,7 +6,7 @@
 \usage{
 bt_make_reducer_umap(
   ...,
-  n_neighbors = 15L,
+  n_neighbours = 15L,
   n_components = 5L,
   min_dist = 0,
   metric = "euclidean",
@@ -18,7 +18,7 @@ bt_make_reducer_umap(
 \arguments{
 \item{...}{Sent to umap$UMAP for adding additional arguments}
 
-\item{n_neighbors}{The size of local neighbourhood (in terms of number of neighboring data points) used
+\item{n_neighbours}{The size of local neighbourhood (in terms of number of neighboring data points) used
 for manifold approximation (default: 15).}
 
 \item{n_components}{The number of dimensions to reduce to (default: 5).}
@@ -43,4 +43,15 @@ This function wraps the UMAP functionality from Python's umap-learn package for 
 If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, when compiling your model with bt_compile_model you should call \code{reducer <- bt_base_reducer()}.
 
 low_memory = TRUE is currently inadvisable as trial and error suggests the results are not as robust in later clustering.
+}
+\examples{
+# using euclidean distance measure and specifying numeric inputs as integers
+reducer <- bt_make_reducer_umap(n_neighbours = 15L, n_components = 10L, metric = "euclidean")
+
+# using euclidean distance measure and not specifying numeric inputs as integers (done internally in function)
+reducer <- bt_make_reducer_umap(n_neighbours = 15, n_components = 10, metric = "euclidean")
+
+ # using cosine distance measure and not specifying numeric inputs as integers (done internally in function)
+reducer <- bt_make_reducer_umap(n_neighbours = 20, n_components = 6, metric = "cosine")
+
 }

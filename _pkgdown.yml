@@ -58,15 +58,7 @@ reference:
   - bertopic_detach
   
 # navbar:
-#   articles:
-#     text: Articles
-#     menu:
-#     - text: Introduction - A Modular Approach to Topic Modelling
-#       href: vignettes/modular_approach.Rmd
-#     - text: Manipulating the Model
-#       href: vignettes/manipulating-the-model.Rmd
-#     - text: Quick Topic Modelling
-#       href: vignettes/quick_start.Rmd
+#   bg: "#8661c5"
 
 articles:
 - title: Main verbs
@@ -83,4 +75,10 @@ repo:
     
 template:
   bootstrap: 5
+  bootswatch: cerulean
+  # theme: breeze-light
+  bslib:
+    pkgdown-nav-height: 100px
+  params:
+    search: true
 

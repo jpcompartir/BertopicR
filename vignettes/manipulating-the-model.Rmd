@@ -4,7 +4,7 @@ output:
   html_document:
     toc: true
     toc_float: true
-    toc_depth: 3
+    toc_depth: 4
     highlight: tango
     code_folding: show
 vignette: >
@@ -34,7 +34,7 @@ sentences <- stringr::sentences
 embedder <- bt_make_embedder("all-mpnet-base-v2")
 embeddings <- bt_do_embedding(embedder, sentences)
 reducer <- bt_make_reducer_umap(
-  n_neighbors = 10L,
+  n_neighbours = 10L,
   n_components = 5L,
   min_dist = 0L,
   metric = "euclidean"
@@ -141,14 +141,20 @@ Now that we have trialled a few representation methods, we can look at how they 
 topic_representations <- topic_model$get_topic_info() %>%
   mutate(keybert = representation_keybert,
          mmr = representation_mmr,
-         openai = representation_openai,
+         # openai = representation_openai,
          flanT5 = representation_hf) %>%
   select(-Representative_Docs)
 
-topic_representations %>% DT::datatable(options = list(scrollX = TRUE))
+topic_representations %>% select(-Topic, -Count, -Name) %>%
+  mutate(keybert = stringr::str_replace_all(keybert, "_",", "),
+         mmr = stringr::str_replace_all(mmr, "_",", "),
+         Representation = stringr::str_replace_all(Representation, "_",", ")) %>%
+  DT::datatable(options = list(scrollX = TRUE))
+
 ```
 
 # Modifying Topics
+Two of the biggest inconveniences that using hdbscan clustering introduces is the generation of large numbers of clusters (topics) and the presence of what can be huge numbers of outliers. In order for our topic analysis to be practical and digestible, we will likely want to reduce the number of topics and, depending on our use case, we may want to reduce the number of outliers. 
 
 ## Merging Topics
 
@@ -163,7 +169,7 @@ hierarchical_topics <- topic_model$hierarchical_topics(sentences)
 topic_model$visualize_hierarchy(hierarchical_topics = hierarchical_topics)$show()
 ```
 
-```{python, echo = FALSE, out.width = 4}
+```{python, echo = FALSE, out.width = 4,  message = FALSE}
 hierarchical_topics = r.topic_model.hierarchical_topics(r.sentences)
 r.topic_model.visualize_hierarchy(hierarchical_topics = hierarchical_topics).show()
 ```
@@ -175,7 +181,7 @@ topic_representations %>%
   filter(Topic %in% c(2,14))
 ```
 
-For larger topics we could use ParseR to analyse topic bigrams here, but since these topics are relatively small, we can just examine exemplars.
+For larger topics we might need to use more sophisticated language analysis tools, but since these topics are relatively small, we can just examine exemplars.
 
 ```{r}
 data %>%
@@ -257,7 +263,7 @@ data %>%
 
 ```
 
-You should take a look at some of the documents which have been redistributed and the topic which they have been redistributed to before deciding on the best strategy for your data. This can be quite laborious for large amounts of data with many topics. As this dataset is relatively small it may not be appropriate, but you can use things like bigrams and top terms on outlier documents that have been redistributed to investigate if they line up with the topics they have been moved to.
+You should take a look at some of the documents which have been redistributed and the topic which they have been redistributed to before deciding on the best strategy for your data. Unfortunately, this can be quite laborious for large amounts of data with many topics.
 
 Once you have settled on a new list of topics that you are happy with, we can update the dataframe we have been keeping. For example, if after looking at the data we decided that the Tokenset Similarity method was the most appropriate:
 

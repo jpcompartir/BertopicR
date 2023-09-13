@@ -30,7 +30,7 @@ test_that("bt_compile_model accepts the inputs from the various bt_make_* functi
 
   embedding_model <- bt_make_embedder("all-minilm-l6-v2")
 
-  reduction_model <- bt_make_reducer_umap(n_neighbors = 10L, n_components = 4L)
+  reduction_model <- bt_make_reducer_umap(n_neighbours = 10L, n_components = 4L)
   clustering_model <- bt_make_clusterer(clustering_method = "kmeans")
   vectoriser_model <- bt_make_vectoriser(ngram_range = c(1, 3))
 

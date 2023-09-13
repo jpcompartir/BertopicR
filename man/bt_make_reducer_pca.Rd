@@ -24,3 +24,10 @@ concerned about processing time, you most likely will only want to reduce the
 dimensions of your dataset once. In this case, when compiling your model with
 bt_compile_model you should call \code{reducer <- bt_base_reducer()}.
 }
+\examples{
+# using default svd_solver
+reducer <- bt_make_reducer_pca(n_components = 100)
+
+# speciying extra pca arguments
+reducer <- bt_make_reducer_pca (n_components = 20, svd_solver = "full", random_state = 42L)
+}

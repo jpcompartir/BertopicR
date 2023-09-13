@@ -2,7 +2,7 @@
 
 test_that("bt_make_reducer_umap stops when it's given bad arguments",{
 
-  expect_error(bt_make_reducer_umap(n_neighbors = "15"), "is.numeric.*n_neighb")
+  expect_error(bt_make_reducer_umap(n_neighbours = "15"), "is.numeric.*n_neighb")
 
   expect_error(bt_make_reducer_umap(n_components = TRUE), "is.numeric.*n_components")
   expect_error(bt_make_reducer_umap(min_dist = "12"))
@@ -17,7 +17,7 @@ test_that("bt_make_reducer_umap's arguments are working as expected", {
   my_array <- array(digits, dim = c(20, 368))
   my_df <- as.data.frame(my_array)
 
-  reducer <- bt_make_reducer_umap(n_neighbors = 5L, n_components = 2L, min_dist = 0.001, metric = "cosine", random_state = 32L, verbose = FALSE)
+  reducer <- bt_make_reducer_umap(n_neighbours = 5L, n_components = 2L, min_dist = 0.001, metric = "cosine", random_state = 32L, verbose = FALSE)
 
   expect_equal(reducer$min_dist, 0.001)
   expect_equal(reducer$verbose, FALSE)
@@ -110,7 +110,7 @@ test_that("bt_embed and bt_reducer work together",{
 
   embedder <- bt_make_embedder("all-minilm-l6-v2")
   embeddings <- bt_do_embedding(embedder = embedder, documents = documents)
-  reducer <- bt_make_reducer_umap( n_neighbors = 2L, verbose = FALSE)
+  reducer <- bt_make_reducer_umap( n_neighbours = 2L, verbose = FALSE)
   reducer_pca <- bt_make_reducer_pca(n_components = 10)
   reduced <- bt_do_reducing(reducer = reducer, embeddings = embeddings )
   reduced_pca <- bt_do_reducing(reducer = reducer_pca, embeddings = embeddings)

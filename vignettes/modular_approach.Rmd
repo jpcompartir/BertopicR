@@ -29,19 +29,17 @@ library(dplyr)
 
 In the [Bertopic Python Library](https://maartengr.github.io/BERTopic/getting_started/quickstart/quickstart.html) by Maarten Grootendorst there are 6 sub-modules:
 
-:   
+   1.  <span style="color:#4472C4">Embeddings</span> - for transforming your documents into a numerical representation
+   
+   2. <span style="color:#4472C4">Dimensionality Reduction</span> - for reducing the number of features of the embeddings output
 
-    Embeddings - for transforming your documents into a numerical representation
-
-    Dimensionality Reduction - for reducing the number of features of the embeddings output
-
-    Clustering - finding groups of similar documents to represent as topics
-
-    Vectorisers - find the n-grams to describe each topic
-
-    c-TF-IDF - create topic-level (rather than document) bag of words matrices for representing topics
-
-    Fine-tuning topic representations - other tools for topic representations (includes generative AI/LLMs), you can read more about this in the [Manipulating the Model](manipulating-the-model.Rmd) vignette.
+   3. <span style="color:#ED7D31">Clustering</span> - finding groups of similar documents to represent as topics
+   
+   4. <span style="color:#FFC000">Vectorisers</span> - find the n-grams to describe each topic
+   
+   5. <span style="color:#FFC000">c-TF-IDF</span> - create topic-level (rather than document) bag of words matrices for representing topics
+   
+   6. Fine-tuning topic representations - other tools for topic representations (includes generative AI/LLMs), you can read more about this in the [Manipulating the Model](manipulating-the-model.Rmd) vignette.
 
 ```{r, echo = FALSE}
 knitr::include_graphics("../man/figures/schematic_of_modules.png")
@@ -116,7 +114,7 @@ We'll use a low-ish value for n_neighbours (we have a small dataset) and an outp
 
 ```{r}
 reducer <- bt_make_reducer_umap(
-  n_neighbors = 10L,
+  n_neighbours = 10L,
   n_components = 5L,
   min_dist = 0L,
   metric = "euclidean"
@@ -300,5 +298,5 @@ data <- data %>%
 
 The df compiled is a common place for everything we have generated so far, in practice we don't really need the cluster column now that we have the topic column, similarly, they provide the same information. Topics and clusters should have largely the same labels, the only discrepancy would be where multiple clusters/topics are the same size.
 
-Now that you have your model up and running, you could look at the [Manipulating the Model](manipulating-the-model.Rmd) vignette to see how you could investigate and alter the topics that have been identified.
+Now that you have your model up and running, you could look at the [Manipulating the Model](manipulating-the-model.html) vignette to see how you could investigate and alter the topics that have been identified.
 

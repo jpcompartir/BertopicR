@@ -17,3 +17,8 @@ Embeddingd with reduced number of dimensions
 \description{
 Perform dimensionality reduction on your embeddings
 }
+\examples{
+reducer <- bt_make_reducer_umap(n_neighbours = 2, n_components = 2)
+embeddings <- matrix(runif(50), nrow = 5, ncol = 10)
+reduced_embeddings <- bt_do_reducing(reducer, embeddings)
+}

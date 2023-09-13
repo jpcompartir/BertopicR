@@ -347,6 +347,7 @@ bt_representation_openai <- function(fitted_model,
   
   # get list of available openai models
   openai <- reticulate::import("openai")
+  openai$api_key <- api_key
   openai_models <- openai$Model$list()$data %>% 
     lapply(function(sublist) sublist$id) %>% 
     unlist()
