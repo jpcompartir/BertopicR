@@ -2,7 +2,7 @@
 #'
 #' This function wraps the UMAP functionality from Python's umap-learn package for use in R via reticulate. It allows you to perform dimension reduction on high-dimensional data, its intended use is in a BertopicR pipeline/
 #'
-#' If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, when compiling your model with bt_compile_model you should call `reducer <- bt_base_reducer()`.
+#' If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, when compiling your model with bt_compile_model you should call `reducer <- bt_empty_reducer()`.
 #'
 #' low_memory = TRUE is currently inadvisable as trial and error suggests the results are not as robust in later clustering.
 #'
@@ -85,7 +85,7 @@ bt_make_reducer_umap <- function( ..., n_neighbours = 15L, n_components = 5L, mi
 #' high-dimensional data, its intended use is in a BertopicR pipeline. If you're 
 #' concerned about processing time, you most likely will only want to reduce the 
 #' dimensions of your dataset once. In this case, when compiling your model with 
-#' bt_compile_model you should call `reducer <- bt_base_reducer()`.
+#' bt_compile_model you should call `reducer <- bt_empty_reducer()`.
 #'
 #' @param ... Sent to sklearn.decomposition.PCA function for adding additional arguments
 #' @param n_components Number of components to keep
@@ -105,11 +105,17 @@ bt_make_reducer_umap <- function( ..., n_neighbours = 15L, n_components = 5L, mi
 #' # speciying extra pca arguments
 #' reducer <- bt_make_reducer_pca (n_components = 20, svd_solver = "full", random_state = 42L)
 #' 
-bt_make_reducer_pca <- function(..., 
-                                n_components,
-                                svd_solver = "auto"){
+bt_make_reducer_pca <- function(n_components,
+                                ..., 
+                                svd_solver = c("auto", "full", "arpack", "randomized")){
   
   #### input validation ####
+  
+  stopifnot(is.numeric(n_components),
+            svd_solver %in% c("auto", "full", "arpack", "randomized"))
+  
+  #Match the clustering_method argument & set 'randomized' as default (first position)
+  svd_solver <- match.arg(svd_solver)
   
   #Import the sklearn decomposition library i
   skl <- reticulate::import("sklearn.decomposition")
@@ -126,12 +132,6 @@ bt_make_reducer_pca <- function(...,
     bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
     stop(paste("Bad argument(s) attempted to be sent to PCA():", bad_args, sep = ' '))
   }
-  
-  # correct UK/US spelling convention
-  if (svd_solver == "randomised"){svd_solver = "randomized"}
-  
-  stopifnot(is.numeric(n_components),
-            svd_solver %in% c("auto", "full", "arpack", "randomized"))
   
   #### End of input validation ####
   
@@ -154,7 +154,7 @@ bt_make_reducer_pca <- function(...,
 #' Its intended use is in a BertopicR pipeline. If you're concerned about processing 
 #' time, you most likely will only want to reduce the dimensions of your dataset once. 
 #' In this case, when compiling your model with bt_compile_model you should call 
-#' `reducer <- bt_base_reducer()`.
+#' `reducer <- bt_empty_reducer()`.
 #'
 #' @param ... Sent to sklearn.decomposition Truncated SVD function for adding additional arguments
 #' @param n_components Number of components to keep
@@ -174,12 +174,12 @@ bt_make_reducer_pca <- function(...,
 bt_make_reducer_truncated_svd <- function(n_components,
                                           ..., 
                                           n_iter = 5L,
-                                          svd_solver = c("auto", "full", "arpack", "randomized")){
+                                          svd_solver = c("randomized", "arpack")){
   
   #### input validation ####
   stopifnot(is.numeric(n_components),
             is.numeric(n_iter),
-            svd_solver %in% c("auto", "full", "arpack", "randomized"))
+            svd_solver %in% c("arpack", "randomized"))
   
   #Import the sklearn decomposition library i
   skl <- reticulate::import("sklearn.decomposition")
@@ -190,7 +190,7 @@ bt_make_reducer_truncated_svd <- function(n_components,
   #Instantiate empty model to get valid arguments
   empty_model <- skl$TruncatedSVD()
   
-  #Match the clustering_method argument & set 'auto' as defualt (first position)
+  #Match the clustering_method argument & set 'randomized' as default (first position)
   svd_solver <- match.arg(svd_solver)
   
   #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad

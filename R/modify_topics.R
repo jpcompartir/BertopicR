@@ -15,7 +15,7 @@
 #' become 1 topic. The grouped topics take the topic representation (Name) of the 
 #' first topic in the list. Any number of topics can be merged together, if you would
 #' like to merge two separate groups of topics, you must pass a list of lists/vectors as
-#' topics_to_merge eg. list(c(1, 3), c(0, 6, 7)) or list(list(1, 3), list(0, 6, 7))
+#' topics_to_merge eg. list(c(1L, 3L), c(0L, 6L, 7L)) or list(list(1L, 3L), list(0L, 6L, 7L))
 #'
 #' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
 #' @param documents documents which the model was fitted to
@@ -24,10 +24,20 @@
 #' @return bertopic model with specified topics merged
 #' @export
 #' 
-#' @examples \dontrun{bt_merge_topics(
-#' fitted_model = model,
-#' documents = documents,
-#' topics_to_merge = list(c(1, 3), c(0, 6, 7)))}
+#' @examples \dontrun{
+#' 
+#' # merge two topics
+#' bt_merge_topics(fitted_model = model, documents = documents, topics_to_merge = list(1L, 2L))
+#' 
+#' # merge three topics
+#' bt_merge_topics(fitted_model = model, documents = documents, topics_to_merge = list(1L, 2L, 3L))
+#' 
+#' # merge multiple sets of topics as a list of vectors
+#' bt_merge_topics(fitted_model = model, documents = documents, topics_to_merge = list(c(1L, 3L), c(0L, 6L, 7L), c(2L, 12L)))
+#' 
+#' # merge multiple sets of topics as a list of lists
+#' bt_merge_topics(fitted_model = model, documents = documents, topics_to_merge = list(list(1L, 3L), list(0L, 6L, 7L), list(2L, 12L)))
+#' }
 #'
 bt_merge_topics <- function(fitted_model,
                             documents,
@@ -198,12 +208,12 @@ bt_outliers_embeddings <- function(fitted_model,
 #' 
 #' }
 #'
-bt_outliers_tokenset_similarity <- function(...,
-                                            fitted_model,
+bt_outliers_tokenset_similarity <- function(fitted_model,
                                             documents,
                                             topics,
-                                            window = 4,
-                                            stride = 1,
+                                            ...,
+                                            window = 4L,
+                                            stride = 1L,
                                             threshold = 0.3){
   #Input validation
   

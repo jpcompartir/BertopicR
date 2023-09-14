@@ -35,12 +35,12 @@ test_that("bt_make_reducer_pca stops when given bad arguments", {
   
   expect_error(bt_make_reducer_pca(n_components = "15"), "is.numeric.*n_components")
   expect_error(bt_make_reducer_pca(n_components = 4, svd_solver = "test"), "svd_solver.*is not TRUE")
-  expect_error(bt_make_reducer_pca(test_argument = 5), "Bad argument\\(s\\) attempted to be sent to PCA\\(\\): test_argument")
+  expect_error(bt_make_reducer_pca(n_components = 15, test_argument = 5), "Bad argument\\(s\\) attempted to be sent to PCA\\(\\): test_argument")
 })
 
 test_that("bt_make_reducer_pca's arguments are working as expected", {
   
-  reducer <- bt_make_reducer_pca(n_components = 5, svd_solver = "randomised", whiten = TRUE)
+  reducer <- bt_make_reducer_pca(n_components = 5, svd_solver = "randomized", whiten = TRUE)
   
   expect_equal(reducer$n_components, 5)
   expect_equal(reducer$svd_solver, "randomized")

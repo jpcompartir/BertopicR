@@ -26,7 +26,7 @@
 #'# vectoriser model that converts text docs to ngrams with between 1 - 3 tokens
 #' vectoriser <- bt_make_vectoriser(ngram_range = c(1, 3), stop_words = "english")
 #' 
-bt_make_vectoriser <- function(..., ngram_range = c(1, 2), stop_words = "english", min_frequency = 1, max_features = NULL) {
+bt_make_vectoriser <- function(..., ngram_range = c(1L, 2L), stop_words = "english", min_frequency = 1L, max_features = NULL) {
 
   stopifnot(is.vector(ngram_range),
             length(ngram_range) == 2,

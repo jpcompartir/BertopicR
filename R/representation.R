@@ -37,10 +37,10 @@ bt_representation_keybert <- function(fitted_model,
                                       documents,
                                       document_embeddings,
                                       embedding_model,
-                                      top_n_words = 10,
-                                      nr_repr_docs = 50,
-                                      nr_samples = 500,
-                                      nr_candidate_words = 100){
+                                      top_n_words = 10L,
+                                      nr_repr_docs = 50L,
+                                      nr_samples = 500L,
+                                      nr_candidate_words = 100L){
   
   #### input validation ####
   stopifnot(is.numeric(top_n_words),
@@ -224,7 +224,7 @@ bt_representation_keybert <- function(fitted_model,
 bt_representation_mmr <- function(fitted_model,
                                   embedding_model,
                                   diversity = 0.1,
-                                  top_n_words = 10){
+                                  top_n_words = 10L){
   
   #### input validation ####
   
@@ -343,8 +343,8 @@ bt_representation_mmr <- function(fitted_model,
 bt_representation_openai <- function(fitted_model,
                                      documents,
                                      openai_model = "text-ada-001",
-                                     nr_repr_docs = 10,
-                                     nr_samples = 500,
+                                     nr_repr_docs = 10L,
+                                     nr_samples = 500L,
                                      chat = FALSE,
                                      api_key = "sk-",
                                      delay_in_seconds = NULL,
@@ -512,15 +512,15 @@ Topic name:"
 #' diversity = 10,
 #' custom_prompt = NULL
 #' )
-bt_representation_hf <- function(...,
-                                 fitted_model,
+bt_representation_hf <- function(fitted_model,
                                  documents,
                                  task,
                                  hf_model,
+                                 ...,
                                  default_prompt = "keywords",
-                                 nr_samples = 500,
-                                 nr_repr_docs = 20,
-                                 diversity = 10,
+                                 nr_samples = 500L,
+                                 nr_repr_docs = 20L,
+                                 diversity = 10L,
                                  custom_prompt = NULL){
   
   #### Validation ####
