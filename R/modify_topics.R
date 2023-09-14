@@ -63,7 +63,7 @@ bt_merge_topics <- function(fitted_model,
   fitted_model$merge_topics(documents,
                             topics_to_merge_int)
   
-  # return(fitted_model)
+  message("\nTopics merged")
 }
 
 #' Redistributes outliers using embeddings

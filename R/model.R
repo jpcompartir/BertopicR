@@ -159,5 +159,5 @@ bt_fit_model <- function(model, documents, embeddings = NULL, topic_labels = NUL
 
   fitted_model <- model$fit(documents = documents, embeddings = embeddings, y = topic_labels)
 
-  # return(fitted_model)
+  message("\nModel is fitted")
 }
