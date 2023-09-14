@@ -44,20 +44,34 @@ bt_make_reducer_umap <- function( ..., n_neighbours = 15L, n_components = 5L, mi
             is.numeric(n_components), is.numeric(random_state),
             is.numeric(min_dist),
             is.character(metric))
+  
+  dots <- rlang::list2(...) # place ellipses in list
+  
+  umap <- reticulate::import("umap")
+  
+  #Instantiate empty model to get valid arguments
+  empty_model <- umap$UMAP()
+  
+  #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad
+  if(any(!names(dots) %in% names(empty_model))){
+    
+    bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
+    stop(paste("Bad argument(s) attempted to be sent to UMAP():", bad_args, sep = ' '))
+  }
 
-    #Import umap library for reduction ----
-    umap <- reticulate::import("umap")
+    #End of validation ----
+    
 
     #Instantiate a UMAP model with the given parameters
-    reducer <- umap$UMAP(n_neighbors = as.integer(n_neighbours),
-                         n_components = as.integer(n_components),
-                         min_dist = min_dist,
-                         metric = metric,
-                         random_state = as.integer(random_state),
-                         verbose = verbose,
-                         low_memory = low_memory,
-                         ... #Allows user to give additional arguments to the umap$UMAP function.
-    )
+  reducer <- umap$UMAP(n_neighbors = as.integer(n_neighbours),
+                       n_components = as.integer(n_components),
+                       min_dist = min_dist,
+                       metric = metric,
+                       random_state = as.integer(random_state),
+                       verbose = verbose,
+                       low_memory = low_memory,
+                       ... #Allows user to give additional arguments to the umap$UMAP function.
+  )
 
 
   return(reducer)
@@ -157,12 +171,15 @@ bt_make_reducer_pca <- function(...,
 #' @examples
 #' reducer <- bt_make_reducer_truncated_svd(n_components = 5)
 #' 
-bt_make_reducer_truncated_svd <- function(..., 
-                                n_components,
-                                n_iter = 5,
-                                svd_solver = "randomized"){
+bt_make_reducer_truncated_svd <- function(n_components,
+                                          ..., 
+                                          n_iter = 5L,
+                                          svd_solver = c("auto", "full", "arpack", "randomized")){
   
   #### input validation ####
+  stopifnot(is.numeric(n_components),
+            is.numeric(n_iter),
+            svd_solver %in% c("auto", "full", "arpack", "randomized"))
   
   #Import the sklearn decomposition library i
   skl <- reticulate::import("sklearn.decomposition")
@@ -173,19 +190,15 @@ bt_make_reducer_truncated_svd <- function(...,
   #Instantiate empty model to get valid arguments
   empty_model <- skl$TruncatedSVD()
   
+  #Match the clustering_method argument & set 'auto' as defualt (first position)
+  svd_solver <- match.arg(svd_solver)
+  
   #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad
   if(any(!names(dots) %in% names(empty_model))){
     
     bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
     stop(paste("Bad argument(s) attempted to be sent to TruncatedSVD():", bad_args, sep = ' '))
   }
-  
-  # correct UK/US spelling convention
-  if (svd_solver == "randomised"){svd_solver = "randomized"}
-  
-  stopifnot(is.numeric(n_components),
-            is.numeric(n_iter),
-            svd_solver %in% c("arpack", "randomized"))
   
   #### End of input validation ####
   

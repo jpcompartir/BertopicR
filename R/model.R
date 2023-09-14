@@ -88,7 +88,7 @@ bt_compile_model <- function(..., embedding_model = NULL, reduction_model = NULL
     ctfidf_model = ctfidf_model,
     ...)
 
-  message("\nModel built")
+  message("\nModel built & input model updated accordingly")
 
   return(model)
 }

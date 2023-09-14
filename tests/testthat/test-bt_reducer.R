@@ -56,7 +56,7 @@ test_that("bt_make_reducer_truncated_svd stops when given bad arguments", {
   expect_error(bt_make_reducer_truncated_svd(n_components = 4, svd_solver = "test"),
                "svd_solver.*is not TRUE")
   expect_error(bt_make_reducer_truncated_svd(n_components = 6, n_iter = "5"), "is.numeric.*n_iter")
-  expect_error(bt_make_reducer_truncated_svd(test_argument = 5), 
+  expect_error(bt_make_reducer_truncated_svd(n_components = 5, test_argument = 5), 
               regexp = "Bad argument\\(s\\) attempted to be sent to TruncatedSVD\\(\\): test_argument")
 })
 

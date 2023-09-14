@@ -9,13 +9,33 @@
 #' clustering_model <- bt_make_clusterer_kmeans(15L)
 #'
 #' kmeans_model <- bt_make_clusterer_kmeans(n_clusters = 10L)
-bt_make_clusterer_kmeans <- function(n_clusters = 10L) {
-
+bt_make_clusterer_kmeans <- function(..., n_clusters = 10L) {
+  
+  # input validation ----
+  
+  stopifnot(is.numeric(n_clusters))
+  
   #Import library to access kmeans inside function scope
   skcluster <- reticulate::import("sklearn.cluster")
+  
+  #Convert the `...` (dot-dot-dot or ellipsis) to list for checking purposes
+  dots <- rlang::list2(...)
+  
+  #Instantiate empty model to get valid arguments
+  empty_model <- skcluster$KMeans()
+  
+  #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad
+  if(any(!names(dots) %in% names(empty_model))){
+    
+    bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
+    stop(paste("Bad argument(s) attempted to be sent to KMeans():", bad_args, sep = ' '))
+  }
+  
+  # end of input validation ----
 
   #Instantiate clustering model making sure n_clusters is an integer
-  clustering_model <- skcluster$KMeans(n_clusters = as.integer(n_clusters))
+  clustering_model <- skcluster$KMeans(n_clusters = as.integer(n_clusters),
+                                       ...)
 
   return(clustering_model)
 }
@@ -31,13 +51,33 @@ bt_make_clusterer_kmeans <- function(n_clusters = 10L) {
 #' clustering_model <- bt_make_clusterer_agglomerative(15L)
 #'
 #' agglomerative_model <- bt_make_clusterer_agglomerative(n_clusters = 10L)
-bt_make_clusterer_agglomerative <- function(n_clusters = 20L) {
-
-  #Import library to access AgglomerativeClustering inside function scope
+bt_make_clusterer_agglomerative <- function(..., n_clusters = 20L) {
+  
+  # input validation ----
+  
+  stopifnot(is.numeric(n_clusters))
+  
+  #Import library to access kmeans inside function scope
   skcluster <- reticulate::import("sklearn.cluster")
+  
+  #Convert the `...` (dot-dot-dot or ellipsis) to list for checking purposes
+  dots <- rlang::list2(...)
+  
+  #Instantiate empty model to get valid arguments
+  empty_model <- skcluster$AgglomerativeClustering()
+  
+  #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad
+  if(any(!names(dots) %in% names(empty_model))){
+    
+    bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
+    stop(paste("Bad argument(s) attempted to be sent to AgglomerativeClustering():", bad_args, sep = ' '))
+  }
+  
+  # end of input validation ----
 
   #Instantiate clustering model making sure n_clusters is an integer
-  clustering_model <- skcluster$AgglomerativeClustering(n_clusters = as.integer(n_clusters))
+  clustering_model <- skcluster$AgglomerativeClustering(n_clusters = as.integer(n_clusters),
+                                                        ...)
 
   return(clustering_model)
 }
@@ -73,8 +113,9 @@ bt_make_clusterer_agglomerative <- function(n_clusters = 20L) {
 #' # not specifying numeric inputs as integers (converted to integers internally)
 #' clusterer = bt_make_clusterer_hdbscan(min_cluster_size = 5, cluster_selection_method = "leaf")
 #' 
-bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, min_samples = 10L, metric = "euclidean", cluster_selection_method = "eom", prediction_data = FALSE) {
+bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, min_samples = 10L, metric = "euclidean", cluster_selection_method = c("eom", "leaf"), prediction_data = FALSE) {
 
+  # input validation ----
   #Import the hdbscan library inside function scope
   hdbscan <- reticulate::import("hdbscan")
 
@@ -90,7 +131,17 @@ bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, min_samples =
     bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
     stop(paste("Bad argument(s) attempted to be sent to HDBSCAN():", bad_args, sep = ' '))
   }
+  
+  stopifnot(is.numeric(min_cluster_size),
+            is.numeric(min_samples),
+            is.character(metric),
+            cluster_selection_method %in% c("eom", "leaf"),
+            is.logical(prediction_data))
 
+  # end of input validation ----
+  
+  cluster_selection_method <- match.arg(cluster_selection_method)
+  
   #Instantiate a model, with some named arguments and ellipsis for users who wish to change other arguments
   clustering_model <- hdbscan$HDBSCAN(
     min_cluster_size = as.integer(min_cluster_size),

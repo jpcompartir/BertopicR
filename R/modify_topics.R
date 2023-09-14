@@ -63,7 +63,7 @@ bt_merge_topics <- function(fitted_model,
   fitted_model$merge_topics(documents,
                             topics_to_merge_int)
   
-  message("\nTopics merged")
+  message("\nTopics merged & input model updated accordingly")
 }
 
 #' Redistributes outliers using embeddings
@@ -316,7 +316,7 @@ bt_outliers_ctfidf <- function(fitted_model,
   new_topics <- fitted_model$reduce_outliers(documents = documents,
                                              topics = topics,
                                              strategy = "c-tf-idf",
-                                             threshold = threshold) # dict for approx_distribution
+                                             threshold = threshold) 
   
   new_topics_matched <- data.frame(message = documents,
                                    current_topics = topics,
@@ -338,7 +338,9 @@ bt_outliers_ctfidf <- function(fitted_model,
 #' NOTE: The bertopic model you are working with is a pointer to a python object 
 #' at a point in memory. This means that the input and the output model cannot be 
 #' differentiated between without explicitly saving the model before performing 
-#' this operation. A model is not returned as the function changes the input model.
+#' this operation. We do not need to specify an output to the bt_fit_model function 
+#' as the function changes the input model in place. If you do decide to explicitly assign a function output,
+#' be aware that the output model and the input model will be the same as one another.
 #' 
 #' @details
 #' NOTE: If using this function to update outlier topics, it may lead to errors 
@@ -392,21 +394,6 @@ bt_update_topics <- function(fitted_model,
             test_is_python_object(vectoriser_model) | is.null(vectoriser_model),
             test_is_python_object(ctfidf_model) | is.null(ctfidf_model))
   
-
-  # sometimes the ctfidf model can cause issues for smaller datasets so allowing these parameters to be NULL
-  # # default vectoriser if none given
-  # if(is.null(vectoriser_model)){
-  #   vectoriser_model <- bt_make_vectoriser()
-  #   message("\nNo vectorising model provided, creating model with default parameters")
-  # }
-  # 
-  # # default ctfidf if none given
-  # if(is.null(ctfidf_model)){
-  #   ctfidf_model <- bt_make_ctfidf()
-  #   message("\nNo ctfidf model provided, creating model with default parameters")
-  # }
-  # 
-  
   new_topics_int <- as.integer(new_topics)
   fitted_model$update_topics(docs = documents, 
                              topics = new_topics_int, 
@@ -414,6 +401,6 @@ bt_update_topics <- function(fitted_model,
                              vectorizer_model = vectoriser_model, 
                              ctfidf_model = ctfidf_model)
   
-  # return(fitted_model)
+  message("\nInput model updated")
   
 }

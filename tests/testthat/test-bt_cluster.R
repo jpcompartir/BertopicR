@@ -1,27 +1,50 @@
-test_that("bt_make_clusterer returns the right type of clustering model", {
+test_that("bt_make_clusterer_hdbscan error on invalid input", {
+  expect_error(bt_make_clusterer_hdbscan(min_cluster_size = "test"), "is.numeric.*min_cluster_size")
+  expect_error(bt_make_clusterer_hdbscan(min_samples = "test"), "is.numeric.*min_samples")
+  expect_error(bt_make_clusterer_hdbscan(metric = 14), "is.character.*metric")
+  expect_error(bt_make_clusterer_hdbscan(cluster_selection_method = 14), "cluster_selection_method.*is not TRUE")
+  expect_error(bt_make_clusterer_hdbscan(prediction_data = 14), "is.logical.*prediction_data")
+  expect_error(bt_make_clusterer_hdbscan(test_arg = "test"), "Bad argument\\(s\\) attempted to be sent to HDBSCAN\\(\\): test_arg")
+})
 
-  #match.arg is working:
-  expect_error(bt_make_clusterer(clustering_method = "beans"))
+test_that("bt_make_clusterer_hdbscan returns correct output", {
+  clusterer <- bt_make_clusterer_hdbscan(min_cluster_size = 5, 
+                                         gen_min_span_tree = FALSE, 
+                                         min_samples = 3,
+                                         metric = "cosine")
+  
+  expect_equal(clusterer$min_cluster_size, 5)
+  expect_equal(clusterer$gen_min_span_tree, FALSE)
+  expect_equal(clusterer$min_samples, 3)
+  expect_equal(clusterer$metric, "cosine")
+})
 
-  #No error raised with correct inputs
-  expect_silent(bt_make_clusterer(clustering_method = "hdbscan"))
+test_that("bt_make_clusterer_kmeans errors on invalid input", {
+  expect_error(bt_make_clusterer_kmeans(n_clusters = "test"), "is.numeric.*n_clusters")
+  expect_error(bt_make_clusterer_kmeans(test_arg = "test"), "Bad argument\\(s\\) attempted to be sent to KMeans\\(\\): test_arg")
+})
 
-  #hdbscan model has appropriate class
-  hdbscan <- bt_make_clusterer(clustering_method = "hdbscan")
-  expect_true(any(grepl("hdbscan", class(hdbscan))))
+test_that("bt_make_clusterer_kmeans returns correct output", {
+  clusterer <- bt_make_clusterer_kmeans(n_clusters = 10L, 
+                                        copy_x = FALSE, 
+                                        max_iter = 200L)
+  
+  expect_equal(clusterer$n_clusters, 10)
+  expect_equal(clusterer$copy_x, FALSE)
+  expect_equal(clusterer$max_iter, 200)
+})
 
-  #Base model has appropriate class and doesn't have inappropriate
-  base <- bt_make_clusterer(clustering_method = "base")
-  expect_true(any(grepl("BaseCluster", class(base))))
-  expect_false(any(grepl("hdbscan", class(base))))
+test_that("bt_make_clusterer_agglomerative errors on invalid input", {
+  expect_error(bt_make_clusterer_agglomerative(n_clusters = "test"), "is.numeric.*n_clusters")
+  expect_error(bt_make_clusterer_agglomerative(test_arg = "test"), "Bad argument\\(s\\) attempted to be sent to AgglomerativeClustering\\(\\): test_arg")
+})
 
-  #kMeans model has appropriate class
-  kmeans <- bt_make_clusterer(clustering_method = "kmeans")
-  expect_true(any(grepl("kmeans", class(kmeans))))
-
-  #Agglomerative model has appropriate class
-  agglomerative <- bt_make_clusterer(clustering_method = "agglomerative", n_clusters = 10L)
-  expect_true(any(grepl("Agglomerative", class(agglomerative))))
+test_that("bt_make_clusterer_agglomerative returns correct output", {
+  clusterer <- bt_make_clusterer_agglomerative(n_clusters = 10L, 
+                                        metric = "manhattan")
+  
+  expect_equal(clusterer$n_clusters, 10)
+  expect_equal(clusterer$metric, "manhattan")
 })
 
 test_that("bt_make_clusterer and bt_do_clustering are working properly", {
@@ -38,13 +61,3 @@ test_that("bt_make_clusterer and bt_do_clustering are working properly", {
   expect_true(length(hdbscan_clusters) == 50)
   expect_true(is.numeric(hdbscan_clusters))
 })
-
-test_that("bt_make_clusterer_hdbscan changes inputs appropriately", {
-  hdbscan_default <- bt_make_clusterer_hdbscan()
-  hdbscan_leaf <- bt_make_clusterer_hdbscan(cluster_selection_method = "leaf", min_cluster_size = 5L, min_samples = 3L)
-  expect_false(hdbscan_default$min_cluster_size == hdbscan_leaf$min_cluster_size)
-  expect_false(hdbscan_default$cluster_selection_method == hdbscan_leaf$cluster_selection_method)
-  expect_true(hdbscan_leaf$cluster_selection_method == "leaf")
-  expect_true(hdbscan_leaf$min_samples == 3L)
-})
-
