@@ -34,6 +34,13 @@ Instantiates an HDBSCAN clustering model using the hdbscan Python library.
 }
 \examples{
 clustering_model <- bt_make_clusterer_hdbscan(metric = "minkowski")
+
+# specify numeric inputs as integers (not necessary, this is )
+clusterer = bt_make_clusterer_hdbscan(min_cluster_size = 5L, gen_min_span_tree = True)
+
+# don't specify numeric inputs as integers (converted to integers internally)
+clusterer = bt_make_clusterer_hdbscan(min_cluster_size = 5, gen_min_span_tree=True)
+
 }
 \seealso{
 \url{https://hdbscan.readthedocs.io/en/latest/}

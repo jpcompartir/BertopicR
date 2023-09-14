@@ -1,38 +1,3 @@
-#' Create a clustering model
-#'
-#' Instantiates a clustering model which can be fed into a BertopicR pipeline.
-#'
-#' Available clustering models are 'hdbscan', 'kmeans', 'agglomerative', and 'base'. For each of these options, see either the hdbscan, or sklearn official documentation for lists of arguments which can be fed to each clustering model. or type "?bt_make_clusterer_hdbscan", "?bt_make_clusterer_kmeans" etc. to see which named arguments have been supplied as a default for each clustering model.
-#'
-#'Executing "bt_make_clusterer(clustering_method = 'base')" is the equivalent of calling `"bt_base_clusterer()" and returns an empty model which is used for streamlining the topic modelling process.
-#'
-#' @param ... Arguments fed to the the clustering function determined by `clustering_method =`
-#' @param clustering_method A string defining which clustering method to use
-#'
-#' @return A clustering model (Python object)
-#' @export
-#'
-#' @examples
-#' empty_clustering_model <- bt_make_clusterer(clustering_method = "base")
-#'
-#' hdbscan_model <- bt_make_clusterer(clustering_method = "hdbscan", min_cluster_size = 10L)
-#'
-#' kmeans_model <- bt_make_clusterer(clustering_method = "kmeans", n_clusters = 10L)
-bt_make_clusterer <- function(..., clustering_method = c("hdbscan", "kmeans", "agglomerative", "base")) {
-
-  #Match the clustering_method argument & set 'hdbscan' as defualt (first position)
-  clustering_method <- match.arg(clustering_method)
-
-  ellipsis::check_dots_used()
-  clustering_model <- switch(clustering_method,
-                             "kmeans" = bt_make_clusterer_kmeans(...),
-                             "hdbscan" = bt_make_clusterer_hdbscan(...),
-                             "agglomerative" = bt_make_clusterer_agglomerative(...),
-                             "base" = bt_empty_clusterer())
-
-  return(clustering_model)
-}
-
 #' Create a kmeans clustering model
 #'
 #' @param n_clusters number of clusters to search for (enter as integer by typing L after the number)
@@ -99,7 +64,15 @@ bt_make_clusterer_agglomerative <- function(n_clusters = 20L) {
 #' @export
 #'
 #' @examples
-#' clustering_model <- bt_make_clusterer_hdbscan(metric = "minkowski")
+#' # using minkowski metric for calculating distance between documents - when using minkowski metric, a value for p must be specified as an additional argument
+#' clustering_model <- bt_make_clusterer_hdbscan(metric = "minkowski", p = 1.5)
+#' 
+#' # specify integer numeric inputs as integer, using additional gen_min_span_tree argument
+#' clusterer = bt_make_clusterer_hdbscan(min_cluster_size = 5L, gen_min_span_tree = True)
+#' 
+#' # not specifying numeric inputs as integers (converted to integers internally)
+#' clusterer = bt_make_clusterer_hdbscan(min_cluster_size = 5, cluster_selection_method = "leaf")
+#' 
 bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, min_samples = 10L, metric = "euclidean", cluster_selection_method = "eom", prediction_data = FALSE) {
 
   #Import the hdbscan library inside function scope
@@ -164,5 +137,5 @@ bt_do_clustering <- function(clustering_model, embeddings) {
   
   ordered_labels <- label_mapping[as.character(labels)] # reassign labels
 
-  return(ordered_labels) #Should we return the model and the labels?
+  return(ordered_labels) 
 }
