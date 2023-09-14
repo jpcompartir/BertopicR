@@ -9,6 +9,10 @@
 #' @return A ctfidf model (Python object).
 #'
 #' @export
+#' 
+#' @examples
+#' ctfidf <- bt_make_ctfidf(reduce_frequent_words = TRUE, bm25_weighting = FALSE)
+#' 
 bt_make_ctfidf <- function(reduce_frequent_words = TRUE, bm25_weighting = FALSE) {
 
   #Input validation

@@ -138,7 +138,17 @@ bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, min_samples =
 #'
 #' @return Cluster labels for each document
 #' @export
-#'
+#' 
+#' @examples
+#' # create clustering model
+#' clusterer <- bt_make_clusterer_kmeans(n_clusters = 2)
+#' 
+#' # mock embeddings
+#' embeddings_test <-  matrix(runif(50), nrow = 25, ncol = 2)
+#' 
+#' # create clusters
+#' clusters <- bt_do_clustering(clusterer, embeddings_test)
+#' 
 bt_do_clustering <- function(clustering_model, embeddings) {
 
   # Early stopping

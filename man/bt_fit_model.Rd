@@ -24,5 +24,28 @@ If you've already performed dimensionality reduction on your embeddings, you can
 NOTE: The bertopic model you are working with is a pointer to a python object
 at a point in memory. This means that the input and the output model cannot be
 differentiated between without explicitly saving the model before performing
-this operation. A model is not returned as the function changes the input model.
+this operation. We do not need to specify an output to the bt_fit_model function
+as the function changes the input model in place. If you do decide to explicitly assign a function output,
+be aware that the output model and the input model will be the same as one another.
+}
+\examples{
+\dontrun{
+# create the model with default parametersthen fit the model to the data
+model <- bt_compile_model()
+bt_fit_model(model = model, documents = docs)
+
+# create the model with document embeddings already created and reduced
+# embeddings
+embedder <- bt_make_embedder(all-minilm-l6-v2)
+embeddings <- bt_do_embedding(embedder, docs)
+
+# reduced embeddings
+reducer <- bt_make_reducer_umap()
+reduced_embeddings <-  bt_do_reducing(reducer, embeddings)
+
+# model
+model <- bt_compile_model(embedding_model = bt_empty_embedder, reducer = bt_empty_reducer)
+bt_fit_model(model, docs, reduced_embeddings)
+}
+
 }

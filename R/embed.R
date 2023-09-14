@@ -47,6 +47,14 @@ bt_make_embedder <- function(model_name) {
 #'
 #' @return An array of floating point numbers
 #' @export
+#' 
+#' @examples
+#' docs <- c("i am", "a list of", "documents", "to be embedded")
+#' 
+#' embedder <- bt_make_embedder("aLL-minilm-l6-v2")
+#' 
+#' embeddings <- bt_do_embedding(embedder, docs)
+#' 
 bt_do_embedding <- function(embedder, documents, ..., accelerator = "mps", progress_bar = TRUE) {
 
   #If the embedder isn't a sentence transformers object, stop early.

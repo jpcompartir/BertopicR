@@ -28,3 +28,18 @@ classification the model outputs does not change after running this function.
 The bt_update_topics function needs to be used to make the change to the model
 itself.
 }
+\examples{
+\dontrun{
+# Reducing outliers original clustering model identified
+outliers <- bt_outliers_ctfidf(fitted_model = topic_model, documents = docs, topics = topic_model$topics_)
+
+# Using chain strategies to build on outliers identified by another reduction strategy to redistribute outlier docs
+# using embeddings to redistribute outliers
+outliers_embed <- bt_outliers_embedings(fitted_model = topic_model, documents = docs, topics = topic_model$topics_)
+
+# using ctfidf outlier reduction method on top of embeddings method to redistribute outliers
+outliers_chain <- bt_outliers_ctfidf(fitted_model = topic_model, documents = docs, topics = outliers_embed$new_topics, threshold = 0.2)
+
+}
+
+}

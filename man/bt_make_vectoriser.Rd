@@ -23,7 +23,7 @@ c(1, 2) means unigrams and bigrams, and c(2, 2) means only bigrams.}
 \item{stop_words}{String (default 'english'). If a string, it is passed to _check_stop_list and the
 appropriate stop list is returned. 'english' is currently the default.}
 
-\item{min_frequency}{Integer (default 10L). When building the vocabulary ignore terms that have a
+\item{min_frequency}{Integer (default 1L). When building the vocabulary ignore terms that have a
 corpus frequency strictly lower than the given threshold.}
 
 \item{max_features}{Integer or NULL (default NULL). If not NULL, build a vocabulary that only considers
@@ -36,4 +36,12 @@ An sklearn CountVectorizer object configured with the provided parameters
 This function uses Python's sklearn for feature extraction and count vectorisation.
 It creates a CountVectorizer object with the specified parameters.
 CountVectorizer is a way to convert text data into vectors as model input. Used inside a BertopicR topc modelling pipeline.
+}
+\examples{
+# vectoriser model that converts text docs to ngrams with between 1 - 2 tokens
+vectoriser <- bt_make_vectoriser(ngram_range = c(1, 2), stop_words = "english")
+
+# vectoriser model that converts text docs to ngrams with between 1 - 3 tokens
+vectoriser <- bt_make_vectoriser(ngram_range = c(1, 3), stop_words = "english")
+
 }

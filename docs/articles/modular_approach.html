@@ -198,7 +198,7 @@ metric to “Euclidean” see <a href="https://umap-learn.readthedocs.io/en/late
 to non-Euclidean Spaces</a> for alternatives.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reducer</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bt_make_reducer_umap.html">bt_make_reducer_umap</a></span><span class="op">(</span></span>
-<span>  n_neighbors <span class="op">=</span> <span class="fl">10L</span>,</span>
+<span>  n_neighbours <span class="op">=</span> <span class="fl">10L</span>,</span>
 <span>  n_components <span class="op">=</span> <span class="fl">5L</span>,</span>
 <span>  min_dist <span class="op">=</span> <span class="fl">0L</span>,</span>
 <span>  metric <span class="op">=</span> <span class="st">"euclidean"</span></span>
@@ -212,11 +212,11 @@ to non-Euclidean Spaces</a> for alternatives.</p>
 <span>  <span class="va">reducer</span>, embeddings <span class="op">=</span> <span class="va">embeddings</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; UMAP(low_memory=False, min_dist=0, n_components=5, n_neighbors=10, random_state=42, verbose=True)</span></span>
-<span><span class="co">#&gt; Wed Sep 13 12:10:11 2023 Construct fuzzy simplicial set</span></span>
-<span><span class="co">#&gt; Wed Sep 13 12:10:11 2023 Finding Nearest Neighbors</span></span>
-<span><span class="co">#&gt; Wed Sep 13 12:10:13 2023 Finished Nearest Neighbor Search</span></span>
-<span><span class="co">#&gt; Wed Sep 13 12:10:14 2023 Construct embedding</span></span>
-<span><span class="co">#&gt; Wed Sep 13 12:10:16 2023 Finished embedding</span></span>
+<span><span class="co">#&gt; Wed Sep 13 16:24:48 2023 Construct fuzzy simplicial set</span></span>
+<span><span class="co">#&gt; Wed Sep 13 16:24:49 2023 Finding Nearest Neighbors</span></span>
+<span><span class="co">#&gt; Wed Sep 13 16:24:49 2023 Finished Nearest Neighbor Search</span></span>
+<span><span class="co">#&gt; Wed Sep 13 16:24:50 2023 Construct embedding</span></span>
+<span><span class="co">#&gt; Wed Sep 13 16:24:51 2023 Finished embedding</span></span>
 <span></span>
 <span><span class="va">reduced_embeddings</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt;          [,1]     [,2]     [,3]     [,4]     [,5]</span></span>
@@ -366,21 +366,21 @@ eclectic.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cluster</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html" class="external-link">sample_n</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">sentence</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "see the cat glaring at the scared mouse."  </span></span>
-<span><span class="co">#&gt; [2] "the baby puts his right foot in his mouth."</span></span>
-<span><span class="co">#&gt; [3] "she saw a cat in the neighbor's house."    </span></span>
-<span><span class="co">#&gt; [4] "a tame squirrel makes a nice pet."         </span></span>
-<span><span class="co">#&gt; [5] "the young kid jumped the rusty gate."</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "the hog crawled under the high fence."             </span></span>
+<span><span class="co">#&gt; [2] "it caught its hind paw in a rusty trap."           </span></span>
+<span><span class="co">#&gt; [3] "it takes a good trap to capture a bear."           </span></span>
+<span><span class="co">#&gt; [4] "she saw a cat in the neighbor's house."            </span></span>
+<span><span class="co">#&gt; [5] "the pup jerked the leash as he saw a feline shape."</span></span></code></pre></div>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cluster</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html" class="external-link">sample_n</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">sentence</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "canned pears lack full flavor."           </span></span>
-<span><span class="co">#&gt; [2] "he ordered peach pie with ice cream."     </span></span>
-<span><span class="co">#&gt; [3] "port is a strong wine with a smoky taste."</span></span>
-<span><span class="co">#&gt; [4] "cut the pie into large parts."            </span></span>
-<span><span class="co">#&gt; [5] "bottles hold four kinds of rum."</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "ripe pears are fit for a queen's table."    </span></span>
+<span><span class="co">#&gt; [2] "the fruit of a fig tree is apple shaped."   </span></span>
+<span><span class="co">#&gt; [3] "canned pears lack full flavor."             </span></span>
+<span><span class="co">#&gt; [4] "cut the pie into large parts."              </span></span>
+<span><span class="co">#&gt; [5] "the ripe taste of cheese improves with age."</span></span></code></pre></div>
 <p>The more clusters we look at, the more difficult it will become to
 figure out what’s happening…</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -388,11 +388,11 @@ figure out what’s happening…</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cluster</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html" class="external-link">sample_n</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">sentence</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "press the pedal with your left foot."             </span></span>
-<span><span class="co">#&gt; [2] "split the log with a quick, sharp blow."          </span></span>
-<span><span class="co">#&gt; [3] "take the match and strike it against your shoe."  </span></span>
-<span><span class="co">#&gt; [4] "crack the walnut with your sharp side teeth."     </span></span>
-<span><span class="co">#&gt; [5] "the best method is to fix it in place with clips."</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "a stiff cord will do to fasten your shoe."      </span></span>
+<span><span class="co">#&gt; [2] "heave the line over the port side."             </span></span>
+<span><span class="co">#&gt; [3] "hold the hammer near the end to drive the nail."</span></span>
+<span><span class="co">#&gt; [4] "hoist the load to your left shoulder."          </span></span>
+<span><span class="co">#&gt; [5] "cut the cord that binds the box tightly."</span></span></code></pre></div>
 <p>Inspecting each of these clusters and trying to figure out what each
 cluster means and how they inter-relate would soon become intractable
 for humans. Thankfully, within BERTopic there are quantitative methods

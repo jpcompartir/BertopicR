@@ -5,16 +5,15 @@
 \title{Use Huggingface models to create topic representation}
 \usage{
 bt_representation_hf(
-  ...,
-  fitted_model,
-  documents,
-  task,
-  hf_model,
-  default_prompt = "keywords",
-  custom_prompt = NULL,
-  nr_samples = 500,
-  nr_repr_docs = 20,
-  diversity = 10
+fitted_model,
+documents,
+task,
+hf_model,
+default_prompt = "keywords",
+nr_samples = 500,
+nr_repr_docs = 20,
+diversity = 10,
+custom_prompt = NULL
 )
 }
 \arguments{
@@ -30,13 +29,13 @@ bt_representation_hf(
 
 \item{default_prompt}{Whether to use the "keywords" or "documents" default prompt. Passing a custom_prompt will render this argument NULL. Default is "keywords" prompt.}
 
-\item{custom_prompt}{The custom prompt to be used in the pipeline. If not specified, the "keywords" or "documents" default_prompt will be used. Use "[KEYWORDS]" and "[DOCUMENTS]" in the prompt to decide where the keywords and documents are inserted.}
-
 \item{nr_samples}{Number of sample documents from which the representative docs are chosen}
 
 \item{nr_repr_docs}{Number of representative documents to be sent to the huggingface model}
 
 \item{diversity}{diversity of documents to be sent to the huggingface model. 0 = no diversity, 1 = max diversity.}
+
+\item{custom_prompt}{The custom prompt to be used in the pipeline. If not specified, the "keywords" or "documents" default_prompt will be used. Use "[KEYWORDS]" and "[DOCUMENTS]" in the prompt to decide where the keywords and documents are inserted.}
 }
 \value{
 updated representation of each topic

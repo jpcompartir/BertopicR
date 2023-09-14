@@ -169,12 +169,14 @@ hierarchical_topics <- topic_model$hierarchical_topics(sentences)
 topic_model$visualize_hierarchy(hierarchical_topics = hierarchical_topics)$show()
 ```
 
-```{python, echo = FALSE, out.width = 4,  message = FALSE}
+```{python, echo = FALSE, out.width = 4, fig.width = 2,  message = FALSE}
 hierarchical_topics = r.topic_model.hierarchical_topics(r.sentences)
 r.topic_model.visualize_hierarchy(hierarchical_topics = hierarchical_topics).show()
 ```
 
 The hierarchical structure is based on how topics emerge based on the similarity of their embeddings, however, we can often find topics that we think should be merged based on our own knowledge. For example, despite their embeddings having a relatively large distance between them, topic 2 and 14 both appear to be about food.
+
+### Looking at Topic Contents
 
 ```{r}
 topic_representations %>%

@@ -90,6 +90,29 @@ this operation. A model is not returned as the function changes the input model.
 <p>a fitted BERTopic model</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># create the model with default parametersthen fit the model to the data</span></span></span>
+<span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="bt_compile_model.html">bt_compile_model</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">bt_fit_model</span><span class="op">(</span>model <span class="op">=</span> <span class="va">model</span>, documents <span class="op">=</span> <span class="va">docs</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># create the model with document embeddings already created and reduced</span></span></span>
+<span class="r-in"><span><span class="co"># embeddings</span></span></span>
+<span class="r-in"><span><span class="va">embedder</span> <span class="op">&lt;-</span> <span class="fu"><a href="bt_make_embedder.html">bt_make_embedder</a></span><span class="op">(</span><span class="va">all</span><span class="op">-</span><span class="va">minilm</span><span class="op">-</span><span class="va">l6</span><span class="op">-</span><span class="va">v2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">embeddings</span> <span class="op">&lt;-</span> <span class="fu"><a href="bt_do_embedding.html">bt_do_embedding</a></span><span class="op">(</span><span class="va">embedder</span>, <span class="va">docs</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># reduced embeddings</span></span></span>
+<span class="r-in"><span><span class="va">reducer</span> <span class="op">&lt;-</span> <span class="fu"><a href="bt_make_reducer_umap.html">bt_make_reducer_umap</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">reduced_embeddings</span> <span class="op">&lt;-</span>  <span class="fu"><a href="bt_do_reducing.html">bt_do_reducing</a></span><span class="op">(</span><span class="va">reducer</span>, <span class="va">embeddings</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># model</span></span></span>
+<span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="bt_compile_model.html">bt_compile_model</a></span><span class="op">(</span>embedding_model <span class="op">=</span> <span class="va">bt_empty_embedder</span>, reducer <span class="op">=</span> <span class="va">bt_empty_reducer</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">bt_fit_model</span><span class="op">(</span><span class="va">model</span>, <span class="va">docs</span>, <span class="va">reduced_embeddings</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
 

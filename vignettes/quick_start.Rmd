@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette will show you how to get a topic model up and running using BertopicR relatively quickly. It should be noted that this approach significantly simplifies and generalises certain steps, and will rarely produce an optimised topic model. To get the most out of your topic modelling, you should refer to the [Modular Approach](modular_approach.html) vignette.
+This vignette will show you how to get a topic model up and running using BertopicR relatively quickly. It should be noted that this approach significantly simplifies and generalises certain steps, and will rarely produce an optimised topic model. To get the most out of your topic modelling, you should refer to the [Interacting with Individual Modules](modular_approach.html) vignette.
 
 # Preparing the Data
 ```{r setup, message = FALSE}
@@ -50,7 +50,9 @@ Now that we have created a model that uses all default parameters, we can simply
 **NOTE:** The bertopic model you are working with is a pointer to a python object 
 at a point in memory. This means that the input and the output model cannot be 
 differentiated between without explicitly saving the model before performing 
-this operation. A model is not returned as the function changes the input model.
+this operation. We do not need to specify an output to the bt_fit_model function 
+as the function changes the input model in place. See the Note under the Fit the Model section in the 
+[Interacting with Individual Modules](modular_approach.html) vignette for more detail.
 
 ```{r fit the model}
 bt_fit_model(model, sentences)
@@ -58,5 +60,5 @@ bt_fit_model(model, sentences)
 model$get_topic_info() %>% select(-Representative_Docs, - Representation)
 ```
 
-That's it, you have a topic model up and running! If you decided that you wanted to adjust factors, like the minimum size of a topic, or the number of topics you want, you should refer to the [Modular Approach](modular_approach.html) vignette. You can also refer to the [Manipulating the Model](manipulating-the-model.html) vignette to see how you can interpret the topics and reduce the number of outliers identified (if using hdbscan (default) clustering).
+That's it, you have a topic model up and running! If you decided that you wanted to adjust factors, like the minimum size of a topic, or the number of topics you want, you should refer to the [Interacting with Individual Modules](modular_approach.html) vignette. You can also refer to the [Manipulating the Model](manipulating-the-model.html) vignette to see how you can interpret the topics and reduce the number of outliers identified (if using hdbscan (default) clustering).
 

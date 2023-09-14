@@ -14,6 +14,18 @@
 #'
 #' @return a BERTopic model
 #' @export
+#' 
+#' @examples
+#' # model using all default parameters
+#' model <- bt_compile_model()
+#' 
+#' # model with modular components already generated
+#' \dontrun{
+#' bt_compile_model(embedding_model = embedder, reduction_model = reducer, clustering_model = clusterer)
+#'
+#' # model with modular components already generated and embeddings already produced and reduced
+#' bt_compile_model(embedding_model = bt_empty_embedder, reduction_model = bt_empty_reducer, ctfidf_model = ctfidf_model)
+#' }
 #'
 bt_compile_model <- function(..., embedding_model = NULL, reduction_model = NULL, clustering_model = NULL, vectoriser_model = NULL, ctfidf_model = NULL){
 
@@ -90,7 +102,9 @@ bt_compile_model <- function(..., embedding_model = NULL, reduction_model = NULL
 #' NOTE: The bertopic model you are working with is a pointer to a python object 
 #' at a point in memory. This means that the input and the output model cannot be 
 #' differentiated between without explicitly saving the model before performing 
-#' this operation. A model is not returned as the function changes the input model.
+#' this operation. We do not need to specify an output to the bt_fit_model function 
+#' as the function changes the input model in place. If you do decide to explicitly assign a function output,
+#' be aware that the output model and the input model will be the same as one another.
 #'
 #' @param model Output of bt_compile_model() or another bertopic topic model
 #' @param documents Your documents to topic model on
@@ -100,6 +114,26 @@ bt_compile_model <- function(..., embedding_model = NULL, reduction_model = NULL
 #' @return a fitted BERTopic model
 #' @export
 #'
+#' @examples
+#' \dontrun{
+#' # create the model with default parametersthen fit the model to the data
+#' model <- bt_compile_model()
+#' bt_fit_model(model = model, documents = docs)
+#' 
+#' # create the model with document embeddings already created and reduced
+#' # embeddings
+#' embedder <- bt_make_embedder(all-minilm-l6-v2)
+#' embeddings <- bt_do_embedding(embedder, docs)
+#' 
+#' # reduced embeddings
+#' reducer <- bt_make_reducer_umap()
+#' reduced_embeddings <-  bt_do_reducing(reducer, embeddings)
+#' 
+#' # model
+#' model <- bt_compile_model(embedding_model = bt_empty_embedder, reducer = bt_empty_reducer)
+#' bt_fit_model(model, docs, reduced_embeddings)
+#' }
+#' 
 bt_fit_model <- function(model, documents, embeddings = NULL, topic_labels = NULL){
 
   #Input validation

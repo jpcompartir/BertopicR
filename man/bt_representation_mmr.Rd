@@ -5,11 +5,10 @@
 \title{Create representation model using Maximal Marginal Relevance}
 \usage{
 bt_representation_mmr(
-  fitted_model,
-  embedding_model,
-  diversity = 0.1,
-  top_n_words = 10
-)
+fitted_model,
+embedding_model,
+diversity = 0.1,
+top_n_words = 10)
 }
 \arguments{
 \item{fitted_model}{Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.}

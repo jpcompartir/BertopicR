@@ -12,13 +12,19 @@ bt_do_reducing(reducer, embeddings)
 \item{embeddings}{Your embeddings}
 }
 \value{
-Embeddingd with reduced number of dimensions
+Embeddings with reduced number of dimensions
 }
 \description{
 Perform dimensionality reduction on your embeddings
 }
 \examples{
+# make reducuction model
 reducer <- bt_make_reducer_umap(n_neighbours = 2, n_components = 2)
+
+# mock embeddings
 embeddings <- matrix(runif(50), nrow = 5, ncol = 10)
+
+# reduce the embeddings
 reduced_embeddings <- bt_do_reducing(reducer, embeddings)
+
 }

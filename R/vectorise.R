@@ -11,14 +11,21 @@
 #'        c(1, 2) means unigrams and bigrams, and c(2, 2) means only bigrams.
 #' @param stop_words String (default 'english'). If a string, it is passed to _check_stop_list and the
 #'        appropriate stop list is returned. 'english' is currently the default.
-#' @param min_frequency Integer (default 10L). When building the vocabulary ignore terms that have a
+#' @param min_frequency Integer (default 1L). When building the vocabulary ignore terms that have a
 #'        corpus frequency strictly lower than the given threshold.
 #' @param max_features Integer or NULL (default NULL). If not NULL, build a vocabulary that only considers
 #'        the top max_features ordered by term frequency across the corpus.
 #'
 #' @return An sklearn CountVectorizer object configured with the provided parameters
 #' @export
-#'
+#' 
+#' @examples
+#' # vectoriser model that converts text docs to ngrams with between 1 - 2 tokens
+#' vectoriser <- bt_make_vectoriser(ngram_range = c(1, 2), stop_words = "english")
+#' 
+#'# vectoriser model that converts text docs to ngrams with between 1 - 3 tokens
+#' vectoriser <- bt_make_vectoriser(ngram_range = c(1, 3), stop_words = "english")
+#' 
 bt_make_vectoriser <- function(..., ngram_range = c(1, 2), stop_words = "english", min_frequency = 1, max_features = NULL) {
 
   stopifnot(is.vector(ngram_range),

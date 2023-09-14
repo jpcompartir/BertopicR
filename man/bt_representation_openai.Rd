@@ -5,17 +5,16 @@
 \title{Create representation model that uses OpenAI text generation models}
 \usage{
 bt_representation_openai(
-  fitted_model,
-  documents,
-  openai_model = "text-ada-001",
-  nr_repr_docs = 10,
-  nr_samples = 500,
-  chat = FALSE,
-  api_key = "sk-",
-  delay_in_seconds = NULL,
-  prompt = NULL,
-  diversity = NULL
-)
+fitted_model,
+documents,
+openai_model = "text-ada-001",
+nr_repr_docs = 10,
+nr_samples = 500,
+chat = FALSE,
+api_key = "sk-",
+delay_in_seconds = NULL,
+prompt = NULL,
+diversity = NULL)
 }
 \arguments{
 \item{fitted_model}{Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.}

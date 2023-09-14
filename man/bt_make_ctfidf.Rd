@@ -18,3 +18,7 @@ A ctfidf model (Python object).
 This function creates an instance of the ClassTfidfTransformer from the bertopic.vectorizers module,
 with the provided arguments. It is used to generate representations for topics by selecting words which are frequent within a topic and less frequent in the entire corpus.
 }
+\examples{
+ctfidf <- bt_make_ctfidf(reduce_frequent_words = TRUE, bm25_weighting = FALSE)
+
+}

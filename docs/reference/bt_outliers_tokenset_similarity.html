@@ -123,6 +123,23 @@ skip when moving to next tokenset)</p></dd>
 <p>df with document, old topic, new topic</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># Reducing outliers original clustering model identified</span></span></span>
+<span class="r-in"><span><span class="va">outliers</span> <span class="op">&lt;-</span> <span class="fu">bt_outliers_tokenset_similarity</span><span class="op">(</span>fitted_model <span class="op">=</span> <span class="va">topic_model</span>, documents <span class="op">=</span> <span class="va">docs</span>, topics <span class="op">=</span> <span class="va">topic_model</span><span class="op">$</span><span class="va">topics_</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Using chain strategies to build on outliers identified by another reduction strategy to redistribute outlier docs</span></span></span>
+<span class="r-in"><span><span class="co"># using embeddings to redistribute outliers</span></span></span>
+<span class="r-in"><span><span class="va">outliers_embed</span> <span class="op">&lt;-</span> <span class="fu">bt_outliers_embedings</span><span class="op">(</span>fitted_model <span class="op">=</span> <span class="va">topic_model</span>, documents <span class="op">=</span> <span class="va">docs</span>, topics <span class="op">=</span> <span class="va">topic_model</span><span class="op">$</span><span class="va">topics_</span>, embeddings <span class="op">=</span> <span class="va">embeddings</span>, threshold <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># using tokenset similarity outlier reduction method on top of embeddings method to redistribute outliers</span></span></span>
+<span class="r-in"><span><span class="va">outliers_chain</span> <span class="op">&lt;-</span> <span class="fu">bt_outliers_tokenset_similarity</span><span class="op">(</span>fitted_model <span class="op">=</span> <span class="va">topic_model</span>, documents <span class="op">=</span> <span class="va">docs</span>, topics <span class="op">=</span> <span class="va">outliers_embed</span><span class="op">$</span><span class="va">new_topics</span>, threshold <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
 

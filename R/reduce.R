@@ -6,7 +6,7 @@
 #'
 #' low_memory = TRUE is currently inadvisable as trial and error suggests the results are not as robust in later clustering.
 #'
-#' @param ... Sent to umap$UMAP for adding additional arguments
+#' @param ... Sent to umap.UMAP python function for adding additional arguments
 #' @param n_neighbours The size of local neighbourhood (in terms of number of neighboring data points) used
 #'        for manifold approximation (default: 15).
 #' @param n_components The number of dimensions to reduce to (default: 5).
@@ -19,6 +19,12 @@
 #' @return A UMAP Model that can be input to bt_do_reducing to reduce dimensions of data
 #'
 #' @export
+#' 
+#' @seealso
+#'  \url{https://umap-learn.readthedocs.io/en/latest/api.html}
+#'  \url{https://umap-learn.readthedocs.io/en/latest/basic_usage.html}
+#'  \url{https://umap-learn.readthedocs.io/en/latest/parameters.html}
+#'  
 #' @examples
 #' # using euclidean distance measure and specifying numeric inputs as integers
 #' reducer <- bt_make_reducer_umap(n_neighbours = 15L, n_components = 10L, metric = "euclidean")
@@ -67,18 +73,24 @@ bt_make_reducer_umap <- function( ..., n_neighbours = 15L, n_components = 5L, mi
 #' dimensions of your dataset once. In this case, when compiling your model with 
 #' bt_compile_model you should call `reducer <- bt_base_reducer()`.
 #'
-#' @param ... Sent to sklearn.decomposition UMAP function for adding additional arguments
+#' @param ... Sent to sklearn.decomposition.PCA function for adding additional arguments
 #' @param n_components Number of components to keep
 #' @param svd_solver method for reducing components can be auto, full, arpack, randomized
 #'
 #' @return A PCA Model that can be input to bt_do_reducing to reduce dimensions of data
 #' @export
+#' 
+#' @seealso
+#'  \url{https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html}
+#'  \url{https://scikit-learn.org/stable/modules/decomposition.html#pca}
+#'  
 #' @examples
 #' # using default svd_solver
 #' reducer <- bt_make_reducer_pca(n_components = 100)
 #' 
 #' # speciying extra pca arguments
 #' reducer <- bt_make_reducer_pca (n_components = 20, svd_solver = "full", random_state = 42L)
+#' 
 bt_make_reducer_pca <- function(..., 
                                 n_components,
                                 svd_solver = "auto"){
@@ -137,7 +149,12 @@ bt_make_reducer_pca <- function(...,
 #'
 #' @return Truncated SVD Model that can be input to bt_do_reducing to reduce dimensions of data
 #' @export
-#' @example
+#' 
+#' @seealso
+#'  \url{https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.TruncatedSVD.html}
+#'  \url{https://scikit-learn.org/stable/modules/decomposition.html#lsa}
+#' 
+#' @examples
 #' reducer <- bt_make_reducer_truncated_svd(n_components = 5)
 #' 
 bt_make_reducer_truncated_svd <- function(..., 
@@ -190,13 +207,19 @@ bt_make_reducer_truncated_svd <- function(...,
 #' @param reducer Your dimensionality reduction model
 #' @param embeddings Your embeddings
 #'
-#' @return Embeddingd with reduced number of dimensions
+#' @return Embeddings with reduced number of dimensions
 #' @export
 #'
 #' @examples 
+#' # make reducuction model
 #' reducer <- bt_make_reducer_umap(n_neighbours = 2, n_components = 2)
+#' 
+#' # mock embeddings
 #' embeddings <- matrix(runif(50), nrow = 5, ncol = 10)
+#' 
+#' # reduce the embeddings
 #' reduced_embeddings <- bt_do_reducing(reducer, embeddings)
+#' 
 bt_do_reducing <- function(reducer, embeddings) {
 
   #Early stopping

@@ -7,7 +7,7 @@
 bt_make_reducer_pca(..., n_components, svd_solver = "auto")
 }
 \arguments{
-\item{...}{Sent to sklearn.decomposition UMAP function for adding additional arguments}
+\item{...}{Sent to sklearn.decomposition.PCA function for adding additional arguments}
 
 \item{n_components}{Number of components to keep}
 
@@ -30,4 +30,9 @@ reducer <- bt_make_reducer_pca(n_components = 100)
 
 # speciying extra pca arguments
 reducer <- bt_make_reducer_pca (n_components = 20, svd_solver = "full", random_state = 42L)
+
+}
+\seealso{
+\url{https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html}
+\url{https://scikit-learn.org/stable/modules/decomposition.html#pca}
 }

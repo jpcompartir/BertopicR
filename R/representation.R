@@ -22,6 +22,16 @@
 #'
 #' @return KeyBERTInspired representation model
 #' @export
+#' 
+#' @usage bt_representation_keybert(
+#' fitted_model, 
+#' documents, 
+#' document_embeddings,
+#' embedding_model,
+#' top_n_words = 10,
+#' nr_repr_docs = 50,
+#' nr_samples = 500,
+#' nr_candidate_words = 100)
 #'
 bt_representation_keybert <- function(fitted_model,
                                       documents,
@@ -206,6 +216,11 @@ bt_representation_keybert <- function(fitted_model,
 #' @return MaximalMarginalRelevance representation model
 #' @export
 #'
+#' @usage bt_representation_mmr(
+#' fitted_model,
+#' embedding_model,
+#' diversity = 0.1,
+#' top_n_words = 10)
 bt_representation_mmr <- function(fitted_model,
                                   embedding_model,
                                   diversity = 0.1,
@@ -312,6 +327,18 @@ bt_representation_mmr <- function(fitted_model,
 #'
 #' @return OpenAI representation model
 #' @export
+#' 
+#' @usage bt_representation_openai(
+#' fitted_model,
+#' documents,
+#' openai_model = "text-ada-001",
+#' nr_repr_docs = 10,
+#' nr_samples = 500,
+#' chat = FALSE,
+#' api_key = "sk-",
+#' delay_in_seconds = NULL,
+#' prompt = NULL,
+#' diversity = NULL)
 #'
 bt_representation_openai <- function(fitted_model,
                                      documents,
@@ -474,16 +501,27 @@ Topic name:"
 #' @return updated representation of each topic
 #' @export
 #'
+#' @usage bt_representation_hf(
+#' fitted_model,
+#' documents,
+#' task,
+#' hf_model,
+#' default_prompt = "keywords",
+#' nr_samples = 500,
+#' nr_repr_docs = 20,
+#' diversity = 10,
+#' custom_prompt = NULL
+#' )
 bt_representation_hf <- function(...,
                                  fitted_model,
                                  documents,
                                  task,
                                  hf_model,
                                  default_prompt = "keywords",
-                                 custom_prompt = NULL,
                                  nr_samples = 500,
                                  nr_repr_docs = 20,
-                                 diversity = 10){
+                                 diversity = 10,
+                                 custom_prompt = NULL){
   
   #### Validation ####
   stopifnot(!is.null(default_prompt) | !is.null(custom_prompt),

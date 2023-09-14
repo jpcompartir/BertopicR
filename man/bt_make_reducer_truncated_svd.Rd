@@ -32,3 +32,11 @@ time, you most likely will only want to reduce the dimensions of your dataset on
 In this case, when compiling your model with bt_compile_model you should call
 \code{reducer <- bt_base_reducer()}.
 }
+\examples{
+reducer <- bt_make_reducer_truncated_svd(n_components = 5)
+
+}
+\seealso{
+\url{https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.TruncatedSVD.html}
+\url{https://scikit-learn.org/stable/modules/decomposition.html#lsa}
+}

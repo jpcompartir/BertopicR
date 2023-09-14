@@ -124,6 +124,22 @@ for this is that when you assign a -1 document to topic 1 and another -1 documen
 to topic 2, it is unclear how you map the -1 documents. Is it matched to topic 1 or 2.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># update model with new topic distribution</span></span></span>
+<span class="r-in"><span><span class="co"># reduce outliers</span></span></span>
+<span class="r-in"><span><span class="va">outliers</span> <span class="op">&lt;-</span> <span class="fu"><a href="bt_outliers_ctfidf.html">bt_outliers_ctfidf</a></span><span class="op">(</span>fitted_model <span class="op">=</span> <span class="va">topic_model</span>, documents <span class="op">=</span> <span class="va">docs</span>, threshold <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># update the model with the new topic distribution</span></span></span>
+<span class="r-in"><span><span class="fu">bt_update_topics</span><span class="op">(</span>fitted_model <span class="op">=</span> <span class="va">topic_model</span>, documents <span class="op">=</span> <span class="va">docs</span>, new_topics <span class="op">=</span> <span class="va">outliers</span><span class="op">$</span><span class="va">new_topics</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># update topic representation</span></span></span>
+<span class="r-in"><span><span class="fu">bt_update_topics</span><span class="op">(</span>fitted_model <span class="op">=</span> <span class="va">topic_model</span>, documents <span class="op">=</span> <span class="va">docs</span>, vectoriser_model <span class="op">=</span> <span class="va">update_vec_model</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
 

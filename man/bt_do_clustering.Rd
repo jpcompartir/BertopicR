@@ -17,3 +17,14 @@ Cluster labels for each document
 \description{
 Cluster your data
 }
+\examples{
+# create clustering model
+clusterer <- bt_make_clusterer_kmeans(n_clusters = 2)
+
+# mock embeddings
+embeddings_test <-  matrix(runif(50), nrow = 25, ncol = 2)
+
+# create clusters
+clusters <- bt_do_clustering(clusterer, embeddings_test)
+
+}

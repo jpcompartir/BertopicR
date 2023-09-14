@@ -5,15 +5,14 @@
 \title{Create representation model using keybert}
 \usage{
 bt_representation_keybert(
-  fitted_model,
-  documents,
-  document_embeddings,
-  embedding_model,
-  top_n_words = 10,
-  nr_repr_docs = 50,
-  nr_samples = 500,
-  nr_candidate_words = 100
-)
+fitted_model, 
+documents, 
+document_embeddings,
+embedding_model,
+top_n_words = 10,
+nr_repr_docs = 50,
+nr_samples = 500,
+nr_candidate_words = 100)
 }
 \arguments{
 \item{fitted_model}{Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.}

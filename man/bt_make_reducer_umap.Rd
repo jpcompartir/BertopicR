@@ -16,7 +16,7 @@ bt_make_reducer_umap(
 )
 }
 \arguments{
-\item{...}{Sent to umap$UMAP for adding additional arguments}
+\item{...}{Sent to umap.UMAP python function for adding additional arguments}
 
 \item{n_neighbours}{The size of local neighbourhood (in terms of number of neighboring data points) used
 for manifold approximation (default: 15).}
@@ -54,4 +54,9 @@ reducer <- bt_make_reducer_umap(n_neighbours = 15, n_components = 10, metric = "
  # using cosine distance measure and not specifying numeric inputs as integers (done internally in function)
 reducer <- bt_make_reducer_umap(n_neighbours = 20, n_components = 6, metric = "cosine")
 
+}
+\seealso{
+\url{https://umap-learn.readthedocs.io/en/latest/api.html}
+\url{https://umap-learn.readthedocs.io/en/latest/basic_usage.html}
+\url{https://umap-learn.readthedocs.io/en/latest/parameters.html}
 }
