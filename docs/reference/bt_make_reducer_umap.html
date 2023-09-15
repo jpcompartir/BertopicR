@@ -105,7 +105,7 @@ for manifold approximation (default: 15).</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, when compiling your model with bt_compile_model you should call <code>reducer &lt;- bt_base_reducer()</code>.</p>
+    <p>If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, when compiling your model with bt_compile_model you should call <code>reducer &lt;- bt_empty_reducer()</code>.</p>
 <p>low_memory = TRUE is currently inadvisable as trial and error suggests the results are not as robust in later clustering.</p>
     </div>
     <div class="section level2">

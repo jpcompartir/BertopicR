@@ -55,6 +55,7 @@
 <span><span class="va">documents</span>,</span>
 <span><span class="va">task</span>,</span>
 <span><span class="va">hf_model</span>,</span>
+<span><span class="va">...</span>,</span>
 <span>default_prompt <span class="op">=</span> <span class="st">"keywords"</span>,</span>
 <span>nr_samples <span class="op">=</span> <span class="fl">500</span>,</span>
 <span>nr_repr_docs <span class="op">=</span> <span class="fl">20</span>,</span>
@@ -65,11 +66,7 @@
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>...</dt>
-<dd><p>arguments sent to the transformers.pipeline function</p></dd>
-
-
-<dt>fitted_model</dt>
+    <dl><dt>fitted_model</dt>
 <dd><p>The fitted bertopic model</p></dd>
 
 
@@ -83,6 +80,10 @@
 
 <dt>hf_model</dt>
 <dd><p>The model that will be used by the pipeline to make predictions</p></dd>
+
+
+<dt>...</dt>
+<dd><p>arguments sent to the transformers.pipeline function</p></dd>
 
 
 <dt>default_prompt</dt>

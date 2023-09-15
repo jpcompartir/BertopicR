@@ -95,30 +95,7 @@
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># model using all default parameters</span></span></span>
-<span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu">bt_compile_model</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> No embedding model provided, defaulting to 'all-mpnet-base-v2' model as embedder.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> No reduction_model provided, using default 'bt_reducer_umap' parameters.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> No clustering model provided, using hdbscan with default parameters.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> No vectorising model provided, creating model with default parameters</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> No ctfidf model provided, creating model with default parameters</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Model built</span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># model with modular components already generated</span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span><span class="fu">bt_compile_model</span><span class="op">(</span>embedding_model <span class="op">=</span> <span class="va">embedder</span>, reduction_model <span class="op">=</span> <span class="va">reducer</span>, clustering_model <span class="op">=</span> <span class="va">clusterer</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># model with modular components already generated and embeddings already produced and reduced</span></span></span>
-<span class="r-in"><span><span class="fu">bt_compile_model</span><span class="op">(</span>embedding_model <span class="op">=</span> <span class="va">bt_empty_embedder</span>, reduction_model <span class="op">=</span> <span class="va">bt_empty_reducer</span>, ctfidf_model <span class="op">=</span> <span class="va">ctfidf_model</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-in"><span></span></span>
-</code></pre></div>
+    
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>

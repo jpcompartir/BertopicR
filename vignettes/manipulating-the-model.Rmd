@@ -119,13 +119,13 @@ representation_keybert <- bt_representation_keybert(fitted_model = topic_model,
 representation_mmr <- bt_representation_mmr(fitted_model = topic_model,
                                             embedding_model = embedder,
                                             diversity = 0.5)
-
-representation_openai <- bt_representation_openai(fitted_model = topic_model,
-                                                  documents = sentences,
-                                                  openai_model = "gpt-3.5-turbo",
-                                                  nr_repr_docs = 10,
-                                                  chat = TRUE,
-                                                  api_key = Sys.getenv("OPENAI_API_KEY"))
+# 
+# representation_openai <- bt_representation_openai(fitted_model = topic_model,
+#                                                   documents = sentences,
+#                                                   openai_model = "gpt-3.5-turbo",
+#                                                   nr_repr_docs = 10,
+#                                                   chat = TRUE,
+#                                                   api_key = Sys.getenv("OPENAI_API_KEY"))
 
 
 representation_hf <- bt_representation_hf(fitted_model = topic_model,

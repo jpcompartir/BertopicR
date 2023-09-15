@@ -75,23 +75,19 @@ itself.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">bt_outliers_tokenset_similarity</span><span class="op">(</span></span>
-<span>  <span class="va">...</span>,</span>
 <span>  <span class="va">fitted_model</span>,</span>
 <span>  <span class="va">documents</span>,</span>
 <span>  <span class="va">topics</span>,</span>
-<span>  window <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>  stride <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  window <span class="op">=</span> <span class="fl">4L</span>,</span>
+<span>  stride <span class="op">=</span> <span class="fl">1L</span>,</span>
 <span>  threshold <span class="op">=</span> <span class="fl">0.3</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>...</dt>
-<dd><p>Optional or additional parameters passed to approximate_distribution function, e.g. batch_size</p></dd>
-
-
-<dt>fitted_model</dt>
+    <dl><dt>fitted_model</dt>
 <dd><p>Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.</p></dd>
 
 
@@ -101,6 +97,10 @@ itself.</p>
 
 <dt>topics</dt>
 <dd><p>current topics associated with the documents</p></dd>
+
+
+<dt>...</dt>
+<dd><p>Optional or additional parameters passed to approximate_distribution function, e.g. batch_size</p></dd>
 
 
 <dt>window</dt>
@@ -137,6 +137,7 @@ skip when moving to next tokenset)</p></dd>
 <span class="r-in"><span><span class="va">outliers_chain</span> <span class="op">&lt;-</span> <span class="fu">bt_outliers_tokenset_similarity</span><span class="op">(</span>fitted_model <span class="op">=</span> <span class="va">topic_model</span>, documents <span class="op">=</span> <span class="va">docs</span>, topics <span class="op">=</span> <span class="va">outliers_embed</span><span class="op">$</span><span class="va">new_topics</span>, threshold <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

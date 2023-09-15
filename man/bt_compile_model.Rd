@@ -33,11 +33,11 @@ a BERTopic model
 Keep \verb{*_model} = NULL to proceed with a model made from default parameters (see each individual \verb{make_*} function for parameters). However, it is not advisable to accept default parameters for each model; you should tune each model according to your dataset and the business question you are answering.
 }
 \examples{
+\dontrun{
 # model using all default parameters
 model <- bt_compile_model()
 
 # model with modular components already generated
-\dontrun{
 # define embedding and reduction modules and pass to bt_compile_model
 embedder <- bt_make_embedder("all-mpnet-base-v2) 
 reducer <- bt_make_reducer_umap(n_components = 10L, n_neighbours = 20L)
@@ -52,8 +52,6 @@ reduced_embeddings <- bt_do_reducing(reducer, embeddings) # reduced embeddings
 # skip embedding and reduction step by passing empty models
 model <- bt_compile_model(embedding_model = bt_empty_embedder, reduction_model = bt_empty_reducer) 
 
-# use all default values when compiling model
-model <- bt_compile_model()
 }
 
 }
