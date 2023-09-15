@@ -1,12 +1,13 @@
 #' Create a kmeans clustering model
 #'
+#' @param ... Additional arguments sent to sklearn.cluster.KMeans()
 #' @param n_clusters number of clusters to search for (enter as integer by typing L after the number)
 #'
 #' @return A kMeans clustering model (Python object)
 #' @export
 #'
 #' @examples
-#' clustering_model <- bt_make_clusterer_kmeans(15L)
+#' clustering_model <- bt_make_clusterer_kmeans(n_clusters = 15L)
 #'
 #' kmeans_model <- bt_make_clusterer_kmeans(n_clusters = 10L)
 bt_make_clusterer_kmeans <- function(..., n_clusters = 10L) {
@@ -42,13 +43,14 @@ bt_make_clusterer_kmeans <- function(..., n_clusters = 10L) {
 
 #' Create an Agglomerative Clustering clustering model
 #'
+#' @param ... Additional arguments sent to sklearn.cluster.AgglomerativeClustering()
 #' @param n_clusters number of clusters to search for (enter as integer by typing L after the number)
 #'
 #' @return An Agglomerative Clustering clustering model (Python object)
 #' @export
 #'
 #' @examples
-#' clustering_model <- bt_make_clusterer_agglomerative(15L)
+#' clustering_model <- bt_make_clusterer_agglomerative( n_clusters = 15L)
 #'
 #' agglomerative_model <- bt_make_clusterer_agglomerative(n_clusters = 10L)
 bt_make_clusterer_agglomerative <- function(..., n_clusters = 20L) {
@@ -108,7 +110,7 @@ bt_make_clusterer_agglomerative <- function(..., n_clusters = 20L) {
 #' clustering_model <- bt_make_clusterer_hdbscan(metric = "minkowski", p = 1.5)
 #' 
 #' # specify integer numeric inputs as integer, using additional gen_min_span_tree argument
-#' clusterer = bt_make_clusterer_hdbscan(min_cluster_size = 5L, gen_min_span_tree = True)
+#' clusterer = bt_make_clusterer_hdbscan(min_cluster_size = 5L, gen_min_span_tree = TRUE)
 #' 
 #' # not specifying numeric inputs as integers (converted to integers internally)
 #' clusterer = bt_make_clusterer_hdbscan(min_cluster_size = 5, cluster_selection_method = "leaf")

@@ -6,9 +6,9 @@
 \usage{
 bt_make_vectoriser(
   ...,
-  ngram_range = c(1, 2),
+  ngram_range = c(1L, 2L),
   stop_words = "english",
-  min_frequency = 1,
+  min_frequency = 1L,
   max_features = NULL
 )
 }

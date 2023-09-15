@@ -5,23 +5,23 @@
 \title{Redistributes outliers using tokenset c-TF-IDF scores}
 \usage{
 bt_outliers_tokenset_similarity(
-  ...,
   fitted_model,
   documents,
   topics,
-  window = 4,
-  stride = 1,
+  ...,
+  window = 4L,
+  stride = 1L,
   threshold = 0.3
 )
 }
 \arguments{
-\item{...}{Optional or additional parameters passed to approximate_distribution function, e.g. batch_size}
-
 \item{fitted_model}{Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.}
 
 \item{documents}{documents to which the model was fit}
 
 \item{topics}{current topics associated with the documents}
+
+\item{...}{Optional or additional parameters passed to approximate_distribution function, e.g. batch_size}
 
 \item{window}{size of the moving window which is the number of tokens in a tokenset}
 
@@ -57,5 +57,6 @@ outliers_embed <- bt_outliers_embedings(fitted_model = topic_model, documents = 
 outliers_chain <- bt_outliers_tokenset_similarity(fitted_model = topic_model, documents = docs, topics = outliers_embed$new_topics, threshold = 0.2)
 
 }
+
 
 }

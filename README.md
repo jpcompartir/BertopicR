@@ -83,7 +83,7 @@ embeddings <- bt_do_embedding(embedder, documents = data$message,  batch_size = 
 #> all-minilm-l6-v2 added to embeddings attributes
 
 
-reducer <- bt_make_reducer(n_neighbors = 10L, n_components = 10L, metric = "cosine")
+reducer <- bt_make_reducer_umap(n_neighbours = 10L, n_components = 10L, metric = "cosine")
 clusterer <- bt_make_clusterer_hdbscan(min_cluster_size = 20L, metric = "euclidean", cluster_selection_method = "eom", min_samples = 10L)
 
 topic_model <- bt_compile_model(embedding_model = embedder,
@@ -100,28 +100,57 @@ topic_model <- bt_compile_model(embedding_model = embedder,
 fitted_model <- bt_fit_model(model = topic_model, 
                              documents = data$message, 
                              embeddings = embeddings)
+#> UMAP(angular_rp_forest=True, low_memory=False, metric='cosine', min_dist=0.0, n_components=10, n_neighbors=10, random_state=42, verbose=True)
+#> Fri Sep 15 12:58:15 2023 Construct fuzzy simplicial set
+#> Fri Sep 15 12:58:27 2023 Finding Nearest Neighbors
+#> Fri Sep 15 12:58:29 2023 Finished Nearest Neighbor Search
+#> Fri Sep 15 12:58:31 2023 Construct embedding
+#> Fri Sep 15 12:58:37 2023 Finished embedding
 
 fitted_model$get_topic_info() %>%
   dplyr::tibble()
-#> # A tibble: 34 × 3
-#>    Topic Count Name                                                 
-#>    <dbl> <dbl> <chr>                                                
-#>  1    -1  1760 -1_music_honor_amazing_spanish                       
-#>  2     0   197 0_celebrates_month celebration_october_heritage month
-#>  3     1   185 1_heritage night_festival_night_heritage celebration 
-#>  4     2   177 2_teachers_grade_students_parents                    
-#>  5     3   170 3_white_black_like_really                            
-#>  6     4   130 4_world_going_latina_got                             
-#>  7     5   125 5_awesome_yes_love_cool                              
-#>  8     6   119 6_utsw_hispanics_hispanicheritage_news               
-#>  9     7   108 7_latinx_latina_ll_chance                            
-#> 10     8    96 8_honored_community_honor_hosting                    
-#> # ℹ 24 more rows
+#> # A tibble: 36 × 5
+#>    Topic Count Name                           Representation Representative_Docs
+#>    <dbl> <dbl> <chr>                          <list>         <list>             
+#>  1    -1  1750 -1_hispanicheritagemonth_mont… <chr [10]>     <chr [3]>          
+#>  2     0   278 0_beto_trump_vote_fake         <chr [10]>     <chr [3]>          
+#>  3     1   238 1_night_heritage night_herita… <chr [10]>     <chr [3]>          
+#>  4     2   168 2_dance_salsa_music_tito       <chr [10]>     <chr [3]>          
+#>  5     3   150 3_heritage month_month_octobe… <chr [10]>     <chr [3]>          
+#>  6     4   126 4_students_school_grade_proje… <chr [10]>     <chr [3]>          
+#>  7     5   109 5_latinx_latina_uber_latinas   <chr [10]>     <chr [3]>          
+#>  8     6    94 6_mdcps_mdcpscentral_celebrat… <chr [10]>     <chr [3]>          
+#>  9     7    90 7_good thread_thread_yup_yes   <chr [10]>     <chr [3]>          
+#> 10     8    90 8_hispanicheritagemonth hispa… <chr [10]>     <chr [3]>          
+#> # ℹ 26 more rows
 ```
 
 ## Error Messages and causes
 
-““” Error in py_call_impl(callable, dots$args, dots$keywords) :
-ValueError: max_df corresponds to \< documents than
-min_df`""" This is usually caused by using relatively small data. Lower the min_frequency argument in`bt_make_vectoriser()\`
-or use more data to fix this.
+We have tried to provide informative error messages but sometimes you
+may be faced with error messages that have arisen from the parent python
+function used. If you get an error that begins with “Error in
+py_call_impl(callable, call_args\$unnamed, call_args\$named) :”, you can
+use reticulate::py_last_error() to trace the origin of the error
+message.
+
+Note that one common cause of error messages when working with python
+functions in R arises when the user fails to specify integer numbers as
+integer type. In R, integers are of type “numeric” by default, python
+functions typically require them to be explicitly specified as integer
+type. For any formal function arguments, this conversion is dealt with
+within in the function, however you should be aware of this if
+specifying extra arguments to any function. In R, this is achieved by
+placing an L after the number or using the as.integer() function:
+
+``` r
+# numbers default to "numeric"
+class(4)
+#> [1] "numeric"
+
+# we can force them to be "integer"
+class(4L)
+#> [1] "integer"
+class(as.integer(4))
+#> [1] "integer"
+```

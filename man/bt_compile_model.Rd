@@ -38,10 +38,22 @@ model <- bt_compile_model()
 
 # model with modular components already generated
 \dontrun{
-bt_compile_model(embedding_model = embedder, reduction_model = reducer, clustering_model = clusterer)
+# define embedding and reduction modules and pass to bt_compile_model
+embedder <- bt_make_embedder("all-mpnet-base-v2) 
+reducer <- bt_make_reducer_umap(n_components = 10L, n_neighbours = 20L)
+model <- bt_compile_model(embedding_model = embedder, reduction_model = reducer)
 
-# model with modular components already generated and embeddings already produced and reduced
-bt_compile_model(embedding_model = bt_empty_embedder, reduction_model = bt_empty_reducer, ctfidf_model = ctfidf_model)
+# Perform document embedding and reduction external to bertopic model and pass empty models to bt_compile_model
+embedder <- bt_make_embedder("all-mpnet-base-v2) # embedder
+embeddings <- bt_do_embedding(embedder, docs) # embeddings
+reducer <- bt_make_reducer_umap(n_components = 10L, n_neighbours = 20L) # reducer
+reduced_embeddings <- bt_do_reducing(reducer, embeddings) # reduced embeddings
+
+# skip embedding and reduction step by passing empty models
+model <- bt_compile_model(embedding_model = bt_empty_embedder, reduction_model = bt_empty_reducer) 
+
+# use all default values when compiling model
+model <- bt_compile_model()
 }
 
 }

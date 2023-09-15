@@ -9,7 +9,7 @@ bt_make_clusterer_hdbscan(
   min_cluster_size = 10L,
   min_samples = 10L,
   metric = "euclidean",
-  cluster_selection_method = "eom",
+  cluster_selection_method = c("eom", "leaf"),
   prediction_data = FALSE
 )
 }
@@ -33,13 +33,14 @@ An instance of the HDBSCAN clustering model (Python object.
 Instantiates an HDBSCAN clustering model using the hdbscan Python library.
 }
 \examples{
-clustering_model <- bt_make_clusterer_hdbscan(metric = "minkowski")
+# using minkowski metric for calculating distance between documents - when using minkowski metric, a value for p must be specified as an additional argument
+clustering_model <- bt_make_clusterer_hdbscan(metric = "minkowski", p = 1.5)
 
-# specify numeric inputs as integers (not necessary, this is )
-clusterer = bt_make_clusterer_hdbscan(min_cluster_size = 5L, gen_min_span_tree = True)
+# specify integer numeric inputs as integer, using additional gen_min_span_tree argument
+clusterer = bt_make_clusterer_hdbscan(min_cluster_size = 5L, gen_min_span_tree = TRUE)
 
-# don't specify numeric inputs as integers (converted to integers internally)
-clusterer = bt_make_clusterer_hdbscan(min_cluster_size = 5, gen_min_span_tree=True)
+# not specifying numeric inputs as integers (converted to integers internally)
+clusterer = bt_make_clusterer_hdbscan(min_cluster_size = 5, cluster_selection_method = "leaf")
 
 }
 \seealso{

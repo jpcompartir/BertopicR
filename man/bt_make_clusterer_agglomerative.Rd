@@ -4,9 +4,11 @@
 \alias{bt_make_clusterer_agglomerative}
 \title{Create an Agglomerative Clustering clustering model}
 \usage{
-bt_make_clusterer_agglomerative(n_clusters = 20L)
+bt_make_clusterer_agglomerative(..., n_clusters = 20L)
 }
 \arguments{
+\item{...}{Additional arguments sent to sklearn.cluster.AgglomerativeClustering()}
+
 \item{n_clusters}{number of clusters to search for (enter as integer by typing L after the number)}
 }
 \value{
@@ -16,7 +18,7 @@ An Agglomerative Clustering clustering model (Python object)
 Create an Agglomerative Clustering clustering model
 }
 \examples{
-clustering_model <- bt_make_clusterer_agglomerative(15L)
+clustering_model <- bt_make_clusterer_agglomerative( n_clusters = 15L)
 
 agglomerative_model <- bt_make_clusterer_agglomerative(n_clusters = 10L)
 }

@@ -9,6 +9,7 @@ fitted_model,
 documents,
 task,
 hf_model,
+...,
 default_prompt = "keywords",
 nr_samples = 500,
 nr_repr_docs = 20,
@@ -17,8 +18,6 @@ custom_prompt = NULL
 )
 }
 \arguments{
-\item{...}{arguments sent to the transformers.pipeline function}
-
 \item{fitted_model}{The fitted bertopic model}
 
 \item{documents}{the documents the topic model was fitted to}
@@ -26,6 +25,8 @@ custom_prompt = NULL
 \item{task}{Task defining the pipeline that will be returned. See https://huggingface.co/transformers/v3.0.2/main_classes/pipelines.html for more information. Use "text-generation" for gpt-like models and "text2text-generation" for T5-like models}
 
 \item{hf_model}{The model that will be used by the pipeline to make predictions}
+
+\item{...}{arguments sent to the transformers.pipeline function}
 
 \item{default_prompt}{Whether to use the "keywords" or "documents" default prompt. Passing a custom_prompt will render this argument NULL. Default is "keywords" prompt.}
 

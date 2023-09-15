@@ -30,7 +30,7 @@ be aware that the output model and the input model will be the same as one anoth
 }
 \examples{
 \dontrun{
-# create the model with default parametersthen fit the model to the data
+# create the model with default parameters, then fit the model to the data
 model <- bt_compile_model()
 bt_fit_model(model = model, documents = docs)
 
@@ -45,7 +45,8 @@ reduced_embeddings <-  bt_do_reducing(reducer, embeddings)
 
 # model
 model <- bt_compile_model(embedding_model = bt_empty_embedder, reducer = bt_empty_reducer)
-bt_fit_model(model, docs, reduced_embeddings)
+bt_fit_model(model = model, documents = docs, embeddings = reduced_embeddings)
+
 }
 
 }

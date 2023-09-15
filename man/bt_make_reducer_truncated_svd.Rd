@@ -5,16 +5,16 @@
 \title{Created Truncated SVD dimensionality reduction model}
 \usage{
 bt_make_reducer_truncated_svd(
-  ...,
   n_components,
-  n_iter = 5,
-  svd_solver = "randomized"
+  ...,
+  n_iter = 5L,
+  svd_solver = c("randomized", "arpack")
 )
 }
 \arguments{
-\item{...}{Sent to sklearn.decomposition Truncated SVD function for adding additional arguments}
-
 \item{n_components}{Number of components to keep}
+
+\item{...}{Sent to sklearn.decomposition Truncated SVD function for adding additional arguments}
 
 \item{n_iter}{Number of iterations for randomised svd solver. Not used if svd solver is "arpack".}
 
@@ -30,7 +30,7 @@ perform dimension reduction on high-dimensional data.
 Its intended use is in a BertopicR pipeline. If you're concerned about processing
 time, you most likely will only want to reduce the dimensions of your dataset once.
 In this case, when compiling your model with bt_compile_model you should call
-\code{reducer <- bt_base_reducer()}.
+\code{reducer <- bt_empty_reducer()}.
 }
 \examples{
 reducer <- bt_make_reducer_truncated_svd(n_components = 5)

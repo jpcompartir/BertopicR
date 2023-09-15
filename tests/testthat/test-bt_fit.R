@@ -8,7 +8,7 @@ test_that("bt_fit accepts a bertopic model, raises an error if not",{
   expect_error(bt_fit_model(empty_model,documents, embeddings))
 
   empty_model <- bertopic$BERTopic()
-  expect_silent(bt_fit_model(empty_model,documents, embeddings))
+  expect_message(bt_fit_model(empty_model,documents, embeddings), "Model is fitted")
 })
 
 test_that("bt_fit_model raises an error if the dimensions of documents and (embeddings or topic_labels)  don't match up, and doesn't if they do", {
@@ -27,7 +27,7 @@ test_that("bt_fit_model raises an error if the dimensions of documents and (embe
   correct_embeddings <- array(runif(200), dim = c(100, 2))
 
   #Run without raising an error
-  expect_silent(bt_fit_model(model = model, documents = documents, embeddings = correct_embeddings))
+  expect_message(bt_fit_model(model = model, documents = documents, embeddings = correct_embeddings))
 
   #Check we error if not array or data.frame provided
   expect_error(bt_fit_model(model = model, documents = "hello",
@@ -47,7 +47,7 @@ test_that("bt_fit_model raises an error if the dimensions of documents and (embe
       )
     )
 
-  expect_silent(
+  expect_message(
     bt_fit_model(model,
                  documents = documents,
                  embeddings = NULL,

@@ -4,12 +4,16 @@
 \alias{bt_make_reducer_pca}
 \title{Create pca dimensionality reduction model}
 \usage{
-bt_make_reducer_pca(..., n_components, svd_solver = "auto")
+bt_make_reducer_pca(
+  n_components,
+  ...,
+  svd_solver = c("auto", "full", "arpack", "randomized")
+)
 }
 \arguments{
-\item{...}{Sent to sklearn.decomposition.PCA function for adding additional arguments}
-
 \item{n_components}{Number of components to keep}
+
+\item{...}{Sent to sklearn.decomposition.PCA function for adding additional arguments}
 
 \item{svd_solver}{method for reducing components can be auto, full, arpack, randomized}
 }
@@ -22,7 +26,7 @@ use in R via reticulate. It allows you to perform dimension reduction on
 high-dimensional data, its intended use is in a BertopicR pipeline. If you're
 concerned about processing time, you most likely will only want to reduce the
 dimensions of your dataset once. In this case, when compiling your model with
-bt_compile_model you should call \code{reducer <- bt_base_reducer()}.
+bt_compile_model you should call \code{reducer <- bt_empty_reducer()}.
 }
 \examples{
 # using default svd_solver

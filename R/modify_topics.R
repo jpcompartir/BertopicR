@@ -208,6 +208,7 @@ bt_outliers_embeddings <- function(fitted_model,
 #' 
 #' }
 #'
+#'
 bt_outliers_tokenset_similarity <- function(fitted_model,
                                             documents,
                                             topics,
@@ -233,33 +234,37 @@ bt_outliers_tokenset_similarity <- function(fitted_model,
             is.numeric(window),
             is.numeric(stride))
   
-  ## validation finished ##
-  
+  # test ellipses inputs
   dots <- rlang::list2(...) # place ellipses in list
   
-  dots_unlist <- c() # empty vec
-  for (i in dots){
-    if (is.numeric(i)){
-      i = as.integer(i)
-    }
-    dots_unlist <- append(dots_unlist, i) # place ellipses in vec
-  } 
+  inspect <- reticulate::import("inspect")
+  empty_model <- fitted_model$approximate_distribution
+  available_args <- inspect$getfullargspec(empty_model)$args
+  
+  if(any(!names(dots) %in% available_args)){
+    
+    bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
+    stop(paste("Bad argument(s) attempted to be sent to fitted_model.approximate_distribution():", bad_args, sep = ' '))
+  }
+  ## validation finished ##
+
   
   # Convert window and stride to integers
   window_int <- as.integer(window)
   stride_int <- as.integer(stride)
   
+  dist_params_dict <- reticulate::py_dict(
+    keys = c("window", "stride",
+             names(dots)), 
+    values = c(window, stride,
+               unlist(dots, use.names = FALSE)), 
+    convert = TRUE) # dict for approx_distribution
+  
   new_topics <- fitted_model$reduce_outliers(documents = documents,
                                              topics = topics,
                                              strategy = "distributions",
                                              threshold = threshold,
-                                             distributions_params = 
-                                               reticulate::py_dict(
-                                                 keys = c("window", "stride",
-                                                          names(dots_unlist)), 
-                                                 values = c(4L, 1L,
-                                                            dots_unlist), 
-                                                 convert = TRUE)) # dict for approx_distribution
+                                             distributions_params = dist_params_dict) 
   
   new_topics_matched <- data.frame(message = documents,
                                    current_topics = topics,

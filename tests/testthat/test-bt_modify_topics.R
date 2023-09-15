@@ -142,6 +142,13 @@ test_that("bt_outlier_tokenset_similarity errors on incorrect input", {
   expect_error(bt_outliers_tokenset_similarity(fitted_model = model,
                                       documents = sentences,
                                       topics = list(rep(1, 50))))
+  
+  # errors on invalid input
+  expect_error(bt_outliers_tokenset_similarity(fitted_model = model,
+                                                documents = sentences,
+                                                topics = rep(1, 50),
+                                                test_arg = "test"),
+               "Bad argument\\(s\\) attempted to be sent to fitted_model.approximate_distribution\\(\\): test_arg")
 })
 
 test_that("bt_outliers_tokenset_similarty returns correct output", {
@@ -157,15 +164,27 @@ test_that("bt_outliers_tokenset_similarty returns correct output", {
                           documents = sentences,
                           topics = model$get_document_info(sentences)$Topic,
                           threshold = 0.01,
-                          window = 5,
-                          stride = 2,
-                          batch_size = 400,
+                          window = 1L,
+                          stride = 2L,
+                          batch_size = 400L,
                           padding = TRUE)
 
   # returns df with document, old topics, new topics:
   expect_true(all(df[2] == model$get_document_info(sentences)$Topic))
   expect_true((df %>% dplyr::filter(current_topics == -1) %>% nrow()) > 
                 (df %>% dplyr::filter(new_topics == -1) %>% nrow()))
+  
+  # test that extra arguments are being fed to the model
+  df2 <- bt_outliers_tokenset_similarity(fitted_model = model,
+                                         documents = sentences,
+                                         topics = model$get_document_info(sentences)$Topic,
+                                         threshold = 0.01,
+                                         window = 20L,
+                                         stride = 20L,
+                                         batch_size = 100L,
+                                         padding = TRUE)
+  
+  expect_true(any(df2$new_topics != df$new_topics))
 
 })
 
