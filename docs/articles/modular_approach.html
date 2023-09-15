@@ -212,11 +212,11 @@ to non-Euclidean Spaces</a> for alternatives.</p>
 <span>  <span class="va">reducer</span>, embeddings <span class="op">=</span> <span class="va">embeddings</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; UMAP(low_memory=False, min_dist=0, n_components=5, n_neighbors=10, random_state=42, verbose=True)</span></span>
-<span><span class="co">#&gt; Wed Sep 13 16:24:48 2023 Construct fuzzy simplicial set</span></span>
-<span><span class="co">#&gt; Wed Sep 13 16:24:49 2023 Finding Nearest Neighbors</span></span>
-<span><span class="co">#&gt; Wed Sep 13 16:24:49 2023 Finished Nearest Neighbor Search</span></span>
-<span><span class="co">#&gt; Wed Sep 13 16:24:50 2023 Construct embedding</span></span>
-<span><span class="co">#&gt; Wed Sep 13 16:24:51 2023 Finished embedding</span></span>
+<span><span class="co">#&gt; Fri Sep 15 13:44:10 2023 Construct fuzzy simplicial set</span></span>
+<span><span class="co">#&gt; Fri Sep 15 13:44:11 2023 Finding Nearest Neighbors</span></span>
+<span><span class="co">#&gt; Fri Sep 15 13:44:12 2023 Finished Nearest Neighbor Search</span></span>
+<span><span class="co">#&gt; Fri Sep 15 13:44:13 2023 Construct embedding</span></span>
+<span><span class="co">#&gt; Fri Sep 15 13:44:13 2023 Finished embedding</span></span>
 <span></span>
 <span><span class="va">reduced_embeddings</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt;          [,1]     [,2]     [,3]     [,4]     [,5]</span></span>
@@ -366,21 +366,21 @@ eclectic.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cluster</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html" class="external-link">sample_n</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">sentence</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "the hog crawled under the high fence."             </span></span>
-<span><span class="co">#&gt; [2] "it caught its hind paw in a rusty trap."           </span></span>
-<span><span class="co">#&gt; [3] "it takes a good trap to capture a bear."           </span></span>
-<span><span class="co">#&gt; [4] "she saw a cat in the neighbor's house."            </span></span>
-<span><span class="co">#&gt; [5] "the pup jerked the leash as he saw a feline shape."</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "the quick fox jumped on the sleeping cat."</span></span>
+<span><span class="co">#&gt; [2] "she saw a cat in the neighbor's house."   </span></span>
+<span><span class="co">#&gt; [3] "dots of light betrayed the black cat."    </span></span>
+<span><span class="co">#&gt; [4] "a toad and a frog are hard to tell apart."</span></span>
+<span><span class="co">#&gt; [5] "it caught its hind paw in a rusty trap."</span></span></code></pre></div>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cluster</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html" class="external-link">sample_n</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">sentence</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "ripe pears are fit for a queen's table."    </span></span>
-<span><span class="co">#&gt; [2] "the fruit of a fig tree is apple shaped."   </span></span>
-<span><span class="co">#&gt; [3] "canned pears lack full flavor."             </span></span>
-<span><span class="co">#&gt; [4] "cut the pie into large parts."              </span></span>
-<span><span class="co">#&gt; [5] "the ripe taste of cheese improves with age."</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "mince pie is a dish served to children."    </span></span>
+<span><span class="co">#&gt; [2] "ripe pears are fit for a queen's table."    </span></span>
+<span><span class="co">#&gt; [3] "they slice the sausage thin with a knife."  </span></span>
+<span><span class="co">#&gt; [4] "the ripe taste of cheese improves with age."</span></span>
+<span><span class="co">#&gt; [5] "the fruit peel was cut in thick slices."</span></span></code></pre></div>
 <p>The more clusters we look at, the more difficult it will become to
 figure out what’s happening…</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -388,11 +388,11 @@ figure out what’s happening…</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cluster</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html" class="external-link">sample_n</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">sentence</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "a stiff cord will do to fasten your shoe."      </span></span>
-<span><span class="co">#&gt; [2] "heave the line over the port side."             </span></span>
-<span><span class="co">#&gt; [3] "hold the hammer near the end to drive the nail."</span></span>
-<span><span class="co">#&gt; [4] "hoist the load to your left shoulder."          </span></span>
-<span><span class="co">#&gt; [5] "cut the cord that binds the box tightly."</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "split the log with a quick, sharp blow."        </span></span>
+<span><span class="co">#&gt; [2] "sever the twine with a quick snip of the knife."</span></span>
+<span><span class="co">#&gt; [3] "hoist the load to your left shoulder."          </span></span>
+<span><span class="co">#&gt; [4] "loop the braid to the left and then over."      </span></span>
+<span><span class="co">#&gt; [5] "press the pants and sew a button on the vest."</span></span></code></pre></div>
 <p>Inspecting each of these clusters and trying to figure out what each
 cluster means and how they inter-relate would soon become intractable
 for humans. Thankfully, within BERTopic there are quantitative methods
@@ -452,7 +452,10 @@ in more depth.</p>
 <span>  ctfidf_model <span class="op">=</span> <span class="va">ctfidf</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Model built</span></span></code></pre></div>
+<span><span class="co">#&gt; Model built &amp; input model updated accordingly</span></span>
+<span></span>
+<span><span class="va">topic_model</span><span class="op">$</span><span class="va">topics_</span></span>
+<span><span class="co">#&gt; NULL</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="fit-the-model">Fit the model<a class="anchor" aria-label="anchor" href="#fit-the-model"></a>
@@ -460,17 +463,51 @@ in more depth.</p>
 <p>We feed in our reduced embeddings rather than the original
 embeddings, this allows us to skip steps in the workflow; this can save
 us a lot of time, particularly when we have many documents.</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/bt_fit_model.html">bt_fit_model</a></span><span class="op">(</span><span class="va">topic_model</span>, <span class="va">data</span><span class="op">$</span><span class="va">sentence</span>, embeddings <span class="op">=</span> <span class="va">reduced_embeddings</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model is fitted</span></span>
+<span></span>
+<span><span class="va">topic_model</span><span class="op">$</span><span class="va">topics_</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span></span>
+<span><span class="co">#&gt;  [1] -1 -1 34 28 28  1 -1 -1 37 -1</span></span></code></pre></div>
 <p><strong>NOTE:</strong> The bertopic model you are working with is a
 pointer to a python object at a point in memory. This means that the
 input and the output model cannot be differentiated between without
-explicitly saving the model before performing this operation. A model is
-not returned as the function changes the input model.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/bt_fit_model.html">bt_fit_model</a></span><span class="op">(</span><span class="va">topic_model</span>, <span class="va">data</span><span class="op">$</span><span class="va">sentence</span>, embeddings <span class="op">=</span> <span class="va">reduced_embeddings</span><span class="op">)</span></span></code></pre></div>
+explicitly saving the model before performing this operation. We do not
+need to specify an output to the bt_fit_model function as the function
+changes the input model in place. Note the output of topic_model$topics_
+after the bt_compile_model() function and the bt_fit_model() function,
+before calling bt_fit_model(), when the model has not yet been fitted to
+any data, the model’s topics attribute is NULL, after being fitted, the
+topics attribute contains a list of topics related to the documents to
+which the model was fitted. Similarly, if we assigned an output to
+bt_fit_model, the output model would be the same as the input model:</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">example_model_compiled</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/bt_compile_model.html">bt_compile_model</a></span><span class="op">(</span></span>
+<span>  embedding_model <span class="op">=</span> <span class="fu"><a href="../reference/bt_empty_embedder.html">bt_empty_embedder</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  reduction_model <span class="op">=</span> <span class="fu"><a href="../reference/bt_empty_reducer.html">bt_empty_reducer</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  clustering_model <span class="op">=</span> <span class="va">clusterer</span>,</span>
+<span>  vectoriser_model <span class="op">=</span> <span class="va">vectoriser</span>,</span>
+<span>  ctfidf_model <span class="op">=</span> <span class="va">ctfidf</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model built &amp; input model updated accordingly</span></span>
+<span></span>
+<span><span class="va">example_model_compiled</span><span class="op">$</span><span class="va">topics_</span></span>
+<span><span class="co">#&gt; NULL</span></span>
+<span></span>
+<span><span class="va">example_model_fitted</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bt_fit_model.html">bt_fit_model</a></span><span class="op">(</span><span class="va">example_model_compiled</span>, <span class="va">data</span><span class="op">$</span><span class="va">sentence</span>, embeddings <span class="op">=</span> <span class="va">reduced_embeddings</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model is fitted</span></span>
+<span></span>
+<span><span class="va">example_model_compiled</span><span class="op">$</span><span class="va">topics_</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span></span>
+<span><span class="co">#&gt;  [1] -1 -1 34 28 28  1 -1 -1 37 -1</span></span>
+<span><span class="va">example_model_fitted</span><span class="op">$</span><span class="va">topics_</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span></span>
+<span><span class="co">#&gt; NULL</span></span></code></pre></div>
 <p>We can create a look up table to join our sentences to their topic
 labels and their topic descriptions and join this information with our
 original dataframe:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">topic_representations</span> <span class="op">&lt;-</span> <span class="va">topic_model</span><span class="op">$</span><span class="fu">get_topic_info</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">topic_rep_lookup</span> <span class="op">&lt;-</span> <span class="va">topic_representations</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span>topic <span class="op">=</span> <span class="va">Topic</span>, description <span class="op">=</span> <span class="va">Name</span>, topic_size <span class="op">=</span> <span class="va">Count</span><span class="op">)</span></span>

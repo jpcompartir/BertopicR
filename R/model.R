@@ -16,11 +16,11 @@
 #' @export
 #' 
 #' @examples
+#' \dontrun{
 #' # model using all default parameters
 #' model <- bt_compile_model()
 #' 
 #' # model with modular components already generated
-#' \dontrun{
 #' # define embedding and reduction modules and pass to bt_compile_model
 #' embedder <- bt_make_embedder("all-mpnet-base-v2) 
 #' reducer <- bt_make_reducer_umap(n_components = 10L, n_neighbours = 20L)
@@ -35,8 +35,6 @@
 #' # skip embedding and reduction step by passing empty models
 #' model <- bt_compile_model(embedding_model = bt_empty_embedder, reduction_model = bt_empty_reducer) 
 #' 
-#' # use all default values when compiling model
-#' model <- bt_compile_model()
 #' }
 #'
 bt_compile_model <- function(..., embedding_model = NULL, reduction_model = NULL, clustering_model = NULL, vectoriser_model = NULL, ctfidf_model = NULL){

@@ -19,7 +19,6 @@ reference:
   - bt_make_clusterer_hdbscan
   - bt_make_clusterer_kmeans
   - bt_make_clusterer_agglomerative
-  - bt_make_clusterer
   - bt_do_clustering
 - title: "Tokenise"
   desc: "Functions for tokenising document words/phrases in order to represent topics"
