@@ -29,7 +29,7 @@ test_that("bt_representation_keybert errors on bad input", {
   expect_error(bt_representation_keybert(documents = "test",
                                          document_embeddings = array(runif(10), dim = c(5, 2)),
                                          fitted_model = model,
-                                         embedding_model = bt_make_embedder("all-mpnet-base-v2")),
+                                         embedding_model = bt_make_embedder_st("all-mpnet-base-v2")),
                ".*Number of documents:.*Number of embeddings:.*")
                
 })
@@ -41,7 +41,7 @@ test_that("bt_representation_keybert returns correct output on correct input", {
   embeddings <- array(runif(3840), dim = c(10, 384))
   model <- bt$BERTopic(embedding_model = bt_empty_embedder(),
                        umap_model = bt_empty_reducer())$fit(docs, embeddings)
-  embedder <- bt_make_embedder("all-MiniLM-L6-v2")
+  embedder <- bt_make_embedder_st("all-MiniLM-L6-v2")
   
   representation_keybert <- bt_representation_keybert(fitted_model = model,
                                                       documents = docs,
@@ -84,7 +84,7 @@ test_that("bt_representation_mmr returns correct output on correct input", {
                        umap_model = bt_empty_reducer())$fit(docs, embeddings)
   
   representation_mmr <- bt_representation_mmr(fitted_model = model,
-                                              embedding_model = bt_make_embedder("all-MiniLM-L6-v2"))
+                                              embedding_model = bt_make_embedder_st("all-MiniLM-L6-v2"))
   nr_topics <- model$get_topic_info() %>% nrow()
   expect_true("-1" %in% names(representation_mmr))
   expect_equal(nr_topics, length(representation_mmr))

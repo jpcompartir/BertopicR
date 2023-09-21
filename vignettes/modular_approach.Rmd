@@ -71,12 +71,12 @@ In BertopicR you will usually either want to be making or doing with modules, or
 
 ### Make the embedder
 
-First we'll make an embedder (or embedding_model) using the `bt_make_embedder` function. Then we'll embed our sentences using the embedder.
+First we'll make an embedder (or embedding_model) using the `bt_make_embedder_st` function. Then we'll embed our sentences using the embedder.
 
 TIP: It's a good idea to save your embeddings, as when working with many documents this process will be time consuming.
 
 ```{r}
-embedder <- bt_make_embedder(
+embedder <- bt_make_embedder_st(
   model_name = "all-mpnet-base-v2"
   )
 ```

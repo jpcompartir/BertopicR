@@ -28,7 +28,7 @@ test_that("bt_compile_model works with Python objects and doesn't with non-Pytho
 
 test_that("bt_compile_model accepts the inputs from the various bt_make_* functions and the parameters are set appropriately", {
 
-  embedding_model <- bt_make_embedder("all-minilm-l6-v2")
+  embedding_model <- bt_make_embedder_st("all-minilm-l6-v2")
 
   reduction_model <- bt_make_reducer_umap(n_neighbours = 10L, n_components = 4L)
   clustering_model <- bt_make_clusterer_kmeans()
@@ -48,3 +48,4 @@ model <- bt_compile_model(ctfidf_model = bt_make_ctfidf(reduce_frequent_words = 
 #by a stronger premise the ctfidf_model we want has been added to the model
 expect_false(model$ctfidf_model$reduce_frequent_words)
 })
+

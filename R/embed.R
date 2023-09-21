@@ -30,56 +30,6 @@ bt_make_embedder_st <- function(model_name) {
   return(embedder)
 }
 
-#' Create an embedding model using the [hugging face library](https://huggingface.co/models)
-#'
-#' @param ... Additional arguments sent to transformers.pipeline()
-#' @param task The task defining the pipeline to be returned, this defaults to feature extraction.
-#' @param model The model used by the pipeline to make predictions
-#'
-#' @return a pipeline formed according to the task defined
-#' @export
-#'
-#' @examples
-#' # define task and use default model for that task
-#' embedder <- bt_make_embedder_hf(task = "feature-extraction")
-#' 
-#' # define model and use task specified for that model
-#' embedder <- bt_make_embedder_hf(model = "distilbert-base-cased")
-#' 
-#' # define task and model
-#' embedder <- bt_make_embedder_hf(task = "feature-extraction", model = "facebook/bart-base")
-#' 
-#' # define 
-bt_make_embedder_hf <- function(..., task = "feature-extraction", model = NULL){
-  # input argument validation
-  if (is.null(model) & is.null(task)){
-    stop("Either model or task input argument must be specified.")
-  }
-  
-  stopifnot(is.null(task)| is.character(task),
-            is.null(model) | is.character(model))
-  
-  dots <- rlang::list2(...) # extra inputs as list
-  transformers <- reticulate::import("transformers") # import transformers library
-  inspect <- reticulate::import("inspect") # import inspect to validate extra arguments
-  empty_model <- transformers$pipeline # function to be used with no arguments
-  available_args <- inspect$getfullargspec(empty_model)$args # arguments allowed
-  
-  if(any(!names(dots) %in% available_args)){
-    bad_args <- names(dots)[!names(dots) %in% names(empty_model)] # non-applicable args
-    stop(paste("Bad argument(s) attempted to be sent to transformers.pipeline():", bad_args, sep = ' '))
-  }
-  
-  # end input validation
-  
-  pipeline <- transformers$pipeline(task = task,
-                                    model = model,
-                                    ...)
-  
-  return(pipeline)
-  
-}
-
 #' Create an embedding model using a model available from the [Spacy Library](https://spacy.io/models)
 #'
 #' @param model The pipeline used to make predictions
@@ -132,6 +82,20 @@ bt_make_embedder_spacy <- function(model, ..., exclude = NULL){
   return(nlp)
 }
 
+bt_make_embedder_flair <- function(){
+  
+  # input argument validation ----
+  # is spacy in installed packages?
+  installed_packages <- reticulate::py_list_packages(model)
+  
+  if(!"flair" %in% installed_packages[["package"]]){
+    message("flair is not in installed packages of current environment, run reticulate::py_install(\"flair\").\n
+            Note that if you receive a module not found error, you may need to instead run reticulate::py_install(\"flair\", pip = TRUE) to force installation with pip instead of conda.")
+  } 
+  
+  
+  flair <- reticulate::import("flair")
+}
 #' Embed your documents
 #'
 #' Takes a document, or list of documents, and returns a numerical embedding which can be used as features for machine learning model or for semantic similarity search. If you have pre-computed your embeddings you can skip this step. the bt_embed function is designed to be used as one step in a topic modelling pipeline.
@@ -158,10 +122,10 @@ bt_make_embedder_spacy <- function(model, ..., exclude = NULL){
 #' 
 bt_do_embedding <- function(embedder, documents, ..., accelerator = "mps", progress_bar = TRUE) {
   
-  #If the embedder isn't a sentence transformers object, stop early.
-  if(!grepl("^sentence_tran",class(embedder)[[1]])){
-    stop("This package currently only supports embedding models from the sentence transformer library, embedder should be a sentence transformers model")
-  }
+  # update this to be compatible with compatible embedding models
+  # if(!grepl("^sentence_tran",class(embedder)[[1]])){
+  #   stop("This package currently only supports embedding models from the sentence transformer library, embedder should be a sentence transformers model")
+  # }
   
   #Store the attributes associated with the embedder for adding the embedding_model later
   embedder_attributes <- attributes(embedder)
@@ -170,15 +134,70 @@ bt_do_embedding <- function(embedder, documents, ..., accelerator = "mps", progr
   stopifnot(is.character(accelerator) | is.null(accelerator),
             is.logical(progress_bar))
   
-  #Create embeddings
-  embeddings <-
-    embedder$encode(
-      documents,
-      device = accelerator,
-      show_progress_bar = progress_bar,
-      ... #This allows knowledgeable users to include other arguments, without bloating the autofill for inexperienced users
-    )
+  #Create embeddings for sentence transformer
+  if(grepl("^sentence_tran",class(embedder)[[1]])){
+    embeddings <-
+      embedder$encode(
+        documents,
+        device = accelerator,
+        show_progress_bar = progress_bar,
+        ... #This allows knowledgeable users to include other arguments, without bloating the autofill for inexperienced users
+      )
+  }
+  else if(grepl("^spacy",class(embedder)[[1]])){
+    
+    embeddings <- c()
+    
+    for (doc in 1:500){
+      
+      embedding <- embedder(documents[doc])
+      
+      if (embedding$has_vector){
+        embedding = embedding$vector
+      }
+      else{
+        embedding = reticulate::py_eval("r.embedding._.trf_data.tensors[-1][0]")
+        embedding = reticulate::py_to_r(embedding)
+      }
+      # this following part is implemented in the python code but I haven't found an applicable use case yet
+      if (!is.array(embedding) && hasMethod("get", embedding)) {
+        embedding = embedding$get()
+      }
+      embeddings <- rbind(embeddings, embedding)
+    }
+    attributes(embeddings)$dimnames <- NULL
+  }
+  else if(grepl("^flair",class(embedder)[[1]])){
+    flair <- reticulate::import("flair")
+    
+    # disable fine tune to prevent CUDA OOM error (have not experienced this myself - from BERTopic python package)
+    if ("fine_tune" %in% names(embedder)){
+      embedder$fine_tune <- FALSE 
+    }
+    
+    # want document embeddings, not token embeddings so using mean pooling to convert token to document embeddings
+    if (grepl("TokenEmbeddings", class(embedder)[[2]])){
+      embedder <- flair$embeddings$DocumentPoolEmbeddings(embedder) 
+    }
+    
+    embeddings <- c()
+    for (doc in 1:length(documents)){
+      sentence <- flair$data$Sentence(documents[doc]) # convert document to flair object
+      embedding_step <- embedder$embed(sentence) # embed sentence
+      embedding <- sentence$embedding$detach()$numpy() # extract embedding and tensor values and convert values to numpy array
+      embeddings <- rbind(embeddings, embedding) # concatenate document embeddings
+    }
+    attributes(embeddings)$dimnames <- NULL # remove dimnames attribute
+  }
+    
+    
+  # implement this if we introduce a hugging face embedder function
+  # else if(grepl("transformers.*pipelines",class(embedder)[[1]])){
+  #   
+  # }
   
+  
+ 
   #Give the user a quick console nudge that the embeddings are ready
   message("\nEmbedding proccess finished")
   
@@ -198,3 +217,54 @@ bt_do_embedding <- function(embedder, documents, ..., accelerator = "mps", progr
   return(embeddings)
   
 }
+
+# do we need a bt_make_embedder_hf when we have st? Should I be using pipeline or different function to make the embedder ----
+#' Create an embedding model using the [hugging face library](https://huggingface.co/models)
+#'
+#' @param ... Additional arguments sent to transformers.pipeline()
+#' @param task The task defining the pipeline to be returned, this defaults to feature extraction.
+#' @param model The model used by the pipeline to make predictions
+#'
+#' @return a pipeline formed according to the task defined
+#' @export
+#'
+#' @examples
+#' # define task and use default model for that task
+#' embedder <- bt_make_embedder_hf(task = "feature-extraction")
+#' 
+#' # define model and use task specified for that model
+#' embedder <- bt_make_embedder_hf(model = "distilbert-base-cased")
+#' 
+#' # define task and model
+#' embedder <- bt_make_embedder_hf(task = "feature-extraction", model = "facebook/bart-base")
+#' 
+#' # define 
+# bt_make_embedder_hf <- function(..., task = "feature-extraction", model = NULL){
+#   # input argument validation
+#   if (is.null(model) & is.null(task)){
+#     stop("Either model or task input argument must be specified.")
+#   }
+#   
+#   stopifnot(is.null(task)| is.character(task),
+#             is.null(model) | is.character(model))
+#   
+#   dots <- rlang::list2(...) # extra inputs as list
+#   transformers <- reticulate::import("transformers") # import transformers library
+#   inspect <- reticulate::import("inspect") # import inspect to validate extra arguments
+#   empty_model <- transformers$pipeline # function to be used with no arguments
+#   available_args <- inspect$getfullargspec(empty_model)$args # arguments allowed
+#   
+#   if(any(!names(dots) %in% available_args)){
+#     bad_args <- names(dots)[!names(dots) %in% names(empty_model)] # non-applicable args
+#     stop(paste("Bad argument(s) attempted to be sent to transformers.pipeline():", bad_args, sep = ' '))
+#   }
+#   
+#   # end input validation
+#   
+#   pipeline <- transformers$pipeline(task = task,
+#                                     model = model,
+#                                     ...)
+#   
+#   return(pipeline)
+#   
+# }

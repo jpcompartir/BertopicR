@@ -1,14 +1,14 @@
-#testing bt_make_embedder ----
-test_that("bt_make_embedder fails when it should and succeeds otherwise",{
-  expect_error(bt_make_embedder("all-minilm-l6-v10"),
+#testing bt_make_embedder_st ----
+test_that("bt_make_embedder_st fails when it should and succeeds otherwise",{
+  expect_error(bt_make_embedder_st("all-minilm-l6-v10"),
                regexp = "Repository Not Found")
 
-  expect_silent(bt_make_embedder("all-minilm-l6-v2"))
+  expect_silent(bt_make_embedder_st("all-minilm-l6-v2"))
 
 })
 
-test_that("bt_make_embedder returns the appropriate object", {
-  embedder <- bt_make_embedder("all-minilm-l6-v2")
+test_that("bt_make_embedder_st returns the appropriate object", {
+  embedder <- bt_make_embedder_st("all-minilm-l6-v2")
 
   expect_true(grepl("^sentence_tran",class(embedder)[[1]]))
   expect_true("encode" %in% names(embedder))
@@ -23,7 +23,7 @@ test_that("bt_make_embedder returns the appropriate object", {
 
 test_that("bt_do_embedding function is raising errors when it should", {
 
-  embedder <- bt_make_embedder("all-minilm-l6-v2")
+  embedder <- bt_make_embedder_st("all-minilm-l6-v2")
   expect_error(
     bt_do_embedding(
       embedder = 1L,
@@ -52,7 +52,7 @@ test_that("bt_do_embedding function is raising errors when it should", {
 
 test_that("bt_do_embedding function returns an array when fed correct parameters and has appropriate attributes", {
 
-  embedder <- bt_make_embedder("all-minilm-l6-v2")
+  embedder <- bt_make_embedder_st("all-minilm-l6-v2")
 
   #Function takes one text
   test_embeddings <- bt_do_embedding(
@@ -87,7 +87,7 @@ test_that("bt_do_embedding function returns an array when fed correct parameters
 })
 
 test_that("embedding_model attribute persists when it should and doesn't break stuff wen it doesn't",{
-  embedder <- bt_make_embedder("all-minilm-l6-v2")
+  embedder <- bt_make_embedder_st("all-minilm-l6-v2")
   expect_true("embedding_model" %in% names(attributes(embedder)))
 
   embeddings <- bt_do_embedding(embedder, "text")
