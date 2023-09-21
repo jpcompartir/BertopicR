@@ -13,7 +13,7 @@
 #' @param min_dist The minimum distance between points in the low-dimensional representation (default: 0.0).
 #' @param metric The metric to use for distance computation (default: "euclidean").
 #' @param random_state The seed used by the random number generator (default: 42).
-#' @param low_memory Loogical, use a low memory version of UMAP (default: FALSE)
+#' @param low_memory Logical, use a low memory version of UMAP (default: FALSE)
 #' @param verbose Logical flag indicating whether to report progress during the dimension reduction (default: TRUE).
 #'
 #' @return A UMAP Model that can be input to bt_do_reducing to reduce dimensions of data
@@ -37,7 +37,7 @@
 #' 
 bt_make_reducer_umap <- function( ..., n_neighbours = 15L, n_components = 5L, min_dist = 0.0, metric = "euclidean", random_state = 42L, low_memory = FALSE, verbose = TRUE
 ) {
-
+  
   #Early stopping and input validation ----
   stopifnot(is.logical(verbose),
             is.numeric(n_neighbours),
@@ -58,11 +58,11 @@ bt_make_reducer_umap <- function( ..., n_neighbours = 15L, n_components = 5L, mi
     bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
     stop(paste("Bad argument(s) attempted to be sent to UMAP():", bad_args, sep = ' '))
   }
-
-    #End of validation ----
-    
-
-    #Instantiate a UMAP model with the given parameters
+  
+  #End of validation ----
+  
+  
+  #Instantiate a UMAP model with the given parameters
   reducer <- umap$UMAP(n_neighbors = as.integer(n_neighbours),
                        n_components = as.integer(n_components),
                        min_dist = min_dist,
@@ -72,8 +72,8 @@ bt_make_reducer_umap <- function( ..., n_neighbours = 15L, n_components = 5L, mi
                        low_memory = low_memory,
                        ... #Allows user to give additional arguments to the umap$UMAP function.
   )
-
-
+  
+  
   return(reducer)
 }
 
@@ -206,10 +206,10 @@ bt_make_reducer_truncated_svd <- function(n_components,
   n_iter <- as.integer(n_iter)
   
   truncated_svd_model <- skl$TruncatedSVD(n_components = n_components,
-                                n_iter = n_iter,
-                       algorithm = svd_solver,
-                       ...)
-
+                                          n_iter = n_iter,
+                                          algorithm = svd_solver,
+                                          ...)
+  
   
   return(truncated_svd_model)
 }
@@ -234,34 +234,33 @@ bt_make_reducer_truncated_svd <- function(n_components,
 #' reduced_embeddings <- bt_do_reducing(reducer, embeddings)
 #' 
 bt_do_reducing <- function(reducer, embeddings) {
-
+  
   #Early stopping
   stopifnot(is.array(embeddings) | is.data.frame(embeddings)) #Might be bad # was bad, check for array or data.frame
-
-  #Should we return the model or just the reduced embeddings
+  
   #Try to reduce dimensions, and if unsuccessful we'll check what happened and try again. This follows the _bertopic.py implementation
   reduced_embeddings <- try(reducer$fit_transform(embeddings))
-
+  
   #Try again, this time setting Y = Y (reducer$fit(X =, Y =)), this is to mimic code from he Python implementation
   if(any(class(reduced_embeddings) == "try-error")){
     reduced_embeddings <-
       try(reducer$fit_transform(X = embeddings,Y = Y))
   }
-
+  
   #If neither call worked, stop the function with an error message
   if(any(class(reduced_embeddings) == "try-error")){
     stop("Error in UMAP call, are your inputs correctly formatted?")
   }
-
+  
   #Add additional attributes which may be helpful to track later on ----
   attr(reduced_embeddings, "reduced") <- dim(reduced_embeddings)[[2]] < dim(embeddings)[[2]]
   attr(reduced_embeddings, "original_dim") <- dim(embeddings)
   
   if ("n_neighbors" %in% names(reducer)) {
     attr(reduced_embeddings, "n_neighbors") <- reducer$n_neighbors
-    } else {
-      attr(reduced_embeddings, "n_neighbors") <- NA
-    }
+  } else {
+    attr(reduced_embeddings, "n_neighbors") <- NA
+  }
   
   if ("metric" %in% names(reducer)) {
     attr(reduced_embeddings, "metric") <- reducer$metric

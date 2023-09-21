@@ -35,7 +35,7 @@ An sklearn CountVectorizer object configured with the provided parameters
 \description{
 This function uses Python's sklearn for feature extraction and count vectorisation.
 It creates a CountVectorizer object with the specified parameters.
-CountVectorizer is a way to convert text data into vectors as model input. Used inside a BertopicR topc modelling pipeline.
+CountVectorizer is a way to convert text data into vectors as model input. Used inside a BertopicR topic modelling pipeline.
 }
 \examples{
 # vectoriser model that converts text docs to ngrams with between 1 - 2 tokens

@@ -2,7 +2,7 @@
 #'
 #' This function uses Python's sklearn for feature extraction and count vectorisation.
 #' It creates a CountVectorizer object with the specified parameters.
-#' CountVectorizer is a way to convert text data into vectors as model input. Used inside a BertopicR topc modelling pipeline.
+#' CountVectorizer is a way to convert text data into vectors as model input. Used inside a BertopicR topic modelling pipeline.
 #'
 #' @param ... Additional parameters passed to sklearn's CountVectorizer
 #' @param ngram_range A vector of length 2 (default c(1, 2)) indicating the lower and upper boundary of the range of n-values for
@@ -27,26 +27,26 @@
 #' vectoriser <- bt_make_vectoriser(ngram_range = c(1, 3), stop_words = "english")
 #' 
 bt_make_vectoriser <- function(..., ngram_range = c(1L, 2L), stop_words = "english", min_frequency = 1L, max_features = NULL) {
-
+  
   stopifnot(is.vector(ngram_range),
             length(ngram_range) == 2,
             is.numeric(ngram_range),
             is.character(stop_words),
             is.numeric(min_frequency))
-
+  
   #Create a tuple from the ngram_range input
   ngram_tuple <-  reticulate::tuple(as.integer(ngram_range[1]), as.integer(ngram_range[2]))
-
+  
   min_frequency <- as.integer(min_frequency) #convert to int for Python
-
+  
   #Text feature extraction from sklearn
   sklearn_fet <- reticulate::import("sklearn.feature_extraction.text")
-
+  
   vectorizer <- sklearn_fet$CountVectorizer(
     ngram_range = ngram_tuple,
     stop_words = stop_words,
     min_df = min_frequency,
     max_features = max_features, ...)
-
+  
   return(vectorizer)
 }
