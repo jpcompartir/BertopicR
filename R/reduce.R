@@ -35,6 +35,8 @@
 #'  # using cosine distance measure and not specifying numeric inputs as integers (done internally in function)
 #' reducer <- bt_make_reducer_umap(n_neighbours = 20, n_components = 6, metric = "cosine")
 #' 
+#' # specifying additional arguments
+#' reducer <- bt_make_reducer_umap(n_neighbours = 20, n_components = 6, metric = "cosine", spread = 1.5) 
 bt_make_reducer_umap <- function( ..., n_neighbours = 15L, n_components = 5L, min_dist = 0.0, metric = "euclidean", random_state = 42L, low_memory = FALSE, verbose = TRUE
 ) {
   
@@ -102,8 +104,8 @@ bt_make_reducer_umap <- function( ..., n_neighbours = 15L, n_components = 5L, mi
 #' # using default svd_solver
 #' reducer <- bt_make_reducer_pca(n_components = 100)
 #' 
-#' # speciying extra pca arguments
-#' reducer <- bt_make_reducer_pca (n_components = 20, svd_solver = "full", random_state = 42L)
+#' # specifying extra pca arguments
+#' reducer <- bt_make_reducer_pca(n_components = 20, svd_solver = "full", random_state = 42L)
 #' 
 bt_make_reducer_pca <- function(n_components,
                                 ..., 
@@ -170,7 +172,7 @@ bt_make_reducer_pca <- function(n_components,
 #' 
 #' @examples
 #' reducer <- bt_make_reducer_truncated_svd(n_components = 5)
-#' 
+#' reducer <- bt_make_reducer_truncated_svd(n_components = 5, svd_solver = "randomized", n_iter = 10)
 bt_make_reducer_truncated_svd <- function(n_components,
                                           ..., 
                                           n_iter = 5L,

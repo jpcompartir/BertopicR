@@ -19,9 +19,9 @@ bt_do_embedding(
 
 \item{...}{Optional or additional parameters passed to SentenceTransformer's encode function, e.g. batch_size}
 
-\item{accelerator}{A string containing the name of a hardware accelerator, e.g. "mps", "cuda". If NULL no acceleartor is used.}
+\item{accelerator}{A string containing the name of a hardware accelerator, e.g. "mps", "cuda". This is currently applied only if the embedder is a sentence transformer or from the flair library. If NULL no accelerator is used for sentence transformer or flair embeddings. GPU usage for spacy embeddings should be specified on embedder creation (bt_make_embedder_spacy)}
 
-\item{progress_bar}{A logical value indicating whether a progress bar is shown in the console}
+\item{progress_bar}{A logical value indicating whether a progress bar is shown in the console. This is only used if using an embedder from the sentence-transformer package}
 }
 \value{
 An array of floating point numbers
@@ -37,7 +37,7 @@ The function currently returns an object with two additional attributes: embeddi
 \examples{
 docs <- c("i am", "a list of", "documents", "to be embedded")
 
-embedder <- bt_make_embedder("aLL-minilm-l6-v2")
+embedder <- bt_make_embedder_st("aLL-minilm-l6-v2")
 
 embeddings <- bt_do_embedding(embedder, docs)
 

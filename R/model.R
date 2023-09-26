@@ -64,7 +64,7 @@ bt_compile_model <- function(..., embedding_model = NULL, reduction_model = NULL
 
   #Provide a default embedding model for: Since MMR is using word embeddings to diversify the topic representations, it is necessary to pass the embedding model to BERTopic if you are using pre-computed embeddings:"
   if(is.null(embedding_model)){
-    embedding_model <- bt_make_embedder_st(model_name = "all-mpnet-base-v2")
+    embedding_model <- bt_make_embedder_st(model = "all-mpnet-base-v2")
     message("\nNo embedding model provided, defaulting to 'all-mpnet-base-v2' model as embedder.")
     }
 

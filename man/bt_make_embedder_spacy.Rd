@@ -4,17 +4,19 @@
 \alias{bt_make_embedder_spacy}
 \title{Create an embedding model using a model available from the \href{https://spacy.io/models}{Spacy Library}}
 \usage{
-bt_make_embedder_spacy(model, ..., exclude = NULL)
+bt_make_embedder_spacy(model, ..., prefer_gpu = TRUE, exclude = NULL)
 }
 \arguments{
 \item{model}{The pipeline used to make predictions}
 
 \item{...}{additional arguments to be sent to the spacy.load function}
 
+\item{prefer_gpu}{if TRUE use gpu if available}
+
 \item{exclude}{name of pipeline components to exclude}
 }
 \value{
-a pipeline formed according to the model defined
+an embedding model, formed according to the model defined, that can be input to be_do_embedding to create document embeddings
 }
 \description{
 Create an embedding model using a model available from the \href{https://spacy.io/models}{Spacy Library}
