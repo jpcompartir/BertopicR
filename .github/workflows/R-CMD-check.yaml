@@ -29,7 +29,6 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: rcmdcheck remotes reticulate
-          needs: check
           cache-version: 3
           upgrade: 'TRUE'
           
