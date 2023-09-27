@@ -28,7 +28,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: rcmdcheck remotes local::.
+          extra-packages: rcmdcheck remotes reticulate
           needs: check
           
       - name: setup r-reticulate venv
