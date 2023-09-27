@@ -32,22 +32,20 @@ jobs:
           cache-version: 3
           upgrade: 'TRUE'
           
-      - name: setup r-reticulate venv
-        shell: Rscript {0}
+      - name: Install Miniconda
         run: |
-
-          path_to_python <- reticulate::virtualenv_create(
-            envname = "r-reticulate",
-            python = Sys.which("python"), # placed on PATH by the setup-python action
-            packages = c(
-              "bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29", "umap-learn==0.5.3", 
-              "pandas==2.0.2", "scikit-learn==1.2.2", "pytorch==2.0.0","tqdm==4.65.0", 
-              "sentence-transformers==2.2.2","plotly==5.15.0", "openai==0.27.8")
-            )
-          )
-
-          writeLines(sprintf("RETICULATE_PYTHON=%s", path_to_python),
-                     Sys.getenv("GITHUB_ENV"))
-
+          Rscript -e "remotes::install_github('rstudio/reticulate')"
+          Rscript -e "reticulate::install_miniconda()"
+      - if: runner.os == 'macOS'
+        run: echo "options(reticulate.conda_binary = reticulate:::miniconda_conda())" >> .Rprofile
+      - name: setup bertopic env
+        run: |
+          reticulate::conda_create(envname = bertopicr_env, 
+                conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
+                packages = c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29", 
+                "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2", 
+                "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2",
+                "plotly==5.15.0", "openai==0.27.8"))
+         
 
       - uses: r-lib/actions/check-r-package@v2
