@@ -85,12 +85,12 @@ home:
   - text: Report an issue
     href: https://github.com/jpcompartir/BertopicR/issues
     
-# template:
-#   bootstrap: 5
-#   bootswatch: cerulean
-#   # theme: breeze-light
-#   bslib:
-#     pkgdown-nav-height: 100px
-#   params:
-#     search: true
+template:
+  bootstrap: 5
+  bootswatch: cerulean
+  # theme: breeze-light
+  bslib:
+    pkgdown-nav-height: 100px
+  params:
+    search: true
 
