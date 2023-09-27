@@ -30,6 +30,8 @@ jobs:
         with:
           extra-packages: rcmdcheck remotes reticulate
           needs: check
+          cache-version: 3
+          upgrade: 'TRUE'
           
       - name: setup r-reticulate venv
         shell: Rscript {0}
