@@ -54,6 +54,8 @@ reducer <- bt_make_reducer_umap(n_neighbours = 15, n_components = 10, metric = "
  # using cosine distance measure and not specifying numeric inputs as integers (done internally in function)
 reducer <- bt_make_reducer_umap(n_neighbours = 20, n_components = 6, metric = "cosine")
 
+# specifying additional arguments
+reducer <- bt_make_reducer_umap(n_neighbours = 20, n_components = 6, metric = "cosine", spread = 1.5) 
 }
 \seealso{
 \url{https://umap-learn.readthedocs.io/en/latest/api.html}

@@ -72,9 +72,12 @@
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">clustering_model</span> <span class="op">&lt;-</span> <span class="fu">bt_make_clusterer_kmeans</span><span class="op">(</span>n_clusters <span class="op">=</span> <span class="fl">15L</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># models with different values for number of clusters</span></span></span>
+<span class="r-in"><span><span class="va">clustering_model</span> <span class="op">&lt;-</span> <span class="fu">bt_make_clusterer_kmeans</span><span class="op">(</span>n_clusters <span class="op">=</span> <span class="fl">15L</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">clustering_model</span> <span class="op">&lt;-</span> <span class="fu">bt_make_clusterer_kmeans</span><span class="op">(</span>n_clusters <span class="op">=</span> <span class="fl">10L</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">kmeans_model</span> <span class="op">&lt;-</span> <span class="fu">bt_make_clusterer_kmeans</span><span class="op">(</span>n_clusters <span class="op">=</span> <span class="fl">10L</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># specifying additional arguments</span></span></span>
+<span class="r-in"><span><span class="va">clustering_model</span> <span class="op">&lt;-</span> <span class="fu">bt_make_clusterer_kmeans</span><span class="op">(</span>n_clusters <span class="op">=</span> <span class="fl">10L</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

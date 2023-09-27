@@ -60,7 +60,7 @@ CountVectorizer is a way to convert text data into vectors as model input. Used 
 <span>  <span class="va">...</span>,</span>
 <span>  ngram_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span><span class="op">)</span>,</span>
 <span>  stop_words <span class="op">=</span> <span class="st">"english"</span>,</span>
-<span>  min_frequency <span class="op">=</span> <span class="fl">1L</span>,</span>
+<span>  min_frequency <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>  max_features <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -84,8 +84,11 @@ appropriate stop list is returned. 'english' is currently the default.</p></dd>
 
 
 <dt>min_frequency</dt>
-<dd><p>Integer (default 1L). When building the vocabulary ignore terms that have a
-corpus frequency strictly lower than the given threshold.</p></dd>
+<dd><p>Integer or float (default 0.1). When building the vocabulary ignore terms that have a
+corpus frequency strictly lower than the given threshold. If min_frequency is explicitly defined to be
+an integer, it is assumed to represent the absolute count. If min_frequency is not explicitly specified
+as an integer and is between 0 and 1, it is assumed to represent a proportion of documents, if it is a
+whole number it is assumed to represent the absolute count.</p></dd>
 
 
 <dt>max_features</dt>
@@ -107,6 +110,15 @@ the top max_features ordered by term frequency across the corpus.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># vectoriser model that converts text docs to ngrams with between 1 - 3 tokens</span></span></span>
 <span class="r-in"><span><span class="va">vectoriser</span> <span class="op">&lt;-</span> <span class="fu">bt_make_vectoriser</span><span class="op">(</span>ngram_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, stop_words <span class="op">=</span> <span class="st">"english"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># You can implement custom stopwords or stopwords from other sources</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="va">stopwords_cat</span> <span class="op">&lt;-</span> <span class="fu">tm</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/tm/man/stopwords.html" class="external-link">stopwords</a></span><span class="op">(</span>kind <span class="op">=</span> <span class="st">"catalan"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">vectoriser</span> <span class="op">&lt;-</span> <span class="fu">bt_make_vectoriser</span><span class="op">(</span>ngram_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, stop_words <span class="op">=</span> <span class="va">stopwords_cat</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">custom_stopwords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"these"</span>, <span class="st">"words"</span>, <span class="st">"are"</span>, <span class="st">"not"</span>, <span class="st">"helpful"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">vectoriser</span> <span class="op">&lt;-</span> <span class="fu">bt_make_vectoriser</span><span class="op">(</span>ngram_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, stop_words <span class="op">=</span> <span class="va">custom_stopwords</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

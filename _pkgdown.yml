@@ -77,8 +77,13 @@ navbar:
   
 repo:
   url: 
-    home: https://aoiferyan-sc.github.io/BertopicR/
+    home: https://aoiferyan-sc.github.io/BertopicR
     source: https://github.com/AoifeRyan-sc/BertopicR/tree/review_updates_12sep2023
+    
+home:
+  links:
+  - text: Report an issue
+    href: https://github.com/jpcompartir/BertopicR/issues
     
 template:
   bootstrap: 5

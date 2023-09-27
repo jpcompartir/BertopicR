@@ -16,18 +16,17 @@
 #' @export
 #' 
 #' @examples
-#' \dontrun{
-#' # model using all default parameters
+#' # model using all default parameters ----
 #' model <- bt_compile_model()
 #' 
-#' # model with modular components already generated
+#' # model with modular components already generated ----
 #' # define embedding and reduction modules and pass to bt_compile_model
-#' embedder <- bt_make_embedder("all-mpnet-base-v2) 
+#' embedder <- bt_make_embedder_st("all-mpnet-base-v2) 
 #' reducer <- bt_make_reducer_umap(n_components = 10L, n_neighbours = 20L)
 #' model <- bt_compile_model(embedding_model = embedder, reduction_model = reducer)
 #'
 #' # Perform document embedding and reduction external to bertopic model and pass empty models to bt_compile_model
-#' embedder <- bt_make_embedder("all-mpnet-base-v2) # embedder
+#' embedder <- bt_make_embedder_st("all-mpnet-base-v2) # embedder
 #' embeddings <- bt_do_embedding(embedder, docs) # embeddings
 #' reducer <- bt_make_reducer_umap(n_components = 10L, n_neighbours = 20L) # reducer
 #' reduced_embeddings <- bt_do_reducing(reducer, embeddings) # reduced embeddings
@@ -35,7 +34,14 @@
 #' # skip embedding and reduction step by passing empty models
 #' model <- bt_compile_model(embedding_model = bt_empty_embedder, reduction_model = bt_empty_reducer) 
 #' 
-#' }
+#' # Perform embedding and reduction as part of model creation with custom models ----
+#' # define models
+#' embedder <- bt_make_embedder_spacy(model = "en_core_web_sm", exclude = c("tagger", "parser", "ner", "attribute_ruler", "lemmatizer"))
+#' reducer <- bt_make_reducer_pca(n_components = 100L)
+#' clusterer <- bt_make_clusterer_kmeans(n_clusters = 10L)
+#' 
+#' # compile model
+#' model <- bt_compile_model(embedding_model = embedder, reduction_model = reducer, clustering_model = clusterer)
 #'
 bt_compile_model <- function(..., embedding_model = NULL, reduction_model = NULL, clustering_model = NULL, vectoriser_model = NULL, ctfidf_model = NULL){
 

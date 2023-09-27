@@ -32,8 +32,8 @@ bt_compile_model you should call \code{reducer <- bt_empty_reducer()}.
 # using default svd_solver
 reducer <- bt_make_reducer_pca(n_components = 100)
 
-# speciying extra pca arguments
-reducer <- bt_make_reducer_pca (n_components = 20, svd_solver = "full", random_state = 42L)
+# specifying extra pca arguments
+reducer <- bt_make_reducer_pca(n_components = 20, svd_solver = "full", random_state = 42L)
 
 }
 \seealso{

@@ -34,7 +34,7 @@ In this case, when compiling your model with bt_compile_model you should call
 }
 \examples{
 reducer <- bt_make_reducer_truncated_svd(n_components = 5)
-
+reducer <- bt_make_reducer_truncated_svd(n_components = 5, svd_solver = "randomized", n_iter = 10)
 }
 \seealso{
 \url{https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.TruncatedSVD.html}
