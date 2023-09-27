@@ -64,7 +64,7 @@ reference:
 
 articles:
 - title: vignettes
-  navbar: ~
+  # navbar: ~
   contents:
   - modular_approach
   - manipulating-the-model
@@ -73,24 +73,24 @@ articles:
 navbar:
   structure:
     left: [home, intro, reference, articles]
-    right: [github]
+    right: [search, github]
   
 repo:
   url: 
-    home: https://aoiferyan-sc.github.io/BertopicR
-    source: https://github.com/AoifeRyan-sc/BertopicR/tree/review_updates_12sep2023
+    home: https://github.com/AoifeRyan-sc/BertopicR
+    source: https://github.com/AoifeRyan-sc/BertopicR/tree/review_updates_12sep2023/
     
 home:
   links:
   - text: Report an issue
     href: https://github.com/jpcompartir/BertopicR/issues
     
-template:
-  bootstrap: 5
-  bootswatch: cerulean
-  # theme: breeze-light
-  bslib:
-    pkgdown-nav-height: 100px
-  params:
-    search: true
+# template:
+#   bootstrap: 5
+#   bootswatch: cerulean
+#   # theme: breeze-light
+#   bslib:
+#     pkgdown-nav-height: 100px
+#   params:
+#     search: true
 
