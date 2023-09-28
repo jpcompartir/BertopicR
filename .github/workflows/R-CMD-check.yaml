@@ -36,6 +36,8 @@ jobs:
       - name: setup env
         shell: Rscript {0}
         run: |
+        
+          reticulate::install_miniconda()
 
           conda_path <- reticulate::conda_create(envname = "BertopicR", 
                 conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
