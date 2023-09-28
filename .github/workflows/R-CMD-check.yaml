@@ -37,8 +37,6 @@ jobs:
         shell: Rscript {0}
         run: |
         
-          echo "Python version used: $(python --version)"
-        
           reticulate::install_miniconda()
 
           conda_path <- reticulate::conda_create(envname = "BertopicR", 
@@ -47,6 +45,8 @@ jobs:
                 "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2", 
                 "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2",
                 "plotly==5.15.0", "openai==0.27.8"))
+                
+          print(conda_path)
         
           writeLines(
             paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
