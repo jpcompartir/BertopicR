@@ -35,9 +35,8 @@ jobs:
           
       - name: setup env
         run: |
-          library(reticulate)
 
-          conda_path <- conda_create(envname = "BertopicR", 
+          conda_path <- reticulate::conda_create(envname = "BertopicR", 
                 conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
                 packages = c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29", 
                 "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2", 
@@ -45,7 +44,7 @@ jobs:
                 "plotly==5.15.0", "openai==0.27.8"))
         
           writeLines(
-            paste0("RETICULATE_PYTHON=", virtualenv_python(conda_path)),
+            paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
             Sys.getenv("GITHUB_ENV"))
 
       - uses: r-lib/actions/check-r-package@v2
