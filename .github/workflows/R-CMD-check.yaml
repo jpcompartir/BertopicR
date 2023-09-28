@@ -5,6 +5,7 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  workflow_dispatch:
 
 name: R-CMD-check
 
@@ -40,7 +41,7 @@ jobs:
       - name: setup bertopicrenv
         run: |
            library(reticulate)
-          
+
           conda_path <- conda_create(envname = "BertopicR", 
                 conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
                 packages = c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29", 
@@ -52,6 +53,5 @@ jobs:
             paste0("RETICULATE_PYTHON=", virtualenv_python(conda_path)),
             Sys.getenv("GITHUB_ENV"))
 
-         
 
       - uses: r-lib/actions/check-r-package@v2
