@@ -47,7 +47,7 @@ jobs:
                 "plotly==5.15.0", "openai==0.27.8"))
                 
           python_path <- reticulate::conda_list()
-          python_path <- python_path[python_path["name"] == bertopicr_env, 2]
+          python_path <- python_path[python_path["name"] == "BerotpicR", 2]
         
           writeLines(
             paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(python_path)),
