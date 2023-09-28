@@ -35,11 +35,7 @@ jobs:
           
       - name: setup env
         run: |
-          remotes::install_github('rstudio/reticulate')
-          
           library(reticulate)
-          
-          install_miniconda()
 
           conda_path <- conda_create(envname = "BertopicR", 
                 conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
