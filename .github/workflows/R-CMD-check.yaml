@@ -43,9 +43,7 @@ jobs:
 
           library(retiuclate)
           
-          bertopicr_env <- "BertopicR"
-          
-          conda_path <- conda_create(envname = bertopicr_env, 
+          conda_path <- conda_create(envname = "BertopicR", 
                 conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
                 packages = c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29", 
                 "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2", 
