@@ -5,6 +5,7 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  workflow_dispatch:
 
 name: R-CMD-check
 
@@ -32,15 +33,14 @@ jobs:
           cache-version: 3
           upgrade: 'TRUE'
           
-      - name: Install Miniconda
+      - name: setup env
         run: |
-          Rscript -e "remotes::install_github('rstudio/reticulate')"
-          Rscript -e "reticulate::install_miniconda()"
+          remotes::install_github('rstudio/reticulate')
           
-      - name: setup bertopicrenv
-        run: |
-           library(reticulate)
+          library(reticulate)
           
+          install_miniconda()
+
           conda_path <- conda_create(envname = "BertopicR", 
                 conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
                 packages = c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29", 
