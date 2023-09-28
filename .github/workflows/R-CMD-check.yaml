@@ -34,7 +34,7 @@ jobs:
           upgrade: 'TRUE'
           
       - name: setup env
-        shell: Rscript{0}
+        shell: Rscript {0}
         run: |
 
           conda_path <- reticulate::conda_create(envname = "BertopicR", 
