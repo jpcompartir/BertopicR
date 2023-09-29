@@ -167,7 +167,7 @@ bt_make_embedder_flair <- function(model,
       stop("It doesn't look like ", model, " is a valid model from the flair library")
     } 
     # check if bad keyword argument - py_call error only returns the first bad argument even if there are many, which is a limitation
-    else if (grepl(".*unexpected keyword argument.*", embedder[1])){
+    else if (grepl(".*unexpected keyword argument.*|.*unused argument", embedder[1])){
       bad_arg <- regmatches(embedder[1], regexec("'(\\w+)'", embedder[1]))[[1]][1] 
       bad_arg <- gsub("'", "", bad_arg)
       constructor_message <- stringr::str_match(as.character(unlist(constructor_matched, use.names = FALSE)[[1]]), "'([^']+)'")[, 2]

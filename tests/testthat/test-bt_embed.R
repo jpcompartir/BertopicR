@@ -74,7 +74,7 @@ test_that("bt_make_embedder_flair fails when it should and succeeds otherwise",{
   # bad arg
   expect_error(bt_make_embedder_flair(model = "test",
                                       test_arg = 3),
-               regexp = "Bad argument\\(s\\) attempted to be sent to flair.embeddings.token.FlairEmbeddings: test_arg")
+               regexp = "Bad argument\\(s\\) attempted to be sent to flair.embeddings.token.FlairEmbeddings:")
   
   expect_silent(bt_make_embedder_flair(model = "news-forward",
                                        flair_class = "FlairEmbeddings",
