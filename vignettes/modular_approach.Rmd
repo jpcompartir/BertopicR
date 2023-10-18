@@ -77,7 +77,8 @@ TIP: It's a good idea to save your embeddings, as when working with many documen
 
 ```{r}
 embedder <- BertopicR::bt_make_embedder_st(
-  model = "all-mpnet-base-v2"
+  model = "all-mpnet-base-v2",
+  accelerator = NULL
   )
 ```
 
