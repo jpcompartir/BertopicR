@@ -50,7 +50,7 @@ for this is that when you assign a -1 document to topic 1 and another -1 documen
 to topic 2, it is unclear how you map the -1 documents. Is it matched to topic 1 or 2.
 }
 \examples{
-\dontrun{
+ \dontrun{
 # update model with new topic distribution
 # reduce outliers
 outliers <- bt_outliers_ctfidf(fitted_model = topic_model, documents = docs, threshold = 0.2)
@@ -61,5 +61,4 @@ bt_update_topics(fitted_model = topic_model, documents = docs, new_topics = outl
 # update topic representation
 bt_update_topics(fitted_model = topic_model, documents = docs, vectoriser_model = update_vec_model)
 }
-
 }

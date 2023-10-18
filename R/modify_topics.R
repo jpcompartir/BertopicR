@@ -85,6 +85,15 @@ bt_merge_topics <- function(fitted_model,
 #' classification the model outputs does not change after running this function. 
 #' The bt_update_topics function needs to be used to make the change to the model 
 #' itself. 
+#' 
+#' @details
+#' It is possible to chain outlier reduction methods together as the operation works on
+#' the list of topics input to the argument, which can vary. You will see in the examples
+#' that we are able to perform one outlier reduction method, eg. bt_outliers_tokenset_similarity,
+#' which will output a list of potential new topics, and input that list into another
+#' outlier reduction method, eg. bt_outliers_embeddings, which will determine the output topic
+#' suggestions based on the input list. In this way we can use aspects of multiple outlier
+#' reduction strategies and chain them together.
 #'
 #' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
 #' @param documents documents to which the model was fit
@@ -116,7 +125,7 @@ bt_outliers_embeddings <- function(fitted_model,
                                    embedding_model = NULL,
                                    threshold = 0.3){
   #Input validation
-
+  
   # Check fitted model
   if(!is.null(fitted_model)) {
     test_is_fitted_model(fitted_model)
@@ -181,6 +190,15 @@ bt_outliers_embeddings <- function(fitted_model,
 #' classification the model outputs does not change after running this function. 
 #' The bt_update_topics function needs to be used to make the change to the model 
 #' itself. 
+#' 
+#' @details
+#' It is possible to chain outlier reduction methods together as the operation works on
+#' the list of topics input to the argument, which can vary. You will see in the examples
+#' that we are able to perform one outlier reduction method, eg. bt_outliers_embeddings,
+#' which will output a list of potential new topics, and input that list into another
+#' outlier reduction method, eg. bt_outliers_tokenset_similarity, which will determine the output topic
+#' suggestions based on the input list. In this way we can use aspects of multiple outlier
+#' reduction strategies and chain them together.
 #'
 #' @param ... Optional or additional parameters passed to approximate_distribution function, e.g. batch_size
 #' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
@@ -247,7 +265,7 @@ bt_outliers_tokenset_similarity <- function(fitted_model,
     stop(paste("Bad argument(s) attempted to be sent to fitted_model.approximate_distribution():", bad_args, sep = ' '))
   }
   ## validation finished ##
-
+  
   
   # Convert window and stride to integers
   window_int <- as.integer(window)
@@ -284,6 +302,15 @@ bt_outliers_tokenset_similarity <- function(fitted_model,
 #' classification the model outputs does not change after running this function. 
 #' The bt_update_topics function needs to be used to make the change to the model 
 #' itself. 
+#'
+#' @details
+#' It is possible to chain outlier reduction methods together as the operation works on
+#' the list of topics input to the argument, which can vary. You will see in the examples
+#' that we are able to perform one outlier reduction method, eg. bt_outliers_embeddings,
+#' which will output a list of potential new topics, and input that list into another
+#' outlier reduction method, eg. bt_outliers_ctfidf, which will determine the output topic
+#' suggestions based on the input list. In this way we can use aspects of multiple outlier
+#' reduction strategies and chain them together.
 #'
 #' @param fitted_model Output of bt_fit_model() or another bertopic topic model. The model must have been fitted to data.
 #' @param documents documents to which the model was fit
@@ -373,8 +400,7 @@ bt_outliers_ctfidf <- function(fitted_model,
 #' @return the updated model
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examples  \dontrun{
 #' # update model with new topic distribution
 #' # reduce outliers
 #' outliers <- bt_outliers_ctfidf(fitted_model = topic_model, documents = docs, threshold = 0.2)
@@ -385,7 +411,6 @@ bt_outliers_ctfidf <- function(fitted_model,
 #' # update topic representation
 #' bt_update_topics(fitted_model = topic_model, documents = docs, vectoriser_model = update_vec_model)
 #' }
-#'
 bt_update_topics <- function(fitted_model, 
                              documents, 
                              new_topics = NULL,

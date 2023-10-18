@@ -36,7 +36,7 @@ bt_fit_model(model = model, documents = docs)
 
 # create the model with document embeddings already created and reduced
 # embeddings
-embedder <- bt_make_embedder(all-minilm-l6-v2)
+embedder <- bt_make_embedder_st(all-minilm-l6-v2)
 embeddings <- bt_do_embedding(embedder, docs)
 
 # reduced embeddings

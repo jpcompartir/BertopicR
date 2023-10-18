@@ -13,7 +13,7 @@ bt_do_embedding(
 )
 }
 \arguments{
-\item{embedder}{An embedding model (output of bt_make_embedder)}
+\item{embedder}{An embedding model (output of bt_make_embedder_st)}
 
 \item{documents}{A character vector of the documents to be embedded, e.g. your text variable}
 
@@ -37,7 +37,7 @@ The function currently returns an object with two additional attributes: embeddi
 \examples{
 docs <- c("i am", "a list of", "documents", "to be embedded")
 
-embedder <- bt_make_embedder("aLL-minilm-l6-v2")
+embedder <- bt_make_embedder_st("aLL-minilm-l6-v2")
 
 embeddings <- bt_do_embedding(embedder, docs)
 

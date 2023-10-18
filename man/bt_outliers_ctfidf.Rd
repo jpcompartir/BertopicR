@@ -28,6 +28,15 @@ classification the model outputs does not change after running this function.
 The bt_update_topics function needs to be used to make the change to the model
 itself.
 }
+\details{
+It is possible to chain outlier reduction methods together as the operation works on
+the list of topics input to the argument, which can vary. You will see in the examples
+that we are able to perform one outlier reduction method, eg. bt_outliers_embeddings,
+which will output a list of potential new topics, and input that list into another
+outlier reduction method, eg. bt_outliers_ctfidf, which will determine the output topic
+suggestions based on the input list. In this way we can use aspects of multiple outlier
+reduction strategies and chain them together.
+}
 \examples{
 \dontrun{
 # Reducing outliers original clustering model identified
