@@ -1,5 +1,3 @@
-# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
     branches: [main, master, branching-before-segmentation-error]
@@ -17,7 +15,7 @@ jobs:
       R_KEEP_PKG_SOURCE: yes
     steps:
       - uses: actions/checkout@v3
-      
+
       - uses: r-lib/actions/setup-pandoc@v2
 
       - uses: r-lib/actions/setup-r@v2
@@ -25,8 +23,8 @@ jobs:
           r-version: latest
           platform: 'aarch64-apple-darwin20'
           use-public-rspm: true
-          
-       - uses: actions/setup-python@v4
+
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.config.python }}
 
@@ -35,23 +33,22 @@ jobs:
           extra-packages: rcmdcheck remotes reticulate
           cache-version: 3
           upgrade: 'TRUE'
-          
+
       - name: setup env
         shell: Rscript {0}
         run: |
-        
           reticulate::install_miniconda()
 
-          conda_path <- reticulate::conda_create(envname = "BertopicR", 
-                conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
-                packages = c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29", 
-                "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2", 
-                "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2",
-                "plotly==5.15.0", "openai==0.27.8"))
-                
+          conda_path <- reticulate::conda_create(envname = "BertopicR",
+            conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
+            packages = c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29",
+              "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2",
+              "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2",
+              "plotly==5.15.0", "openai==0.27.8"))
+
           print(conda_path)
           print(R.Version()$platform)
-        
+
           writeLines(
             paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
             Sys.getenv("GITHUB_ENV"))
