@@ -76,8 +76,8 @@ First we'll make an embedder (or embedding_model) using the `bt_make_embedder_st
 TIP: It's a good idea to save your embeddings, as when working with many documents this process will be time consuming.
 
 ```{r}
-embedder <- bt_make_embedder_st(
-  model_name = "all-mpnet-base-v2"
+embedder <- BertopicR::bt_make_embedder_st(
+  model = "all-mpnet-base-v2"
   )
 ```
 

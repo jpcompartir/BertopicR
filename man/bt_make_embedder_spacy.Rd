@@ -21,3 +21,12 @@ an embedding model, formed according to the model defined, that can be input to 
 \description{
 Create an embedding model using a model available from the \href{https://spacy.io/models}{Spacy Library}
 }
+\examples{
+\donttest{
+# specify a non-transformer model, excluding features not required
+embedder <- bt_make_embedder_spacy(model = "en_core_web_md", exclude = c("tagger", "parser", "ner", "attribute_ruler", "lemmatizer"))
+
+# specify a transformer model and exclude features not required
+embedder <- bt_make_embedder_spacy(model = "en_core_web_trf", exclude = c("tagger", "parser", "ner", "attribute_ruler", "lemmatizer"))
+}
+}

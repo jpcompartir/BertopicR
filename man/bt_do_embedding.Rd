@@ -13,15 +13,15 @@ bt_do_embedding(
 )
 }
 \arguments{
-\item{embedder}{An embedding model (output of bt_make_embedder_st)}
+\item{embedder}{An embedding model (output of bt_make_embedder)}
 
 \item{documents}{A character vector of the documents to be embedded, e.g. your text variable}
 
 \item{...}{Optional or additional parameters passed to SentenceTransformer's encode function, e.g. batch_size}
 
-\item{accelerator}{A string containing the name of a hardware accelerator, e.g. "mps", "cuda". If NULL no acceleartor is used.}
+\item{accelerator}{A string containing the name of a hardware accelerator, e.g. "mps", "cuda". This is currently applied only if the embedder is a sentence transformer or from the flair library. If NULL no accelerator is used for sentence transformer or flair embeddings. GPU usage for spacy embeddings should be specified on embedder creation (bt_make_embedder_spacy)}
 
-\item{progress_bar}{A logical value indicating whether a progress bar is shown in the console}
+\item{progress_bar}{A logical value indicating whether a progress bar is shown in the console. This is only used if using an embedder from the sentence-transformer package}
 }
 \value{
 An array of floating point numbers
