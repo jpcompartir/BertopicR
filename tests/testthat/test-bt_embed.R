@@ -28,6 +28,7 @@ test_that("bt_do_embedding function is raising errors when it should", {
     bt_do_embedding(
       embedder = 1L,
       documents = "text",
+      accelerator = NULL
       ),
     regexp = 'embedding model passed is not.*'
     )
@@ -43,7 +44,7 @@ test_that("bt_do_embedding function is raising errors when it should", {
     bt_do_embedding(
       embedder = embedder,
       documents = "text",
-      accelerator = "mps",
+      accelerator = NULL,
       progress_bar = 1L),
     regexp = "is.logical\\(progress_bar\\) is not TRUE"
   )
@@ -58,7 +59,7 @@ test_that("bt_do_embedding function returns an array when fed correct parameters
   test_embeddings <- bt_do_embedding(
     embedder = embedder,
     documents = "text",
-    accelerator = "mps",
+    accelerator = NULL,
     progress_bar = TRUE)
 
   expect_equal(384, dim(test_embeddings))
@@ -66,7 +67,8 @@ test_that("bt_do_embedding function returns an array when fed correct parameters
   #Function takes a vector of texts
   embeddings_list <- bt_do_embedding(
     embedder = embedder,
-    documents = c("this is some text", "this is more text"))
+    documents = c("this is some text", "this is more text"),
+    accelerator = NULL)
 
   expect_true(all(class(embeddings_list) == c("matrix", "array")))
 
@@ -74,6 +76,7 @@ test_that("bt_do_embedding function returns an array when fed correct parameters
   ellipsis <- bt_do_embedding(
     embedder = embedder,
     documents = c("this is some text", "this is more text"),
+    accelerator = NULL,
     batch_size = 1L)
 
   expect_equal(class(ellipsis), c('matrix', "array"))
@@ -90,9 +93,9 @@ test_that("embedding_model attribute persists when it should and doesn't break s
   embedder <- bt_make_embedder_st("all-minilm-l6-v2")
   expect_true("embedding_model" %in% names(attributes(embedder)))
 
-  embeddings <- bt_do_embedding(embedder, "text")
+  embeddings <- bt_do_embedding(embedder, "text", accelerator = NULL)
   expect_true("embedding_model" %in% names(attributes(embeddings)))
 
   attr(embedder, "embedding_model") <- NULL
-  expect_message(bt_do_embedding(embedder, "text"), regexp = "No embedding_mod")
+  expect_message(bt_do_embedding(embedder, "text", accelerator = NULL), regexp = "No embedding_mod")
 })
