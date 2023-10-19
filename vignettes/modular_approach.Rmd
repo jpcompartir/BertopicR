@@ -77,8 +77,7 @@ TIP: It's a good idea to save your embeddings, as when working with many documen
 
 ```{r}
 embedder <- BertopicR::bt_make_embedder_st(
-  model = "all-mpnet-base-v2",
-  accelerator = NULL
+  model = "all-mpnet-base-v2"
   )
 ```
 
@@ -87,7 +86,8 @@ embedder <- BertopicR::bt_make_embedder_st(
 ```{r}
 embeddings <- bt_do_embedding(
   embedder,
-  df$sentences
+  df$sentences,
+  accelerator = NULL
   )
 
 embeddings[1, 1:10]
