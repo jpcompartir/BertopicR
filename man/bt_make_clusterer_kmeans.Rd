@@ -18,7 +18,10 @@ A kMeans clustering model (Python object)
 Create a kmeans clustering model
 }
 \examples{
+# models with different values for number of clusters
 clustering_model <- bt_make_clusterer_kmeans(n_clusters = 15L)
+clustering_model <- bt_make_clusterer_kmeans(n_clusters = 10L)
 
-kmeans_model <- bt_make_clusterer_kmeans(n_clusters = 10L)
+# specifying additional arguments
+clustering_model <- bt_make_clusterer_kmeans(n_clusters = 10L, verbose = TRUE)
 }

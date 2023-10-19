@@ -7,9 +7,12 @@
 #' @export
 #'
 #' @examples
+#' # models with different values for number of clusters
 #' clustering_model <- bt_make_clusterer_kmeans(n_clusters = 15L)
-#'
-#' kmeans_model <- bt_make_clusterer_kmeans(n_clusters = 10L)
+#' clustering_model <- bt_make_clusterer_kmeans(n_clusters = 10L)
+#' 
+#' # specifying additional arguments
+#' clustering_model <- bt_make_clusterer_kmeans(n_clusters = 10L, verbose = TRUE)
 bt_make_clusterer_kmeans <- function(..., n_clusters = 10L) {
   
   # input validation ----
@@ -33,11 +36,11 @@ bt_make_clusterer_kmeans <- function(..., n_clusters = 10L) {
   }
   
   # end of input validation ----
-
+  
   #Instantiate clustering model making sure n_clusters is an integer
   clustering_model <- skcluster$KMeans(n_clusters = as.integer(n_clusters),
                                        ...)
-
+  
   return(clustering_model)
 }
 
@@ -76,11 +79,11 @@ bt_make_clusterer_agglomerative <- function(..., n_clusters = 20L) {
   }
   
   # end of input validation ----
-
+  
   #Instantiate clustering model making sure n_clusters is an integer
   clustering_model <- skcluster$AgglomerativeClustering(n_clusters = as.integer(n_clusters),
                                                         ...)
-
+  
   return(clustering_model)
 }
 
@@ -116,20 +119,20 @@ bt_make_clusterer_agglomerative <- function(..., n_clusters = 20L) {
 #' clusterer = bt_make_clusterer_hdbscan(min_cluster_size = 5, cluster_selection_method = "leaf")
 #' 
 bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, min_samples = 10L, metric = "euclidean", cluster_selection_method = c("eom", "leaf"), prediction_data = FALSE) {
-
+  
   # input validation ----
   #Import the hdbscan library inside function scope
   hdbscan <- reticulate::import("hdbscan")
-
+  
   #Convert the `...` (dot-dot-dot or ellipsis) to list for checking purposes
   dots <- rlang::list2(...)
-
+  
   #Instantiate empty model to get valid arguments
   empty_model <- hdbscan$HDBSCAN()
-
+  
   #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad
   if(any(!names(dots) %in% names(empty_model))){
-
+    
     bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
     stop(paste("Bad argument(s) attempted to be sent to HDBSCAN():", bad_args, sep = ' '))
   }
@@ -139,7 +142,7 @@ bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, min_samples =
             is.character(metric),
             cluster_selection_method %in% c("eom", "leaf"),
             is.logical(prediction_data))
-
+  
   # end of input validation ----
   
   cluster_selection_method <- match.arg(cluster_selection_method)
@@ -152,7 +155,7 @@ bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, min_samples =
     prediction_data = prediction_data,
     min_samples = as.integer(min_samples),
     ...)
-
+  
   return(clustering_model)
 }
 
@@ -176,7 +179,7 @@ bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, min_samples =
 #' clusters <- bt_do_clustering(clusterer, embeddings_test)
 #' 
 bt_do_clustering <- function(clustering_model, embeddings) {
-
+  
   # Early stopping
   stopifnot(is.array(embeddings) | is.data.frame(embeddings))
   
@@ -189,6 +192,6 @@ bt_do_clustering <- function(clustering_model, embeddings) {
   label_mapping <- stats::setNames(-1:(length(sort_index) - 1), c(-1, names(table(labels[labels != -1]))[sort_index])) # map previous labels to ordered labels
   
   ordered_labels <- label_mapping[as.character(labels)] # reassign labels
-
+  
   return(ordered_labels) 
 }
