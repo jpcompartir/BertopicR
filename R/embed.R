@@ -249,7 +249,7 @@ bt_make_embedder_openai <- function(model = "text-embedding-ada-002",
 #' 
 #' embedder <- bt_make_embedder_st("aLL-minilm-l6-v2")
 #' 
-#' embeddings <- bt_do_embedding(embedder, docs)
+#' embeddings <- bt_do_embedding(embedder, docs, accelerator = NULL)
 #' 
 bt_do_embedding <- function(embedder, documents, ..., accelerator = "mps", progress_bar = TRUE) {
   
