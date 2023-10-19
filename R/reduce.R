@@ -13,7 +13,7 @@
 #' @param min_dist The minimum distance between points in the low-dimensional representation (default: 0.0).
 #' @param metric The metric to use for distance computation (default: "euclidean").
 #' @param random_state The seed used by the random number generator (default: 42).
-#' @param low_memory Logical, use a low memory version of UMAP (default: FALSE)
+#' @param low_memory Loogical, use a low memory version of UMAP (default: FALSE)
 #' @param verbose Logical flag indicating whether to report progress during the dimension reduction (default: TRUE).
 #'
 #' @return A UMAP Model that can be input to bt_do_reducing to reduce dimensions of data
