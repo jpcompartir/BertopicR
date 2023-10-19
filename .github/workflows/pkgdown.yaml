@@ -2,7 +2,7 @@
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, branching-before-segmentation-error]
   pull_request:
     branches: [main, master]
   release:
@@ -19,15 +19,19 @@ jobs:
       group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-    permissions:
-      contents: write
+      R_KEEP_PKG_SOURCE: yes
+      
     steps:
       - uses: actions/checkout@v3
 
       - uses: r-lib/actions/setup-pandoc@v2
+        with: 
+          pandoc-version: '3.1.8'
 
       - uses: r-lib/actions/setup-r@v2
         with:
+          r-version: latest
+          platform: 'aarch64-apple-darwin20'
           use-public-rspm: true
 
       - uses: r-lib/actions/setup-r-dependencies@v2
@@ -35,6 +39,18 @@ jobs:
           extra-packages: any::pkgdown, local::.
           needs: website
 
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.config.python }}
+
+      - name: setup env
+        shell: Rscript {0}
+        run: |
+          reticulate::install_miniconda()
+
+          conda_path <- reticulate::conda_create(envname = "BertopicR",
+            conda = paste0(reticulate::miniconda_path(), "/condabin/conda"))
+          
       - name: Build site
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
         shell: Rscript {0}
