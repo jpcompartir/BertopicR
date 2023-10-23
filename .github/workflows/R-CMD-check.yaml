@@ -56,8 +56,6 @@ jobs:
             Sys.getenv("GITHUB_ENV"))
 
       - uses: r-lib/actions/check-r-package@v2
-        run: |
-          echo OPENAI_API_KEY="$OPENAI_API_KEY" >> ~/.Renviron
         with:
           args: 'c("--no-manual")'
           error-on: '"error"'
