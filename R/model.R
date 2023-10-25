@@ -98,7 +98,7 @@ bt_compile_model <- function(..., embedding_model = NULL, reduction_model = NULL
     ctfidf_model = ctfidf_model,
     ...)
 
-  message("\nModel built & input model updated accordingly")
+  message("\nModel built")
 
   return(model)
 }
@@ -170,5 +170,5 @@ bt_fit_model <- function(model, documents, embeddings = NULL, topic_labels = NUL
 
   fitted_model <- model$fit(documents = documents, embeddings = embeddings, y = topic_labels)
 
-  message("\nModel is fitted")
+  message("\nThe input model has bee fitted to the data and updated accordingly")
 }
