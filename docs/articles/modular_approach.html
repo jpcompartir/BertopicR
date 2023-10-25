@@ -38,8 +38,13 @@
 <li class="nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
-<li class="active nav-item">
-  <a class="nav-link" href="../articles/index.html">Articles</a>
+<li class="active nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/modular_approach.html">Interacting with Individual Modules</a>
+    <a class="dropdown-item" href="../articles/manipulating-the-model.html">Manipulating the Model</a>
+    <a class="dropdown-item" href="../articles/quick_start.html">Topic Modelling without Optimisation</a>
+  </div>
 </li>
       </ul>
 <form class="form-inline my-2 my-lg-0" role="search">
@@ -48,7 +53,7 @@
 
       <ul class="navbar-nav">
 <li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/AoifeRyan-sc/BertopicR" aria-label="github">
+  <a class="external-link nav-link" href="https://github.com/jpcompartir/BertopicR" aria-label="github">
     <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
@@ -68,7 +73,7 @@
       <img src="" class="logo" alt=""><h1>Interacting with Individual Modules</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/AoifeRyan-sc/BertopicR/tree/branching-before-segmentation-error/vignettes/modular_approach.Rmd" class="external-link"><code>vignettes/modular_approach.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/jpcompartir/BertopicRvignettes/modular_approach.Rmd" class="external-link"><code>vignettes/modular_approach.Rmd</code></a></small>
       <div class="d-none name"><code>modular_approach.Rmd</code></div>
     </div>
 
@@ -215,11 +220,11 @@ to non-Euclidean Spaces</a> for alternatives.</p>
 <span>  <span class="va">reducer</span>, embeddings <span class="op">=</span> <span class="va">embeddings</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; UMAP(low_memory=False, min_dist=0, n_components=5, n_neighbors=10, random_state=42, verbose=True)</span></span>
-<span><span class="co">#&gt; Fri Oct 20 08:36:46 2023 Construct fuzzy simplicial set</span></span>
-<span><span class="co">#&gt; Fri Oct 20 08:36:46 2023 Finding Nearest Neighbors</span></span>
-<span><span class="co">#&gt; Fri Oct 20 08:36:47 2023 Finished Nearest Neighbor Search</span></span>
-<span><span class="co">#&gt; Fri Oct 20 08:36:49 2023 Construct embedding</span></span>
-<span><span class="co">#&gt; Fri Oct 20 08:36:50 2023 Finished embedding</span></span>
+<span><span class="co">#&gt; Wed Oct 25 17:28:02 2023 Construct fuzzy simplicial set</span></span>
+<span><span class="co">#&gt; Wed Oct 25 17:28:02 2023 Finding Nearest Neighbors</span></span>
+<span><span class="co">#&gt; Wed Oct 25 17:28:03 2023 Finished Nearest Neighbor Search</span></span>
+<span><span class="co">#&gt; Wed Oct 25 17:28:05 2023 Construct embedding</span></span>
+<span><span class="co">#&gt; Wed Oct 25 17:28:07 2023 Finished embedding</span></span>
 <span></span>
 <span><span class="va">reduced_embeddings</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt;          [,1]     [,2]     [,3]     [,4]      [,5]</span></span>
@@ -370,21 +375,21 @@ eclectic.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cluster</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html" class="external-link">sample_n</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">sentence</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "kick the ball straight and follow through."       </span></span>
-<span><span class="co">#&gt; [2] "the best method is to fix it in place with clips."</span></span>
-<span><span class="co">#&gt; [3] "slide the catch back and open the desk."          </span></span>
-<span><span class="co">#&gt; [4] "the last switch cannot be turned off."            </span></span>
-<span><span class="co">#&gt; [5] "just hoist it up and take it away."</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "screw the round cap on as tight as needed."     </span></span>
+<span><span class="co">#&gt; [2] "hoist the load to your left shoulder."          </span></span>
+<span><span class="co">#&gt; [3] "drive the screw straight into the wood."        </span></span>
+<span><span class="co">#&gt; [4] "kick the ball straight and follow through."     </span></span>
+<span><span class="co">#&gt; [5] "take the match and strike it against your shoe."</span></span></code></pre></div>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cluster</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html" class="external-link">sample_n</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">sentence</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "she saw a cat in the neighbor's house." </span></span>
-<span><span class="co">#&gt; [2] "the hog crawled under the high fence."  </span></span>
-<span><span class="co">#&gt; [3] "it caught its hind paw in a rusty trap."</span></span>
-<span><span class="co">#&gt; [4] "the stray cat gave birth to kittens."   </span></span>
-<span><span class="co">#&gt; [5] "the child almost hurt the small dog."</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "the pup jerked the leash as he saw a feline shape."</span></span>
+<span><span class="co">#&gt; [2] "feed the white mouse some flower seeds."           </span></span>
+<span><span class="co">#&gt; [3] "he crawled with care along the ledge."             </span></span>
+<span><span class="co">#&gt; [4] "the small pup gnawed a hole in the sock."          </span></span>
+<span><span class="co">#&gt; [5] "the quick fox jumped on the sleeping cat."</span></span></code></pre></div>
 <p>The more clusters we look at, the more difficult it will become to
 figure out what’s happening…</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -392,11 +397,11 @@ figure out what’s happening…</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cluster</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html" class="external-link">sample_n</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">sentence</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "a gold ring will please most any girl."      </span></span>
-<span><span class="co">#&gt; [2] "the knife was hung inside its bright sheath."</span></span>
-<span><span class="co">#&gt; [3] "the vamp of the shoe had a gold buckle."     </span></span>
-<span><span class="co">#&gt; [4] "a brown leather bag hung from its strap."    </span></span>
-<span><span class="co">#&gt; [5] "fake stones shine but cost little."</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "the store walls were lined with colored frocks."</span></span>
+<span><span class="co">#&gt; [2] "the tin box held priceless stones."             </span></span>
+<span><span class="co">#&gt; [3] "a gold vase is both rare and costly."           </span></span>
+<span><span class="co">#&gt; [4] "the work of the tailor is seen on each side."   </span></span>
+<span><span class="co">#&gt; [5] "brass rings are sold by these natives."</span></span></code></pre></div>
 <p>Inspecting each of these clusters and trying to figure out what each
 cluster means and how they inter-relate would soon become intractable
 for humans. Thankfully, within BERTopic there are quantitative methods
@@ -460,7 +465,7 @@ in more depth.</p>
 <span>  ctfidf_model <span class="op">=</span> <span class="va">ctfidf</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Model built &amp; input model updated accordingly</span></span>
+<span><span class="co">#&gt; Model built</span></span>
 <span></span>
 <span><span class="va">topic_model</span><span class="op">$</span><span class="va">topics_</span></span>
 <span><span class="co">#&gt; NULL</span></span></code></pre></div>
@@ -474,7 +479,7 @@ us a lot of time, particularly when we have many documents.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/bt_fit_model.html">bt_fit_model</a></span><span class="op">(</span><span class="va">topic_model</span>, <span class="va">data</span><span class="op">$</span><span class="va">sentence</span>, embeddings <span class="op">=</span> <span class="va">reduced_embeddings</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Model is fitted</span></span>
+<span><span class="co">#&gt; The input model has bee fitted to the data and updated accordingly</span></span>
 <span></span>
 <span><span class="va">topic_model</span><span class="op">$</span><span class="va">topics_</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span></span>
 <span><span class="co">#&gt;  [1] -1 -1 33 17 17  9 56 14 -1 -1</span></span></code></pre></div>
@@ -499,14 +504,14 @@ bt_fit_model, the output model would be the same as the input model:</p>
 <span>  ctfidf_model <span class="op">=</span> <span class="va">ctfidf</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Model built &amp; input model updated accordingly</span></span>
+<span><span class="co">#&gt; Model built</span></span>
 <span></span>
 <span><span class="va">example_model_compiled</span><span class="op">$</span><span class="va">topics_</span></span>
 <span><span class="co">#&gt; NULL</span></span>
 <span></span>
 <span><span class="va">example_model_fitted</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bt_fit_model.html">bt_fit_model</a></span><span class="op">(</span><span class="va">example_model_compiled</span>, <span class="va">data</span><span class="op">$</span><span class="va">sentence</span>, embeddings <span class="op">=</span> <span class="va">reduced_embeddings</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Model is fitted</span></span>
+<span><span class="co">#&gt; The input model has bee fitted to the data and updated accordingly</span></span>
 <span></span>
 <span><span class="va">example_model_compiled</span><span class="op">$</span><span class="va">topics_</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span></span>
 <span><span class="co">#&gt;  [1] -1 -1 33 17 17  9 56 14 -1 -1</span></span>

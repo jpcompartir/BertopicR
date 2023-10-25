@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [main, master, branching-before-segmentation-error]
+    branches: [main, master, rebase-commits]
   pull_request:
     branches: [main, master]
   workflow_dispatch:

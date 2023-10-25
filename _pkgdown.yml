@@ -64,7 +64,7 @@ reference:
 
 articles:
 - title: vignettes
-  # navbar: ~
+  navbar: ~
   contents:
   - modular_approach
   - manipulating-the-model
@@ -74,11 +74,16 @@ navbar:
   structure:
     left: [home, intro, reference, articles]
     right: [search, github]
-  
+  # dropdown:
+  #   articles:
+  #     - modular_approach
+  #     - manipulating-the-model
+  #     - quick_start
+  # 
 repo:
   url: 
-    home: https://github.com/AoifeRyan-sc/BertopicR
-    source: https://github.com/AoifeRyan-sc/BertopicR/tree/branching-before-segmentation-error/
+    home: https://github.com/jpcompartir/BertopicR
+    source: https://github.com/jpcompartir/BertopicR
     
 home:
   links:

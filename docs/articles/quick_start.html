@@ -38,8 +38,13 @@
 <li class="nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
-<li class="active nav-item">
-  <a class="nav-link" href="../articles/index.html">Articles</a>
+<li class="active nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/modular_approach.html">Interacting with Individual Modules</a>
+    <a class="dropdown-item" href="../articles/manipulating-the-model.html">Manipulating the Model</a>
+    <a class="dropdown-item" href="../articles/quick_start.html">Topic Modelling without Optimisation</a>
+  </div>
 </li>
       </ul>
 <form class="form-inline my-2 my-lg-0" role="search">
@@ -48,7 +53,7 @@
 
       <ul class="navbar-nav">
 <li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/AoifeRyan-sc/BertopicR" aria-label="github">
+  <a class="external-link nav-link" href="https://github.com/jpcompartir/BertopicR" aria-label="github">
     <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
@@ -68,7 +73,7 @@
       <img src="" class="logo" alt=""><h1>Topic Modelling without Optimisation</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/AoifeRyan-sc/BertopicR/tree/branching-before-segmentation-error/vignettes/quick_start.Rmd" class="external-link"><code>vignettes/quick_start.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/jpcompartir/BertopicRvignettes/quick_start.Rmd" class="external-link"><code>vignettes/quick_start.Rmd</code></a></small>
       <div class="d-none name"><code>quick_start.Rmd</code></div>
     </div>
 
@@ -105,7 +110,7 @@ components) with the same function.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bt_compile_model.html">bt_compile_model</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; No embedding model provided, defaulting to 'all-mpnet-base-v2' model as embedder.</span></span>
+<span><span class="co">#&gt; No embedding model provided, defaulting to 'all-miniLM-L6-v2' model as embedder.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; No reduction_model provided, using default 'bt_reducer_umap' parameters.</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -115,7 +120,7 @@ components) with the same function.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; No ctfidf model provided, creating model with default parameters</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Model built &amp; input model updated accordingly</span></span></code></pre></div>
+<span><span class="co">#&gt; Model built</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="fitting-the-model">Fitting the Model<a class="anchor" aria-label="anchor" href="#fitting-the-model"></a>
@@ -137,31 +142,29 @@ Individual Modules</a> vignette for more detail.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/bt_fit_model.html">bt_fit_model</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">sentences</span><span class="op">)</span></span>
 <span><span class="co">#&gt; UMAP(low_memory=False, min_dist=0.0, n_components=5, random_state=42, verbose=True)</span></span>
-<span><span class="co">#&gt; Fri Oct 20 08:37:35 2023 Construct fuzzy simplicial set</span></span>
-<span><span class="co">#&gt; Fri Oct 20 08:37:36 2023 Finding Nearest Neighbors</span></span>
-<span><span class="co">#&gt; Fri Oct 20 08:37:37 2023 Finished Nearest Neighbor Search</span></span>
-<span><span class="co">#&gt; Fri Oct 20 08:37:39 2023 Construct embedding</span></span>
-<span><span class="co">#&gt; Fri Oct 20 08:37:40 2023 Finished embedding</span></span>
+<span><span class="co">#&gt; Wed Oct 25 17:28:34 2023 Construct fuzzy simplicial set</span></span>
+<span><span class="co">#&gt; Wed Oct 25 17:28:34 2023 Finding Nearest Neighbors</span></span>
+<span><span class="co">#&gt; Wed Oct 25 17:28:35 2023 Finished Nearest Neighbor Search</span></span>
+<span><span class="co">#&gt; Wed Oct 25 17:28:37 2023 Construct embedding</span></span>
+<span><span class="co">#&gt; Wed Oct 25 17:28:39 2023 Finished embedding</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Model is fitted</span></span>
+<span><span class="co">#&gt; The input model has bee fitted to the data and updated accordingly</span></span>
 <span></span>
 <span><span class="va">model</span><span class="op">$</span><span class="fu">get_topic_info</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">Representative_Docs</span>, <span class="op">-</span> <span class="va">Representation</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    Topic Count                        Name</span></span>
-<span><span class="co">#&gt; 1     -1   253  -1_words_serve_night_store</span></span>
-<span><span class="co">#&gt; 2      0    91      0_wind_sun_cloud_shore</span></span>
-<span><span class="co">#&gt; 3      1    61     1_plans_short_fun_right</span></span>
-<span><span class="co">#&gt; 4      2    53    2_soap_fence_hatch_porch</span></span>
-<span><span class="co">#&gt; 5      3    51       3_tea_ripe_taste_stew</span></span>
-<span><span class="co">#&gt; 6      4    51      4_book_paper_add_chart</span></span>
-<span><span class="co">#&gt; 7      5    34   5_cord_hoist_screw_fasten</span></span>
-<span><span class="co">#&gt; 8      6    23     6_ship_fell_broke_rider</span></span>
-<span><span class="co">#&gt; 9      7    19      7_home_year_school_sat</span></span>
-<span><span class="co">#&gt; 10     8    18    8_gold_ring_silk_pierced</span></span>
-<span><span class="co">#&gt; 11     9    17        9_cat_cats_pup_rusty</span></span>
-<span><span class="co">#&gt; 12    10    15 10_stone_wood_blocks_cement</span></span>
-<span><span class="co">#&gt; 13    11    13   11_corn_grain_peas_spring</span></span>
-<span><span class="co">#&gt; 14    12    11     12_chair_desk_couch_tan</span></span>
-<span><span class="co">#&gt; 15    13    10     13_month_funds_debt_aim</span></span></code></pre></div>
+<span><span class="co">#&gt;    Topic Count                              Name</span></span>
+<span><span class="co">#&gt; 1     -1   254           -1_brass_grass_left_red</span></span>
+<span><span class="co">#&gt; 2      0   101           0_words_men_march_laugh</span></span>
+<span><span class="co">#&gt; 3      1    66             1_tea_corn_ripe_taste</span></span>
+<span><span class="co">#&gt; 4      2    54            2_store_tin_pearl_ring</span></span>
+<span><span class="co">#&gt; 5      3    50           3_sun_wind_breeze_beach</span></span>
+<span><span class="co">#&gt; 6      4    44          4_smell_carpet_soap_heat</span></span>
+<span><span class="co">#&gt; 7      5    41            5_pack_box_slide_sheet</span></span>
+<span><span class="co">#&gt; 8      6    30          6_book_wrote_seven_write</span></span>
+<span><span class="co">#&gt; 9      7    20          7_fell_river_storm_crash</span></span>
+<span><span class="co">#&gt; 10     8    19      8_ship_fish_apart_used catch</span></span>
+<span><span class="co">#&gt; 11     9    15                9_cat_dog_trap_pup</span></span>
+<span><span class="co">#&gt; 12    10    14 10_talked_music_answer_sang tunes</span></span>
+<span><span class="co">#&gt; 13    11    12      11_school_boy_child_children</span></span></code></pre></div>
 <p>That’s it, you have a topic model up and running! If you decided that
 you wanted to adjust factors, like the minimum size of a topic, or the
 number of topics you want, you should refer to the <a href="modular_approach.html">Interacting with Individual Modules</a>
