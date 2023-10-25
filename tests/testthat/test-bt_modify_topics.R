@@ -154,7 +154,7 @@ test_that("bt_outlier_tokenset_similarity errors on incorrect input", {
 })
 
 test_that("bt_outliers_tokenset_similarty returns correct output", {
-
+set.seed(12)
   # setup
   bt <- reticulate::import("bertopic")
   sentences <- stringr::sentences[1:100]
