@@ -39,11 +39,26 @@ bt_compile_model.
 NOTE: The bertopic model you are working with is a pointer to a python object
 at a point in memory. This means that the input and the output model cannot be
 differentiated between without explicitly saving the model before performing
-this operation. A model is not returned as the function changes the input model.
+this operation. We do not need to specify an output to the bt_fit_model function
+as the function changes the input model in place. If you do decide to explicitly assign a function output,
+be aware that the output model and the input model will be the same as one another.
 }
 \details{
 NOTE: If using this function to update outlier topics, it may lead to errors
 if topic reduction or topic merging techniques are used afterwards. The reason
 for this is that when you assign a -1 document to topic 1 and another -1 document
 to topic 2, it is unclear how you map the -1 documents. Is it matched to topic 1 or 2.
+}
+\examples{
+ \dontrun{
+# update model with new topic distribution
+# reduce outliers
+outliers <- bt_outliers_ctfidf(fitted_model = topic_model, documents = docs, threshold = 0.2)
+
+# update the model with the new topic distribution
+bt_update_topics(fitted_model = topic_model, documents = docs, new_topics = outliers$new_topics)
+
+# update topic representation
+bt_update_topics(fitted_model = topic_model, documents = docs, vectoriser_model = update_vec_model)
+}
 }

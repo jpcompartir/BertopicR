@@ -22,7 +22,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    <nav class="navbar fixed-top navbar-dark navbar-expand-lg bg-primary"><div class="container">
     
     <a class="navbar-brand me-2" href="index.html">BertopicR</a>
 
@@ -41,9 +41,9 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="articles/modular_approach.html">Interacting with Individual Modules</a>
     <a class="dropdown-item" href="articles/manipulating-the-model.html">Manipulating the Model</a>
-    <a class="dropdown-item" href="articles/modular_approach.html">Interacting with individaul modules</a>
-    <a class="dropdown-item" href="articles/quick_start.html">Quick Start</a>
+    <a class="dropdown-item" href="articles/quick_start.html">Topic Modelling without Optimisation</a>
   </div>
 </li>
       </ul>
@@ -51,7 +51,14 @@
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="search.json" id="search-input" placeholder="Search for" autocomplete="off">
 </form>
 
-      <ul class="navbar-nav"></ul>
+      <ul class="navbar-nav">
+<li class="nav-item">
+  <a class="external-link nav-link" href="https://github.com/jpcompartir/BertopicR" aria-label="github">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 
     
@@ -95,14 +102,14 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">BertopicR</span><span class="fu">::</span><span class="va"><a href="reference/bert_example_data.html">bert_example_data</a></span></span>
 <span></span>
-<span><span class="va">embedder</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bt_make_embedder.html">bt_make_embedder</a></span><span class="op">(</span><span class="st">"all-minilm-l6-v2"</span><span class="op">)</span></span>
+<span><span class="va">embedder</span> <span class="op">&lt;-</span> <span class="fu">bt_make_embedder</span><span class="op">(</span><span class="st">"all-minilm-l6-v2"</span><span class="op">)</span></span>
 <span><span class="va">embeddings</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bt_do_embedding.html">bt_do_embedding</a></span><span class="op">(</span><span class="va">embedder</span>, documents <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">message</span>,  batch_size <span class="op">=</span> <span class="fl">16L</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Embedding proccess finished</span></span>
 <span><span class="co">#&gt; all-minilm-l6-v2 added to embeddings attributes</span></span>
 <span></span>
 <span></span>
-<span><span class="va">reducer</span> <span class="op">&lt;-</span> <span class="fu">bt_make_reducer</span><span class="op">(</span>n_neighbors <span class="op">=</span> <span class="fl">10L</span>, n_components <span class="op">=</span> <span class="fl">10L</span>, metric <span class="op">=</span> <span class="st">"cosine"</span><span class="op">)</span></span>
+<span><span class="va">reducer</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bt_make_reducer_umap.html">bt_make_reducer_umap</a></span><span class="op">(</span>n_neighbours <span class="op">=</span> <span class="fl">10L</span>, n_components <span class="op">=</span> <span class="fl">10L</span>, metric <span class="op">=</span> <span class="st">"cosine"</span><span class="op">)</span></span>
 <span><span class="va">clusterer</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bt_make_clusterer_hdbscan.html">bt_make_clusterer_hdbscan</a></span><span class="op">(</span>min_cluster_size <span class="op">=</span> <span class="fl">20L</span>, metric <span class="op">=</span> <span class="st">"euclidean"</span>, cluster_selection_method <span class="op">=</span> <span class="st">"eom"</span>, min_samples <span class="op">=</span> <span class="fl">10L</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">topic_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bt_compile_model.html">bt_compile_model</a></span><span class="op">(</span>embedding_model <span class="op">=</span> <span class="va">embedder</span>,</span>
@@ -119,31 +126,56 @@
 <span><span class="va">fitted_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bt_fit_model.html">bt_fit_model</a></span><span class="op">(</span>model <span class="op">=</span> <span class="va">topic_model</span>, </span>
 <span>                             documents <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">message</span>, </span>
 <span>                             embeddings <span class="op">=</span> <span class="va">embeddings</span><span class="op">)</span></span>
+<span><span class="co">#&gt; UMAP(angular_rp_forest=True, low_memory=False, metric='cosine', min_dist=0.0, n_components=10, n_neighbors=10, random_state=42, verbose=True)</span></span>
+<span><span class="co">#&gt; Fri Sep 15 12:58:15 2023 Construct fuzzy simplicial set</span></span>
+<span><span class="co">#&gt; Fri Sep 15 12:58:27 2023 Finding Nearest Neighbors</span></span>
+<span><span class="co">#&gt; Fri Sep 15 12:58:29 2023 Finished Nearest Neighbor Search</span></span>
+<span><span class="co">#&gt; Fri Sep 15 12:58:31 2023 Construct embedding</span></span>
+<span><span class="co">#&gt; Fri Sep 15 12:58:37 2023 Finished embedding</span></span>
 <span></span>
 <span><span class="va">fitted_model</span><span class="op">$</span><span class="fu">get_topic_info</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 34 × 3</span></span>
-<span><span class="co">#&gt;    Topic Count Name                                                 </span></span>
-<span><span class="co">#&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;                                                </span></span>
-<span><span class="co">#&gt;  1    -1  1760 -1_music_honor_amazing_spanish                       </span></span>
-<span><span class="co">#&gt;  2     0   197 0_celebrates_month celebration_october_heritage month</span></span>
-<span><span class="co">#&gt;  3     1   185 1_heritage night_festival_night_heritage celebration </span></span>
-<span><span class="co">#&gt;  4     2   177 2_teachers_grade_students_parents                    </span></span>
-<span><span class="co">#&gt;  5     3   170 3_white_black_like_really                            </span></span>
-<span><span class="co">#&gt;  6     4   130 4_world_going_latina_got                             </span></span>
-<span><span class="co">#&gt;  7     5   125 5_awesome_yes_love_cool                              </span></span>
-<span><span class="co">#&gt;  8     6   119 6_utsw_hispanics_hispanicheritage_news               </span></span>
-<span><span class="co">#&gt;  9     7   108 7_latinx_latina_ll_chance                            </span></span>
-<span><span class="co">#&gt; 10     8    96 8_honored_community_honor_hosting                    </span></span>
-<span><span class="co">#&gt; # ℹ 24 more rows</span></span></code></pre></div>
+<span><span class="co">#&gt; # A tibble: 36 × 5</span></span>
+<span><span class="co">#&gt;    Topic Count Name                           Representation Representative_Docs</span></span>
+<span><span class="co">#&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;                          &lt;list&gt;         &lt;list&gt;             </span></span>
+<span><span class="co">#&gt;  1    -1  1750 -1_hispanicheritagemonth_mont… &lt;chr [10]&gt;     &lt;chr [3]&gt;          </span></span>
+<span><span class="co">#&gt;  2     0   278 0_beto_trump_vote_fake         &lt;chr [10]&gt;     &lt;chr [3]&gt;          </span></span>
+<span><span class="co">#&gt;  3     1   238 1_night_heritage night_herita… &lt;chr [10]&gt;     &lt;chr [3]&gt;          </span></span>
+<span><span class="co">#&gt;  4     2   168 2_dance_salsa_music_tito       &lt;chr [10]&gt;     &lt;chr [3]&gt;          </span></span>
+<span><span class="co">#&gt;  5     3   150 3_heritage month_month_octobe… &lt;chr [10]&gt;     &lt;chr [3]&gt;          </span></span>
+<span><span class="co">#&gt;  6     4   126 4_students_school_grade_proje… &lt;chr [10]&gt;     &lt;chr [3]&gt;          </span></span>
+<span><span class="co">#&gt;  7     5   109 5_latinx_latina_uber_latinas   &lt;chr [10]&gt;     &lt;chr [3]&gt;          </span></span>
+<span><span class="co">#&gt;  8     6    94 6_mdcps_mdcpscentral_celebrat… &lt;chr [10]&gt;     &lt;chr [3]&gt;          </span></span>
+<span><span class="co">#&gt;  9     7    90 7_good thread_thread_yup_yes   &lt;chr [10]&gt;     &lt;chr [3]&gt;          </span></span>
+<span><span class="co">#&gt; 10     8    90 8_hispanicheritagemonth hispa… &lt;chr [10]&gt;     &lt;chr [3]&gt;          </span></span>
+<span><span class="co">#&gt; # ℹ 26 more rows</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="error-messages-and-causes">Error Messages and causes<a class="anchor" aria-label="anchor" href="#error-messages-and-causes"></a>
 </h2>
-<p>““” Error in py_call_impl(callable, dots<span class="math inline"><em>a</em><em>r</em><em>g</em><em>s</em>, <em>d</em><em>o</em><em>t</em><em>s</em></span>keywords) : ValueError: max_df corresponds to &lt; documents than min_df<code>""" This is usually caused by using relatively small data. Lower the min_frequency argument in</code>bt_make_vectoriser()` or use more data to fix this.</p>
+<p>We have tried to provide informative error messages but sometimes you may be faced with error messages that have arisen from the parent python function used. If you get an error that begins with “Error in py_call_impl(callable, call_args$unnamed, call_args$named) :”, you can use reticulate::py_last_error() to trace the origin of the error message.</p>
+<p>Note that one common cause of error messages when working with python functions in R arises when the user fails to specify integer numbers as integer type. In R, integers are of type “numeric” by default, python functions typically require them to be explicitly specified as integer type. For any formal function arguments, this conversion is dealt with within in the function, however you should be aware of this if specifying extra arguments to any function. In R, this is achieved by placing an L after the number or using the as.integer() function:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># numbers default to "numeric"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "numeric"</span></span>
+<span></span>
+<span><span class="co"># we can force them to be "integer"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="fl">4L</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "integer"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "integer"</span></span></code></pre></div>
 </div>
 </div>
-  </main><aside class="col-md-3"><div class="license">
+  </main><aside class="col-md-3"><div class="links">
+<h2 data-toc-skip>Links</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/jpcompartir/BertopicR" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/jpcompartir/BertopicR/issues" class="external-link">Report an issue</a></li>
+</ul>
+</div>
+
+<div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>

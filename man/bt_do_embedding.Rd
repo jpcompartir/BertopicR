@@ -8,7 +8,7 @@ bt_do_embedding(
   embedder,
   documents,
   ...,
-  accelerator = "mps",
+  accelerator = NULL,
   progress_bar = TRUE
 )
 }
@@ -19,9 +19,9 @@ bt_do_embedding(
 
 \item{...}{Optional or additional parameters passed to SentenceTransformer's encode function, e.g. batch_size}
 
-\item{accelerator}{A string containing the name of a hardware accelerator, e.g. "mps", "cuda". If NULL no acceleartor is used.}
+\item{accelerator}{A string containing the name of a hardware accelerator, e.g. "mps", "cuda". This is currently applied only if the embedder is a sentence transformer or from the flair library. If NULL no accelerator is used for sentence transformer or flair embeddings. GPU usage for spacy embeddings should be specified on embedder creation (bt_make_embedder_spacy)}
 
-\item{progress_bar}{A logical value indicating whether a progress bar is shown in the console}
+\item{progress_bar}{A logical value indicating whether a progress bar is shown in the console. This is only used if using an embedder from the sentence-transformer package}
 }
 \value{
 An array of floating point numbers
@@ -33,4 +33,12 @@ Takes a document, or list of documents, and returns a numerical embedding which 
 Initially this function is built upon the \code{sentence_transformers} Python library, but it may be expanded to accept other frameworks. You should feed in your documents as a list. You can use hardware accelerators e.g. GPUs, to speed up computation.
 
 The function currently returns an object with two additional attributes: embedding_model, n_documents, they have been appended to the embeddings for extraction at later steps in the pipeline, e.g. when merging data frames later on it's important to check how many documents we entered.
+}
+\examples{
+docs <- c("i am", "a list of", "documents", "to be embedded")
+
+embedder <- bt_make_embedder_st("aLL-minilm-l6-v2")
+
+embeddings <- bt_do_embedding(embedder, docs, accelerator = NULL)
+
 }

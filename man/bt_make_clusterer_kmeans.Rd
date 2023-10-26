@@ -4,9 +4,11 @@
 \alias{bt_make_clusterer_kmeans}
 \title{Create a kmeans clustering model}
 \usage{
-bt_make_clusterer_kmeans(n_clusters = 10L)
+bt_make_clusterer_kmeans(..., n_clusters = 10L)
 }
 \arguments{
+\item{...}{Additional arguments sent to sklearn.cluster.KMeans()}
+
 \item{n_clusters}{number of clusters to search for (enter as integer by typing L after the number)}
 }
 \value{
@@ -16,7 +18,10 @@ A kMeans clustering model (Python object)
 Create a kmeans clustering model
 }
 \examples{
-clustering_model <- bt_make_clusterer_kmeans(15L)
+# models with different values for number of clusters
+clustering_model <- bt_make_clusterer_kmeans(n_clusters = 15L)
+clustering_model <- bt_make_clusterer_kmeans(n_clusters = 10L)
 
-kmeans_model <- bt_make_clusterer_kmeans(n_clusters = 10L)
+# specifying additional arguments
+clustering_model <- bt_make_clusterer_kmeans(n_clusters = 10L, verbose = TRUE)
 }

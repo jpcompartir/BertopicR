@@ -14,6 +14,28 @@
 #'
 #' @return a BERTopic model
 #' @export
+#' 
+#' @examples
+#' \dontrun{
+#' # model using all default parameters
+#' model <- bt_compile_model()
+#' 
+#' # model with modular components already generated
+#' # define embedding and reduction modules and pass to bt_compile_model
+#' embedder <- bt_make_embedder_st("all-miniLM-L6-v2") 
+#' reducer <- bt_make_reducer_umap(n_components = 10L, n_neighbours = 20L)
+#' model <- bt_compile_model(embedding_model = embedder, reduction_model = reducer)
+#'
+#' # Perform document embedding and reduction external to bertopic model and pass empty models to bt_compile_model
+#' embedder <- bt_make_embedder_st("all-miniLM-L6-v2") # embedder
+#' embeddings <- bt_do_embedding(embedder, docs, accelerator = NULL) # embeddings
+#' reducer <- bt_make_reducer_umap(n_components = 10L, n_neighbours = 20L) # reducer
+#' reduced_embeddings <- bt_do_reducing(reducer, embeddings) # reduced embeddings
+#' 
+#' # skip embedding and reduction step by passing empty models
+#' model <- bt_compile_model(embedding_model = bt_empty_embedder(), reduction_model = bt_empty_reducer()) 
+#' 
+#' }
 #'
 bt_compile_model <- function(..., embedding_model = NULL, reduction_model = NULL, clustering_model = NULL, vectoriser_model = NULL, ctfidf_model = NULL){
 
@@ -42,8 +64,8 @@ bt_compile_model <- function(..., embedding_model = NULL, reduction_model = NULL
 
   #Provide a default embedding model for: Since MMR is using word embeddings to diversify the topic representations, it is necessary to pass the embedding model to BERTopic if you are using pre-computed embeddings:"
   if(is.null(embedding_model)){
-    embedding_model <- bt_make_embedder(model_name = "all-mpnet-base-v2")
-    message("\nNo embedding model provided, defaulting to 'all-mpnet-base-v2' model as embedder.")
+    embedding_model <- bt_make_embedder_st(model = "all-miniLM-L6-v2")
+    message("\nNo embedding model provided, defaulting to 'all-miniLM-L6-v2' model as embedder.")
     }
 
   #If no UMAP model given, provide empty
@@ -90,7 +112,9 @@ bt_compile_model <- function(..., embedding_model = NULL, reduction_model = NULL
 #' NOTE: The bertopic model you are working with is a pointer to a python object 
 #' at a point in memory. This means that the input and the output model cannot be 
 #' differentiated between without explicitly saving the model before performing 
-#' this operation. A model is not returned as the function changes the input model.
+#' this operation. We do not need to specify an output to the bt_fit_model function 
+#' as the function changes the input model in place. If you do decide to explicitly assign a function output,
+#' be aware that the output model and the input model will be the same as one another.
 #'
 #' @param model Output of bt_compile_model() or another bertopic topic model
 #' @param documents Your documents to topic model on
@@ -100,6 +124,27 @@ bt_compile_model <- function(..., embedding_model = NULL, reduction_model = NULL
 #' @return a fitted BERTopic model
 #' @export
 #'
+#' @examples
+#' \dontrun{
+#' # create the model with default parameters, then fit the model to the data
+#' model <- bt_compile_model()
+#' bt_fit_model(model = model, documents = docs)
+#' 
+#' # create the model with document embeddings already created and reduced
+#' # embeddings
+#' embedder <- bt_make_embedder_st(all-minilm-l6-v2)
+#' embeddings <- bt_do_embedding(embedder, docs)
+#' 
+#' # reduced embeddings
+#' reducer <- bt_make_reducer_umap()
+#' reduced_embeddings <-  bt_do_reducing(reducer, embeddings)
+#' 
+#' # model
+#' model <- bt_compile_model(embedding_model = bt_empty_embedder, reducer = bt_empty_reducer)
+#' bt_fit_model(model = model, documents = docs, embeddings = reduced_embeddings)
+#' 
+#' }
+#' 
 bt_fit_model <- function(model, documents, embeddings = NULL, topic_labels = NULL){
 
   #Input validation
@@ -125,5 +170,5 @@ bt_fit_model <- function(model, documents, embeddings = NULL, topic_labels = NUL
 
   fitted_model <- model$fit(documents = documents, embeddings = embeddings, y = topic_labels)
 
-  # return(fitted_model)
+  message("\nThe input model has bee fitted to the data and updated accordingly")
 }

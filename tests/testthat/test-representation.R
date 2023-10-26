@@ -29,7 +29,7 @@ test_that("bt_representation_keybert errors on bad input", {
   expect_error(bt_representation_keybert(documents = "test",
                                          document_embeddings = array(runif(10), dim = c(5, 2)),
                                          fitted_model = model,
-                                         embedding_model = bt_make_embedder("all-mpnet-base-v2")),
+                                         embedding_model = bt_make_embedder_st("all-miniLM-L6-v2")),
                ".*Number of documents:.*Number of embeddings:.*")
                
 })
@@ -41,7 +41,7 @@ test_that("bt_representation_keybert returns correct output on correct input", {
   embeddings <- array(runif(3840), dim = c(10, 384))
   model <- bt$BERTopic(embedding_model = bt_empty_embedder(),
                        umap_model = bt_empty_reducer())$fit(docs, embeddings)
-  embedder <- bt_make_embedder("all-MiniLM-L6-v2")
+  embedder <- bt_make_embedder_st("all-MiniLM-L6-v2")
   
   representation_keybert <- bt_representation_keybert(fitted_model = model,
                                                       documents = docs,
@@ -84,7 +84,7 @@ test_that("bt_representation_mmr returns correct output on correct input", {
                        umap_model = bt_empty_reducer())$fit(docs, embeddings)
   
   representation_mmr <- bt_representation_mmr(fitted_model = model,
-                                              embedding_model = bt_make_embedder("all-MiniLM-L6-v2"))
+                                              embedding_model = bt_make_embedder_st("all-MiniLM-L6-v2"))
   nr_topics <- model$get_topic_info() %>% nrow()
   expect_true("-1" %in% names(representation_mmr))
   expect_equal(nr_topics, length(representation_mmr))
@@ -122,12 +122,14 @@ test_that("bt_representation_openai errors on bad input", {
                                         openai_model = "gpt",
                                         chat = FALSE,
                                         documents = "test"), "If using a gpt model, you must specify chat = TRUE")
-  expect_error(bt_representation_openai(fitted_model = model,
-                                        documents = "test",
-                                        openai_model = "test",
-                                        api_key = Sys.getenv("OPENAI_API_KEY")
-                                        ),
-               "The input model, test, is not an available OpenAI model.")
+  
+  if(interactive()){expect_error(bt_representation_openai(fitted_model = model,
+                                                          documents = "test",
+                                                          openai_model = "test",
+                                                          api_key = Sys.getenv("OPENAI_API_KEY")
+  ),
+  "The input model, test, is not an available OpenAI model.")}
+  
   
   # extra inputs
   # expect_error(bt_representation_openai(test_input = "test",
@@ -135,24 +137,28 @@ test_that("bt_representation_openai errors on bad input", {
   #              "Bad argument\\(s\\) attempted to be sent to OpenAI\\(\\): test_input")
 })
 
-test_that("bt_representation_openai returns correct output on correct input", {
+if(interactive()){
+  test_that("bt_representation_openai returns correct output on correct input", {
+      
+      bt <- reticulate::import("bertopic")
+      docs <- stringr::sentences[1:10]
+      embeddings <- array(runif(3840), dim = c(10,384))
+      model <- bt$BERTopic(embedding_model = bt_empty_embedder(),
+                           umap_model = bt_empty_reducer())$fit(docs, embeddings)
+      nr_topics <- model$get_topic_info() %>% nrow()
+      
+      representation_openai <- bt_representation_openai(fitted_model = model,
+                                                        documents = docs,
+                                                        api_key = Sys.getenv("OPENAI_API_KEY")
+      )
+      
+      expect_true("-1" %in% names(representation_openai))
+      expect_equal(nr_topics, length(representation_openai))
+      expect_true(is.character(unlist(representation_openai)))
   
-  bt <- reticulate::import("bertopic")
-  docs <- stringr::sentences[1:10]
-  embeddings <- array(runif(3840), dim = c(10,384))
-  model <- bt$BERTopic(embedding_model = bt_empty_embedder(),
-                       umap_model = bt_empty_reducer())$fit(docs, embeddings)
-  nr_topics <- model$get_topic_info() %>% nrow()
-  
-  representation_openai <- bt_representation_openai(fitted_model = model,
-                                                 documents = docs,
-                                                 api_key = Sys.getenv("OPENAI_API_KEY")
-                                                 )
-  
-  expect_true("-1" %in% names(representation_openai))
-  expect_equal(nr_topics, length(representation_openai))
-  expect_true(is.character(unlist(representation_openai)))
-})
+    
+  })
+}
 
 test_that("bt_representation_hf errors on bad input", {
   

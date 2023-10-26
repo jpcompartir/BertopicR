@@ -4,7 +4,7 @@ output:
   html_document:
     toc: true
     toc_float: true
-    toc_depth: 3
+    toc_depth: 4
     highlight: tango
     code_folding: show
 vignette: >
@@ -29,15 +29,15 @@ library(ggplot2)
 
 # Changing the Model Representation
 
-```{r echo = FALSE}
+```{r, echo = FALSE, message = FALSE}
 sentences <- stringr::sentences
-embedder <- bt_make_embedder("all-mpnet-base-v2")
-embeddings <- bt_do_embedding(embedder, sentences)
+embedder <- BertopicR::bt_make_embedder_st("all-miniLM-L6-v2")
+embeddings <- bt_do_embedding(embedder, sentences, accelerator = NULL)
 reducer <- bt_make_reducer_umap(
-  n_neighbors = 10L,
-  n_components = 10L,
+  n_neighbours = 10L,
+  n_components = 5L,
   min_dist = 0L,
-  metric = "cosine"
+  metric = "euclidean"
   )
 reduced_embeddings <- bt_do_reducing(reducer, embeddings)
 clusterer <-  bt_make_clusterer_hdbscan(min_cluster_size = 5L,
@@ -119,13 +119,13 @@ representation_keybert <- bt_representation_keybert(fitted_model = topic_model,
 representation_mmr <- bt_representation_mmr(fitted_model = topic_model,
                                             embedding_model = embedder,
                                             diversity = 0.5)
-
-representation_openai <- bt_representation_openai(fitted_model = topic_model,
-                                                  documents = sentences,
-                                                  openai_model = "gpt-3.5-turbo",
-                                                  nr_repr_docs = 10,
-                                                  chat = TRUE,
-                                                  api_key = Sys.getenv("OPENAI_API_KEY"))
+# 
+# representation_openai <- bt_representation_openai(fitted_model = topic_model,
+#                                                   documents = sentences,
+#                                                   openai_model = "gpt-3.5-turbo",
+#                                                   nr_repr_docs = 10,
+#                                                   chat = TRUE,
+#                                                   api_key = Sys.getenv("OPENAI_API_KEY"))
 
 
 representation_hf <- bt_representation_hf(fitted_model = topic_model,
@@ -135,20 +135,26 @@ representation_hf <- bt_representation_hf(fitted_model = topic_model,
                                           default_prompt = "keywords")
 ```
 
-Now that we have trialed a few representation methods, we can look at how they compare to default representations and we should be able to get a good idea of what each topic is about. You will notice that the gpt-3.5 model gives the most coherent topic representation and it would be easy to just take that as gospel and chose a topic title based on that. It is important to remember, like with the other representation methods, only the number you input for nr_repr_docs in bt_representation_openai has been sent to the model and for a large topic, these documents may not represent the topic as a whole.
+Now that we have trialled a few representation methods, we can look at how they compare to default representations and we should be able to get a good idea of what each topic is about. You will notice that the gpt-3.5 model gives the most coherent topic representation and it would be easy to just take that as gospel and chose a topic title based on that. It is important to remember, like with the other representation methods, only the number you input for nr_repr_docs in bt_representation_openai has been sent to the model and for a large topic, these documents may not represent the topic as a whole.
 
 ```{r update_keybert}
 topic_representations <- topic_model$get_topic_info() %>%
   mutate(keybert = representation_keybert,
          mmr = representation_mmr,
-         openai = representation_openai,
+         # openai = representation_openai,
          flanT5 = representation_hf) %>%
   select(-Representative_Docs)
 
-topic_representations %>% DT::datatable(options = list(scrollX = TRUE))
+topic_representations %>% select(-Topic, -Count, -Name) %>%
+  mutate(keybert = stringr::str_replace_all(keybert, "_",", "),
+         mmr = stringr::str_replace_all(mmr, "_",", "),
+         Representation = stringr::str_replace_all(Representation, "_",", ")) %>%
+  DT::datatable(options = list(scrollX = TRUE))
+
 ```
 
 # Modifying Topics
+Two of the biggest inconveniences that using hdbscan clustering introduces is the generation of large numbers of clusters (topics) and the presence of what can be huge numbers of outliers. In order for our topic analysis to be practical and digestible, we will likely want to reduce the number of topics and, depending on our use case, we may want to reduce the number of outliers. 
 
 ## Merging Topics
 
@@ -163,19 +169,21 @@ hierarchical_topics <- topic_model$hierarchical_topics(sentences)
 topic_model$visualize_hierarchy(hierarchical_topics = hierarchical_topics)$show()
 ```
 
-```{python, echo = FALSE, out.width = 4}
+```{python, echo = FALSE, out.width = 4, fig.width = 2,  message = FALSE}
 hierarchical_topics = r.topic_model.hierarchical_topics(r.sentences)
 r.topic_model.visualize_hierarchy(hierarchical_topics = hierarchical_topics).show()
 ```
 
 The hierarchical structure is based on how topics emerge based on the similarity of their embeddings, however, we can often find topics that we think should be merged based on our own knowledge. For example, despite their embeddings having a relatively large distance between them, topic 2 and 14 both appear to be about food.
 
+### Looking at Topic Contents
+
 ```{r}
 topic_representations %>%
   filter(Topic %in% c(2,14))
 ```
 
-For larger topics we could use ParseR to analyse topic bigrams here, but since these topics are relatively small, we can just examine exemplars.
+For larger topics we might need to use more sophisticated language analysis tools, but since these topics are relatively small, we can just examine exemplars.
 
 ```{r}
 data %>%
@@ -206,7 +214,7 @@ The methods currently available to us are:
 
 1. **Tokenset Similarity:** Divides each documents into tokensets and calculates the c-TF-IDF cosine similarity between each tokenset and each topic. The summation of each cosine similarity score for each topic across each outlier document gives the most similar topic for each outlier document.
 
-2. **Embeddings:** Measures the cosine similarty between embeddings for each outlier document and each topic. If we have passed an empty embedding model to bt_compile_model (which we did), we must specify an embedding model to be used with this function.
+2. **Embeddings:** Measures the cosine similarity between embeddings for each outlier document and each topic. If we have passed an empty embedding model to bt_compile_model (which we did), we must specify an embedding model to be used with this function.
 
 3. **c-TF-IDF:** Calculates the c-TF-IDF cosine similarity for each outlier document and topic and redistributes outliers based on the topic with which it has the highest similarity.
 
@@ -257,7 +265,7 @@ data %>%
 
 ```
 
-You should take a look at some of the documents which have been redistributed and the topic which they have been redistributed to before deciding on the best strategy for your data. This can be quite laborious for large amounts of data with many topics. As this dataset is relatively small it may not be appropriate, but you can use things like bigrams and top terms on outlier documents that have been redistributed to investigate if they line up with the topics they have been moved to.
+You should take a look at some of the documents which have been redistributed and the topic which they have been redistributed to before deciding on the best strategy for your data. Unfortunately, this can be quite laborious for large amounts of data with many topics.
 
 Once you have settled on a new list of topics that you are happy with, we can update the dataframe we have been keeping. For example, if after looking at the data we decided that the Tokenset Similarity method was the most appropriate:
 

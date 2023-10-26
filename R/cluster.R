@@ -1,79 +1,89 @@
-#' Create a clustering model
-#'
-#' Instantiates a clustering model which can be fed into a BertopicR pipeline.
-#'
-#' Available clustering models are 'hdbscan', 'kmeans', 'agglomerative', and 'base'. For each of these options, see either the hdbscan, or sklearn official documentation for lists of arguments which can be fed to each clustering model. or type "?bt_make_clusterer_hdbscan", "?bt_make_clusterer_kmeans" etc. to see which named arguments have been supplied as a default for each clustering model.
-#'
-#'Executing "bt_make_clusterer(clustering_method = 'base')" is the equivalent of calling `"bt_base_clusterer()" and returns an empty model which is used for streamlining the topic modelling process.
-#'
-#' @param ... Arguments fed to the the clustering function determined by `clustering_method =`
-#' @param clustering_method A string defining which clustering method to use
-#'
-#' @return A clustering model (Python object)
-#' @export
-#'
-#' @examples
-#' empty_clustering_model <- bt_make_clusterer(clustering_method = "base")
-#'
-#' hdbscan_model <- bt_make_clusterer(clustering_method = "hdbscan", min_cluster_size = 10L)
-#'
-#' kmeans_model <- bt_make_clusterer(clustering_method = "kmeans", n_clusters = 10L)
-bt_make_clusterer <- function(..., clustering_method = c("hdbscan", "kmeans", "agglomerative", "base")) {
-
-  #Match the clustering_method argument & set 'hdbscan' as defualt (first position)
-  clustering_method <- match.arg(clustering_method)
-
-  ellipsis::check_dots_used()
-  clustering_model <- switch(clustering_method,
-                             "kmeans" = bt_make_clusterer_kmeans(...),
-                             "hdbscan" = bt_make_clusterer_hdbscan(...),
-                             "agglomerative" = bt_make_clusterer_agglomerative(...),
-                             "base" = bt_empty_clusterer())
-
-  return(clustering_model)
-}
-
 #' Create a kmeans clustering model
 #'
+#' @param ... Additional arguments sent to sklearn.cluster.KMeans()
 #' @param n_clusters number of clusters to search for (enter as integer by typing L after the number)
 #'
 #' @return A kMeans clustering model (Python object)
 #' @export
 #'
 #' @examples
-#' clustering_model <- bt_make_clusterer_kmeans(15L)
-#'
-#' kmeans_model <- bt_make_clusterer_kmeans(n_clusters = 10L)
-bt_make_clusterer_kmeans <- function(n_clusters = 10L) {
-
+#' # models with different values for number of clusters
+#' clustering_model <- bt_make_clusterer_kmeans(n_clusters = 15L)
+#' clustering_model <- bt_make_clusterer_kmeans(n_clusters = 10L)
+#' 
+#' # specifying additional arguments
+#' clustering_model <- bt_make_clusterer_kmeans(n_clusters = 10L, verbose = TRUE)
+bt_make_clusterer_kmeans <- function(..., n_clusters = 10L) {
+  
+  # input validation ----
+  
+  stopifnot(is.numeric(n_clusters))
+  
   #Import library to access kmeans inside function scope
   skcluster <- reticulate::import("sklearn.cluster")
-
+  
+  #Convert the `...` (dot-dot-dot or ellipsis) to list for checking purposes
+  dots <- rlang::list2(...)
+  
+  #Instantiate empty model to get valid arguments
+  empty_model <- skcluster$KMeans()
+  
+  #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad
+  if(any(!names(dots) %in% names(empty_model))){
+    
+    bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
+    stop(paste("Bad argument(s) attempted to be sent to KMeans():", bad_args, sep = ' '))
+  }
+  
+  # end of input validation ----
+  
   #Instantiate clustering model making sure n_clusters is an integer
-  clustering_model <- skcluster$KMeans(n_clusters = as.integer(n_clusters))
-
+  clustering_model <- skcluster$KMeans(n_clusters = as.integer(n_clusters),
+                                       ...)
+  
   return(clustering_model)
 }
 
 #' Create an Agglomerative Clustering clustering model
 #'
+#' @param ... Additional arguments sent to sklearn.cluster.AgglomerativeClustering()
 #' @param n_clusters number of clusters to search for (enter as integer by typing L after the number)
 #'
 #' @return An Agglomerative Clustering clustering model (Python object)
 #' @export
 #'
 #' @examples
-#' clustering_model <- bt_make_clusterer_agglomerative(15L)
+#' clustering_model <- bt_make_clusterer_agglomerative( n_clusters = 15L)
 #'
 #' agglomerative_model <- bt_make_clusterer_agglomerative(n_clusters = 10L)
-bt_make_clusterer_agglomerative <- function(n_clusters = 20L) {
-
-  #Import library to access AgglomerativeClustering inside function scope
+bt_make_clusterer_agglomerative <- function(..., n_clusters = 20L) {
+  
+  # input validation ----
+  
+  stopifnot(is.numeric(n_clusters))
+  
+  #Import library to access kmeans inside function scope
   skcluster <- reticulate::import("sklearn.cluster")
-
+  
+  #Convert the `...` (dot-dot-dot or ellipsis) to list for checking purposes
+  dots <- rlang::list2(...)
+  
+  #Instantiate empty model to get valid arguments
+  empty_model <- skcluster$AgglomerativeClustering()
+  
+  #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad
+  if(any(!names(dots) %in% names(empty_model))){
+    
+    bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
+    stop(paste("Bad argument(s) attempted to be sent to AgglomerativeClustering():", bad_args, sep = ' '))
+  }
+  
+  # end of input validation ----
+  
   #Instantiate clustering model making sure n_clusters is an integer
-  clustering_model <- skcluster$AgglomerativeClustering(n_clusters = as.integer(n_clusters))
-
+  clustering_model <- skcluster$AgglomerativeClustering(n_clusters = as.integer(n_clusters),
+                                                        ...)
+  
   return(clustering_model)
 }
 
@@ -99,25 +109,44 @@ bt_make_clusterer_agglomerative <- function(n_clusters = 20L) {
 #' @export
 #'
 #' @examples
-#' clustering_model <- bt_make_clusterer_hdbscan(metric = "minkowski")
-bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, min_samples = 10L, metric = "euclidean", cluster_selection_method = "eom", prediction_data = FALSE) {
-
+#' # using minkowski metric for calculating distance between documents - when using minkowski metric, a value for p must be specified as an additional argument
+#' clustering_model <- bt_make_clusterer_hdbscan(metric = "minkowski", p = 1.5)
+#' 
+#' # specify integer numeric inputs as integer, using additional gen_min_span_tree argument
+#' clusterer = bt_make_clusterer_hdbscan(min_cluster_size = 5L, gen_min_span_tree = TRUE)
+#' 
+#' # not specifying numeric inputs as integers (converted to integers internally)
+#' clusterer = bt_make_clusterer_hdbscan(min_cluster_size = 5, cluster_selection_method = "leaf")
+#' 
+bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, min_samples = 10L, metric = "euclidean", cluster_selection_method = c("eom", "leaf"), prediction_data = FALSE) {
+  
+  # input validation ----
   #Import the hdbscan library inside function scope
   hdbscan <- reticulate::import("hdbscan")
-
+  
   #Convert the `...` (dot-dot-dot or ellipsis) to list for checking purposes
   dots <- rlang::list2(...)
-
+  
   #Instantiate empty model to get valid arguments
   empty_model <- hdbscan$HDBSCAN()
-
+  
   #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad
   if(any(!names(dots) %in% names(empty_model))){
-
+    
     bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
     stop(paste("Bad argument(s) attempted to be sent to HDBSCAN():", bad_args, sep = ' '))
   }
-
+  
+  stopifnot(is.numeric(min_cluster_size),
+            is.numeric(min_samples),
+            is.character(metric),
+            cluster_selection_method %in% c("eom", "leaf"),
+            is.logical(prediction_data))
+  
+  # end of input validation ----
+  
+  cluster_selection_method <- match.arg(cluster_selection_method)
+  
   #Instantiate a model, with some named arguments and ellipsis for users who wish to change other arguments
   clustering_model <- hdbscan$HDBSCAN(
     min_cluster_size = as.integer(min_cluster_size),
@@ -126,7 +155,7 @@ bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, min_samples =
     prediction_data = prediction_data,
     min_samples = as.integer(min_samples),
     ...)
-
+  
   return(clustering_model)
 }
 
@@ -138,9 +167,19 @@ bt_make_clusterer_hdbscan <- function(..., min_cluster_size = 10L, min_samples =
 #'
 #' @return Cluster labels for each document
 #' @export
-#'
+#' 
+#' @examples
+#' # create clustering model
+#' clusterer <- bt_make_clusterer_kmeans(n_clusters = 2)
+#' 
+#' # mock embeddings
+#' embeddings_test <-  matrix(runif(50), nrow = 25, ncol = 2)
+#' 
+#' # create clusters
+#' clusters <- bt_do_clustering(clusterer, embeddings_test)
+#' 
 bt_do_clustering <- function(clustering_model, embeddings) {
-
+  
   # Early stopping
   stopifnot(is.array(embeddings) | is.data.frame(embeddings))
   
@@ -153,6 +192,6 @@ bt_do_clustering <- function(clustering_model, embeddings) {
   label_mapping <- stats::setNames(-1:(length(sort_index) - 1), c(-1, names(table(labels[labels != -1]))[sort_index])) # map previous labels to ordered labels
   
   ordered_labels <- label_mapping[as.character(labels)] # reassign labels
-
-  return(ordered_labels) #Should we return the model and the labels?
+  
+  return(ordered_labels) 
 }

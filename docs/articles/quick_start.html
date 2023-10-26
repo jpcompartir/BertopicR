@@ -6,12 +6,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="description" content="BertopicR">
-<title>Quick Start • BertopicR</title>
+<title>Topic Modelling without Optimisation • BertopicR</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Quick Start">
+<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Topic Modelling without Optimisation">
 <meta property="og:description" content="BertopicR">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -22,7 +22,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    <nav class="navbar fixed-top navbar-dark navbar-expand-lg bg-primary"><div class="container">
     
     <a class="navbar-brand me-2" href="../index.html">BertopicR</a>
 
@@ -41,9 +41,9 @@
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/modular_approach.html">Interacting with Individual Modules</a>
     <a class="dropdown-item" href="../articles/manipulating-the-model.html">Manipulating the Model</a>
-    <a class="dropdown-item" href="../articles/modular_approach.html">Interacting with individaul modules</a>
-    <a class="dropdown-item" href="../articles/quick_start.html">Quick Start</a>
+    <a class="dropdown-item" href="../articles/quick_start.html">Topic Modelling without Optimisation</a>
   </div>
 </li>
       </ul>
@@ -51,7 +51,14 @@
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off">
 </form>
 
-      <ul class="navbar-nav"></ul>
+      <ul class="navbar-nav">
+<li class="nav-item">
+  <a class="external-link nav-link" href="https://github.com/jpcompartir/BertopicR" aria-label="github">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 
     
@@ -63,10 +70,10 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="" class="logo" alt=""><h1>Quick Start</h1>
+      <img src="" class="logo" alt=""><h1>Topic Modelling without Optimisation</h1>
             
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/jpcompartir/BertopicRvignettes/quick_start.Rmd" class="external-link"><code>vignettes/quick_start.Rmd</code></a></small>
       <div class="d-none name"><code>quick_start.Rmd</code></div>
     </div>
 
@@ -76,7 +83,8 @@
 using BertopicR relatively quickly. It should be noted that this
 approach significantly simplifies and generalises certain steps, and
 will rarely produce an optimised topic model. To get the most out of
-your topic modelling, you should refer to the <a href="vignettes/modular_approach.Rmd">Modular Approach</a> vignette.</p>
+your topic modelling, you should refer to the <a href="modular_approach.html">Interacting with Individual Modules</a>
+vignette.</p>
 <div class="section level2">
 <h2 id="preparing-the-data">Preparing the Data<a class="anchor" aria-label="anchor" href="#preparing-the-data"></a>
 </h2>
@@ -93,7 +101,7 @@ model.</p>
 <div class="section level2">
 <h2 id="compiling-the-model">Compiling the Model<a class="anchor" aria-label="anchor" href="#compiling-the-model"></a>
 </h2>
-<p>If you have read the <a href="vignettes/modular_approach.Rmd">Modular
+<p>If you have read the <a href="modular_approach.Rmd">Modular
 Approach</a> vignette, you will have seen that we specified each
 individual component of our topic model (embedding_model, ctfidf_model
 etc.) and fed those to bt_compile_model. If we wish, we can use entirely
@@ -102,7 +110,7 @@ components) with the same function.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bt_compile_model.html">bt_compile_model</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; No embedding model provided, defaulting to 'all-mpnet-base-v2' model as embedder.</span></span>
+<span><span class="co">#&gt; No embedding model provided, defaulting to 'all-miniLM-L6-v2' model as embedder.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; No reduction_model provided, using default 'bt_reducer_umap' parameters.</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -126,54 +134,43 @@ run the topic modelling process multiple times.</p>
 <p><strong>NOTE:</strong> The bertopic model you are working with is a
 pointer to a python object at a point in memory. This means that the
 input and the output model cannot be differentiated between without
-explicitly saving the model before performing this operation. A model is
-not returned as the function changes the input model.</p>
+explicitly saving the model before performing this operation. We do not
+need to specify an output to the bt_fit_model function as the function
+changes the input model in place. See the Note under the Fit the Model
+section in the <a href="modular_approach.html">Interacting with
+Individual Modules</a> vignette for more detail.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/bt_fit_model.html">bt_fit_model</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">sentences</span><span class="op">)</span></span>
 <span><span class="co">#&gt; UMAP(low_memory=False, min_dist=0.0, n_components=5, random_state=42, verbose=True)</span></span>
-<span><span class="co">#&gt; Tue Sep 12 11:46:13 2023 Construct fuzzy simplicial set</span></span>
-<span><span class="co">#&gt; Tue Sep 12 11:46:14 2023 Finding Nearest Neighbors</span></span>
-<span><span class="co">#&gt; Tue Sep 12 11:46:15 2023 Finished Nearest Neighbor Search</span></span>
-<span><span class="co">#&gt; Tue Sep 12 11:46:16 2023 Construct embedding</span></span>
-<span><span class="co">#&gt; Tue Sep 12 11:46:17 2023 Finished embedding</span></span>
+<span><span class="co">#&gt; Wed Oct 25 17:28:34 2023 Construct fuzzy simplicial set</span></span>
+<span><span class="co">#&gt; Wed Oct 25 17:28:34 2023 Finding Nearest Neighbors</span></span>
+<span><span class="co">#&gt; Wed Oct 25 17:28:35 2023 Finished Nearest Neighbor Search</span></span>
+<span><span class="co">#&gt; Wed Oct 25 17:28:37 2023 Construct embedding</span></span>
+<span><span class="co">#&gt; Wed Oct 25 17:28:39 2023 Finished embedding</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; The input model has bee fitted to the data and updated accordingly</span></span>
 <span></span>
-<span><span class="va">model</span><span class="op">$</span><span class="fu">get_topic_info</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">Representative_Docs</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    Topic Count                       Name</span></span>
-<span><span class="co">#&gt; 1     -1   233   -1_box_days_good_crawled</span></span>
-<span><span class="co">#&gt; 2      0   117       0_wind_sun_air_house</span></span>
-<span><span class="co">#&gt; 3      1    68    1_plans_tales_short_boy</span></span>
-<span><span class="co">#&gt; 4      2    62     2_burn_soap_dirty_tent</span></span>
-<span><span class="co">#&gt; 5      3    53      3_tea_taste_ripe_beef</span></span>
-<span><span class="co">#&gt; 6      4    45    4_book_add_seven_pencil</span></span>
-<span><span class="co">#&gt; 7      5    32     5_cord_screw_cap_press</span></span>
-<span><span class="co">#&gt; 8      6    23    6_ship_fell_broke_rider</span></span>
-<span><span class="co">#&gt; 9      7    22 7_school_sat_home_new girl</span></span>
-<span><span class="co">#&gt; 10     8    15   8_corn_spring_peas_grain</span></span>
-<span><span class="co">#&gt; 11     9    15 9_gold_ring_gold ring_silk</span></span>
-<span><span class="co">#&gt; 12    10    13        10_cat_cats_pup_saw</span></span>
-<span><span class="co">#&gt; 13    11    12    11_chair_desk_couch_tan</span></span>
-<span><span class="co">#&gt; 14    12    10    12_funds_debt_tried_aim</span></span>
-<span><span class="co">#&gt;                                                                                          Representation</span></span>
-<span><span class="co">#&gt; 1                                        box, days, good, crawled, quite, march, shirt, heat, hat, work</span></span>
-<span><span class="co">#&gt; 2                                         wind, sun, air, house, pink, cloud, drifts, sky, shore, shone</span></span>
-<span><span class="co">#&gt; 3                                        plans, tales, short, boy, fun, friends, right, got, fail, life</span></span>
-<span><span class="co">#&gt; 4                                         burn, soap, dirty, tent, soak, hatch, porch, rug, wake, fence</span></span>
-<span><span class="co">#&gt; 5                                          tea, taste, ripe, beef, fruit, stew, pie, served, cold, rare</span></span>
-<span><span class="co">#&gt; 6                                          book, add, seven, pencil, chart, write, ink, list, page, sum</span></span>
-<span><span class="co">#&gt; 7                                      cord, screw, cap, press, fasten, hoist, left, drive, glass, shoe</span></span>
-<span><span class="co">#&gt; 8                              ship, fell, broke, rider, crash, cracked, storm, loss, tall rider, threw</span></span>
-<span><span class="co">#&gt; 9  school, sat, home, new girl, store clock, lame kept, straight home, long journey, struck mark, looks</span></span>
-<span><span class="co">#&gt; 10     corn, spring, peas, grain, kindle farmers, hogs fed, young calf, mules healthy, mules, horse man</span></span>
-<span><span class="co">#&gt; 11                       gold, ring, gold ring, silk, pierced, costly, stones, rings, band, sheath gold</span></span>
-<span><span class="co">#&gt; 12                           cat, cats, pup, saw, jerked, sock, sock stray, pup jerked, hate, paw rusty</span></span>
-<span><span class="co">#&gt; 13        chair, desk, couch, tan, leaned wall, wall desk, weight jacket, shaky floor, van, sweater sat</span></span>
-<span><span class="co">#&gt; 14         funds, debt, tried, aim, great fund, rush funds, raise great, replace coin, plea funds, plea</span></span></code></pre></div>
+<span><span class="va">model</span><span class="op">$</span><span class="fu">get_topic_info</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">Representative_Docs</span>, <span class="op">-</span> <span class="va">Representation</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    Topic Count                              Name</span></span>
+<span><span class="co">#&gt; 1     -1   254           -1_brass_grass_left_red</span></span>
+<span><span class="co">#&gt; 2      0   101           0_words_men_march_laugh</span></span>
+<span><span class="co">#&gt; 3      1    66             1_tea_corn_ripe_taste</span></span>
+<span><span class="co">#&gt; 4      2    54            2_store_tin_pearl_ring</span></span>
+<span><span class="co">#&gt; 5      3    50           3_sun_wind_breeze_beach</span></span>
+<span><span class="co">#&gt; 6      4    44          4_smell_carpet_soap_heat</span></span>
+<span><span class="co">#&gt; 7      5    41            5_pack_box_slide_sheet</span></span>
+<span><span class="co">#&gt; 8      6    30          6_book_wrote_seven_write</span></span>
+<span><span class="co">#&gt; 9      7    20          7_fell_river_storm_crash</span></span>
+<span><span class="co">#&gt; 10     8    19      8_ship_fish_apart_used catch</span></span>
+<span><span class="co">#&gt; 11     9    15                9_cat_dog_trap_pup</span></span>
+<span><span class="co">#&gt; 12    10    14 10_talked_music_answer_sang tunes</span></span>
+<span><span class="co">#&gt; 13    11    12      11_school_boy_child_children</span></span></code></pre></div>
 <p>That’s it, you have a topic model up and running! If you decided that
 you wanted to adjust factors, like the minimum size of a topic, or the
-number of topics you want, you should refer to the <a href="vignettes/modular_approach.Rmd">Modular Approach</a> vignette. You
-can also refer to the <a href="vignettes/manipulating-the-model.Rmd">Manipulating the Model</a>
-vignette to see how you can interpret the topics and reduce the number
-of outliers identified (if using hdbscan (default) clustering).</p>
+number of topics you want, you should refer to the <a href="modular_approach.html">Interacting with Individual Modules</a>
+vignette. You can also refer to the <a href="manipulating-the-model.html">Manipulating the Model</a> vignette
+to see how you can interpret the topics and reduce the number of
+outliers identified (if using hdbscan (default) clustering).</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

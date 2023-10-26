@@ -2,12 +2,12 @@
 #'
 #' This function wraps the UMAP functionality from Python's umap-learn package for use in R via reticulate. It allows you to perform dimension reduction on high-dimensional data, its intended use is in a BertopicR pipeline/
 #'
-#' If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, when compiling your model with bt_compile_model you should call `reducer <- bt_base_reducer()`.
+#' If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, when compiling your model with bt_compile_model you should call `reducer <- bt_empty_reducer()`.
 #'
 #' low_memory = TRUE is currently inadvisable as trial and error suggests the results are not as robust in later clustering.
 #'
-#' @param ... Sent to umap$UMAP for adding additional arguments
-#' @param n_neighbors The size of local neighbourhood (in terms of number of neighboring data points) used
+#' @param ... Sent to umap.UMAP python function for adding additional arguments
+#' @param n_neighbours The size of local neighbourhood (in terms of number of neighboring data points) used
 #'        for manifold approximation (default: 15).
 #' @param n_components The number of dimensions to reduce to (default: 5).
 #' @param min_dist The minimum distance between points in the low-dimensional representation (default: 0.0).
@@ -19,29 +19,59 @@
 #' @return A UMAP Model that can be input to bt_do_reducing to reduce dimensions of data
 #'
 #' @export
-bt_make_reducer_umap <- function( ..., n_neighbors = 15L, n_components = 5L, min_dist = 0.0, metric = "euclidean", random_state = 42L, low_memory = FALSE, verbose = TRUE
+#' 
+#' @seealso
+#'  \url{https://umap-learn.readthedocs.io/en/latest/api.html}
+#'  \url{https://umap-learn.readthedocs.io/en/latest/basic_usage.html}
+#'  \url{https://umap-learn.readthedocs.io/en/latest/parameters.html}
+#'  
+#' @examples
+#' # using euclidean distance measure and specifying numeric inputs as integers
+#' reducer <- bt_make_reducer_umap(n_neighbours = 15L, n_components = 10L, metric = "euclidean")
+#'
+#' # using euclidean distance measure and not specifying numeric inputs as integers (done internally in function)
+#' reducer <- bt_make_reducer_umap(n_neighbours = 15, n_components = 10, metric = "euclidean")
+#' 
+#'  # using cosine distance measure and not specifying numeric inputs as integers (done internally in function)
+#' reducer <- bt_make_reducer_umap(n_neighbours = 20, n_components = 6, metric = "cosine")
+#' 
+bt_make_reducer_umap <- function( ..., n_neighbours = 15L, n_components = 5L, min_dist = 0.0, metric = "euclidean", random_state = 42L, low_memory = FALSE, verbose = TRUE
 ) {
 
   #Early stopping and input validation ----
   stopifnot(is.logical(verbose),
-            is.numeric(n_neighbors),
+            is.numeric(n_neighbours),
             is.numeric(n_components), is.numeric(random_state),
             is.numeric(min_dist),
             is.character(metric))
+  
+  dots <- rlang::list2(...) # place ellipses in list
+  
+  umap <- reticulate::import("umap")
+  
+  #Instantiate empty model to get valid arguments
+  empty_model <- umap$UMAP()
+  
+  #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad
+  if(any(!names(dots) %in% names(empty_model))){
+    
+    bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
+    stop(paste("Bad argument(s) attempted to be sent to UMAP():", bad_args, sep = ' '))
+  }
 
-    #Import umap library for reduction ----
-    umap <- reticulate::import("umap")
+    #End of validation ----
+    
 
     #Instantiate a UMAP model with the given parameters
-    reducer <- umap$UMAP(n_neighbors = as.integer(n_neighbors),
-                         n_components = as.integer(n_components),
-                         min_dist = min_dist,
-                         metric = metric,
-                         random_state = as.integer(random_state),
-                         verbose = verbose,
-                         low_memory = low_memory,
-                         ... #Allows user to give additional arguments to the umap$UMAP function.
-    )
+  reducer <- umap$UMAP(n_neighbors = as.integer(n_neighbours),
+                       n_components = as.integer(n_components),
+                       min_dist = min_dist,
+                       metric = metric,
+                       random_state = as.integer(random_state),
+                       verbose = verbose,
+                       low_memory = low_memory,
+                       ... #Allows user to give additional arguments to the umap$UMAP function.
+  )
 
 
   return(reducer)
@@ -55,20 +85,37 @@ bt_make_reducer_umap <- function( ..., n_neighbors = 15L, n_components = 5L, min
 #' high-dimensional data, its intended use is in a BertopicR pipeline. If you're 
 #' concerned about processing time, you most likely will only want to reduce the 
 #' dimensions of your dataset once. In this case, when compiling your model with 
-#' bt_compile_model you should call `reducer <- bt_base_reducer()`.
+#' bt_compile_model you should call `reducer <- bt_empty_reducer()`.
 #'
-#' @param ... Sent to sklearn.decomposition UMAP function for adding additional arguments
+#' @param ... Sent to sklearn.decomposition.PCA function for adding additional arguments
 #' @param n_components Number of components to keep
 #' @param svd_solver method for reducing components can be auto, full, arpack, randomized
 #'
 #' @return A PCA Model that can be input to bt_do_reducing to reduce dimensions of data
 #' @export
-#'
-bt_make_reducer_pca <- function(..., 
-                                n_components,
-                                svd_solver = "auto"){
+#' 
+#' @seealso
+#'  \url{https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html}
+#'  \url{https://scikit-learn.org/stable/modules/decomposition.html#pca}
+#'  
+#' @examples
+#' # using default svd_solver
+#' reducer <- bt_make_reducer_pca(n_components = 100)
+#' 
+#' # speciying extra pca arguments
+#' reducer <- bt_make_reducer_pca (n_components = 20, svd_solver = "full", random_state = 42L)
+#' 
+bt_make_reducer_pca <- function(n_components,
+                                ..., 
+                                svd_solver = c("auto", "full", "arpack", "randomized")){
   
   #### input validation ####
+  
+  stopifnot(is.numeric(n_components),
+            svd_solver %in% c("auto", "full", "arpack", "randomized"))
+  
+  #Match the clustering_method argument & set 'randomized' as default (first position)
+  svd_solver <- match.arg(svd_solver)
   
   #Import the sklearn decomposition library i
   skl <- reticulate::import("sklearn.decomposition")
@@ -85,12 +132,6 @@ bt_make_reducer_pca <- function(...,
     bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
     stop(paste("Bad argument(s) attempted to be sent to PCA():", bad_args, sep = ' '))
   }
-  
-  # correct UK/US spelling convention
-  if (svd_solver == "randomised"){svd_solver = "randomized"}
-  
-  stopifnot(is.numeric(n_components),
-            svd_solver %in% c("auto", "full", "arpack", "randomized"))
   
   #### End of input validation ####
   
@@ -113,7 +154,7 @@ bt_make_reducer_pca <- function(...,
 #' Its intended use is in a BertopicR pipeline. If you're concerned about processing 
 #' time, you most likely will only want to reduce the dimensions of your dataset once. 
 #' In this case, when compiling your model with bt_compile_model you should call 
-#' `reducer <- bt_base_reducer()`.
+#' `reducer <- bt_empty_reducer()`.
 #'
 #' @param ... Sent to sklearn.decomposition Truncated SVD function for adding additional arguments
 #' @param n_components Number of components to keep
@@ -122,13 +163,23 @@ bt_make_reducer_pca <- function(...,
 #'
 #' @return Truncated SVD Model that can be input to bt_do_reducing to reduce dimensions of data
 #' @export
-#'
-bt_make_reducer_truncated_svd <- function(..., 
-                                n_components,
-                                n_iter = 5,
-                                svd_solver = "randomized"){
+#' 
+#' @seealso
+#'  \url{https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.TruncatedSVD.html}
+#'  \url{https://scikit-learn.org/stable/modules/decomposition.html#lsa}
+#' 
+#' @examples
+#' reducer <- bt_make_reducer_truncated_svd(n_components = 5)
+#' 
+bt_make_reducer_truncated_svd <- function(n_components,
+                                          ..., 
+                                          n_iter = 5L,
+                                          svd_solver = c("randomized", "arpack")){
   
   #### input validation ####
+  stopifnot(is.numeric(n_components),
+            is.numeric(n_iter),
+            svd_solver %in% c("arpack", "randomized"))
   
   #Import the sklearn decomposition library i
   skl <- reticulate::import("sklearn.decomposition")
@@ -139,19 +190,15 @@ bt_make_reducer_truncated_svd <- function(...,
   #Instantiate empty model to get valid arguments
   empty_model <- skl$TruncatedSVD()
   
+  #Match the clustering_method argument & set 'randomized' as default (first position)
+  svd_solver <- match.arg(svd_solver)
+  
   #Stop function early if bad arguments fed with ellipsis and send message to user pointing out which arguments were bad
   if(any(!names(dots) %in% names(empty_model))){
     
     bad_args <- names(dots)[!names(dots) %in% names(empty_model)]
     stop(paste("Bad argument(s) attempted to be sent to TruncatedSVD():", bad_args, sep = ' '))
   }
-  
-  # correct UK/US spelling convention
-  if (svd_solver == "randomised"){svd_solver = "randomized"}
-  
-  stopifnot(is.numeric(n_components),
-            is.numeric(n_iter),
-            svd_solver %in% c("arpack", "randomized"))
   
   #### End of input validation ####
   
@@ -173,9 +220,19 @@ bt_make_reducer_truncated_svd <- function(...,
 #' @param reducer Your dimensionality reduction model
 #' @param embeddings Your embeddings
 #'
-#' @return Embeddingd with reduced number of dimensions
+#' @return Embeddings with reduced number of dimensions
 #' @export
 #'
+#' @examples 
+#' # make reducuction model
+#' reducer <- bt_make_reducer_umap(n_neighbours = 2, n_components = 2)
+#' 
+#' # mock embeddings
+#' embeddings <- matrix(runif(50), nrow = 5, ncol = 10)
+#' 
+#' # reduce the embeddings
+#' reduced_embeddings <- bt_do_reducing(reducer, embeddings)
+#' 
 bt_do_reducing <- function(reducer, embeddings) {
 
   #Early stopping
@@ -233,110 +290,3 @@ bt_do_reducing <- function(reducer, embeddings) {
   #Return the reduced embeddings
   return(reduced_embeddings)
 }
-
-
-
-#' Reduce dimensions of your embeddings
-#'
-#' This function wraps the UMAP functionality from Python's umap-learn package for use in R via reticulate. It allows users to perform dimension reduction on high-dimensional data, its intended use is in a BertopicR pipeline, you can choose to return reduced embeddings, the reducer (UMAP model) or both.
-#'
-#' If you're concerned about processing time, you most likely will only want to reduce the dimensions of your dataset once. In this case, you should set `return_value = reduced_embeddings`, feed your reduced_embeddings into either a `BERTopic()` call or the `fit_transform()` function, and instantiate a base dimensionality reduction model (so that the calculation is effectively skipped.)
-#'
-#' @param embeddings A matrix or data frame to be reduced. Each row is considered a separate data point, and each column is a separate dimension.
-#' @param ... Additional parameters to pass to the UMAP function.
-#' @param return_value Whether to return the reduced embeddings and a base model or model with inputted parameters.
-#' @param n_neighbors The size of local neighborhood (in terms of number of neighboring data points) used
-#'        for manifold approximation (default: 15).
-#' @param n_components The number of dimensions to reduce to (default: 5).
-#' @param min_dist The minimum distance between points in the low-dimensional representation (default: 0.0).
-#' @param metric The metric to use for distance computation (default: "euclidean").
-#' @param random_state The seed used by the random number generator (default: 42).
-#' @param verbose Logical flag indicating whether to report progress during the dimension reduction (default: TRUE).
-#'
-#' @return A matrix or data frame of the dimension-reduced data. The number of rows will be the same
-#'         as `embeddings`, and the number of columns will be `n_components`.
-#'         This object will also have attributes "original_dim", "n_neighbors", "metric", and "random_state" that store corresponding inputs.
-#'
-#' @export
-# bt_reducer <- function(embeddings, ..., return_value = c("reduced_embeddings", "reducer"), n_neighbors = 15L, n_components = 5L, min_dist = 0.0, metric = "euclidean", random_state = 42L, verbose = TRUE){
-#
-#   return_value <- match.arg(return_value)
-#
-#   #Early stopping and input validation ----
-#   stopifnot(is.logical(verbose),
-#             is.array(embeddings) | is.data.frame(embeddings), #Might be bad # was bad, check for array or data.frame
-#             is.numeric(n_neighbors),
-#             is.numeric(n_components), is.numeric(random_state),
-#             is.numeric(min_dist),
-#             is.character(metric))
-#
-#   #Import umap library for reduction ----
-#   umap <- reticulate::import("umap")
-#
-#   #Instantiate a UMAP model with the given parameters
-#   reducer <- umap$UMAP(n_neighbors = as.integer(n_neighbors),
-#                        n_components = as.integer(n_components),
-#                        min_dist = min_dist,
-#                        metric = metric,
-#                        random_state = as.integer(random_state),
-#                        verbose = verbose,
-#                        ... #Allows user to give additional arguments to the umap$UMAP function.
-#                        )
-#
-#   if(return_value == "reducer") {return(reducer)} #Do we want to split this into a different function, and call that function with bt_reduce?
-#
-#   #Should we return the model or just the reduced embeddings
-#   #Try to reduce dimensions, and if unsuccessful we'll check what happened and ry again. This follows the _bertopic.py implementation
-#   reduced_embeddings <- try(reducer$fit_transform(embeddings))
-#
-#   #Try again, this time setting Y = Y (reducer$fit(X =, Y =)), this is to mimic code from he Python implementation
-#   if(any(class(reduced_embeddings) == "try-error")){
-#     reduced_embeddings <-
-#       try(reducer$fit_transform(X = embeddings,Y = Y))
-#   }
-#
-#   #If neither call worked, stop the function with an error message
-#   if(any(class(reduced_embeddings) == "try-error")){
-#     stop("Error in UMAP call, are your inputs correctly formatted?")
-#     }
-#
-#   #Instantiate empty dim reduction model to skip the step in the pipeline:
-#   btd <- reticulate::import("bertopic.dimensionality")
-#   empty_reduction_model  <- btd$BaseDimensionalityReduction() #return as a funciton call, so user doesn't have to.
-#
-#   #Add additional attributes which may be helpful to track later on ----
-#   attr(reduced_embeddings, "reduced") <- TRUE
-#   attr(reduced_embeddings, "original_dim") <- dim(embeddings)
-#   attr(reduced_embeddings, "n_neighbors") <- n_neighbors
-#   attr(reduced_embeddings, "metric") <- metric
-#   attr(reduced_embeddings, "random_state") <- random_state
-#
-#   #Return the reduced embeddings and the base reducer model; this empty model should be fed into the BERTopic call before .fit_transofrm or .fit--
-#   return(list("reduced_embeddings" = reduced_embeddings,
-#                      "base_reducer" = empty_reduction_model))
-# }
-
-
-#Doesn't need any documentation, just implements the logic from https://github.com/MaartenGr/BERTopic/blob/master/bertopic/dimensionality/_base.py , alhough method not working properly
-# base_dimensionality_reduction <- function(){
-#
-#   base_dim_reduc <- reticulate::PyClass(
-#
-#     classname = "BaseDimensionalityReduction",
-#                       defs = list(
-#                         `__init__` = function(self, fit, transform){
-#                           self$fit <- fit
-#                           self$transform <- transform
-#                           NULL
-#                         },
-#                         fit = function(self, X = NULL){
-#                           return(self)
-#                         },
-#                         transform = function(self, X){
-#                           return(X)
-#                         }
-#                       )
-#   )
-#
-#   return(base_dim_reduc)
-# }

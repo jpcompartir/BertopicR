@@ -22,15 +22,25 @@
 #'
 #' @return KeyBERTInspired representation model
 #' @export
+#' 
+#' @usage bt_representation_keybert(
+#' fitted_model, 
+#' documents, 
+#' document_embeddings,
+#' embedding_model,
+#' top_n_words = 10,
+#' nr_repr_docs = 50,
+#' nr_samples = 500,
+#' nr_candidate_words = 100)
 #'
 bt_representation_keybert <- function(fitted_model,
                                       documents,
                                       document_embeddings,
                                       embedding_model,
-                                      top_n_words = 10,
-                                      nr_repr_docs = 50,
-                                      nr_samples = 500,
-                                      nr_candidate_words = 100){
+                                      top_n_words = 10L,
+                                      nr_repr_docs = 50L,
+                                      nr_samples = 500L,
+                                      nr_candidate_words = 100L){
   
   #### input validation ####
   stopifnot(is.numeric(top_n_words),
@@ -206,10 +216,15 @@ bt_representation_keybert <- function(fitted_model,
 #' @return MaximalMarginalRelevance representation model
 #' @export
 #'
+#' @usage bt_representation_mmr(
+#' fitted_model,
+#' embedding_model,
+#' diversity = 0.1,
+#' top_n_words = 10)
 bt_representation_mmr <- function(fitted_model,
                                   embedding_model,
                                   diversity = 0.1,
-                                  top_n_words = 10){
+                                  top_n_words = 10L){
   
   #### input validation ####
   
@@ -312,12 +327,24 @@ bt_representation_mmr <- function(fitted_model,
 #'
 #' @return OpenAI representation model
 #' @export
+#' 
+#' @usage bt_representation_openai(
+#' fitted_model,
+#' documents,
+#' openai_model = "text-ada-001",
+#' nr_repr_docs = 10,
+#' nr_samples = 500,
+#' chat = FALSE,
+#' api_key = "sk-",
+#' delay_in_seconds = NULL,
+#' prompt = NULL,
+#' diversity = NULL)
 #'
 bt_representation_openai <- function(fitted_model,
                                      documents,
                                      openai_model = "text-ada-001",
-                                     nr_repr_docs = 10,
-                                     nr_samples = 500,
+                                     nr_repr_docs = 10L,
+                                     nr_samples = 500L,
                                      chat = FALSE,
                                      api_key = "sk-",
                                      delay_in_seconds = NULL,
@@ -347,6 +374,7 @@ bt_representation_openai <- function(fitted_model,
   
   # get list of available openai models
   openai <- reticulate::import("openai")
+  openai$api_key <- api_key
   openai_models <- openai$Model$list()$data %>% 
     lapply(function(sublist) sublist$id) %>% 
     unlist()
@@ -458,31 +486,43 @@ Topic name:"
 #' is defined by the nr_repr_docs parameter) is extracted and passed to the huggingface
 #' model and topic description predicted. 
 #'
-#' @param ... arguments sent to the transformers.pipeline function
-#' @param task Task defining the pipeline that will be returned. See https://huggingface.co/transformers/v3.0.2/main_classes/pipelines.html for more information. Use "text-generation" for gpt-like models and "text2text-generation" for T5-like models
-#' @param hf_model The model that will be used by the pipeline to make predictions 
+#'
 #' @param fitted_model The fitted bertopic model
 #' @param documents the documents the topic model was fitted to
+#' @param task Task defining the pipeline that will be returned. See https://huggingface.co/transformers/v3.0.2/main_classes/pipelines.html for more information. Use "text-generation" for gpt-like models and "text2text-generation" for T5-like models
+#' @param hf_model The model that will be used by the pipeline to make predictions 
+#' @param ... arguments sent to the transformers.pipeline function
 #' @param default_prompt Whether to use the "keywords" or "documents" default prompt. Passing a custom_prompt will render this argument NULL. Default is "keywords" prompt.
-#' @param custom_prompt The custom prompt to be used in the pipeline. If not specified, the "keywords" or "documents" default_prompt will be used. Use "\[KEYWORDS\]" and "\[DOCUMENTS\]" in the prompt to decide where the keywords and documents are inserted.
 #' @param nr_samples Number of sample documents from which the representative docs are chosen
 #' @param nr_repr_docs Number of representative documents to be sent to the huggingface model
 #' @param diversity diversity of documents to be sent to the huggingface model. 0 = no diversity, 1 = max diversity. 
-
+#' @param custom_prompt The custom prompt to be used in the pipeline. If not specified, the "keywords" or "documents" default_prompt will be used. Use "\[KEYWORDS\]" and "\[DOCUMENTS\]" in the prompt to decide where the keywords and documents are inserted.
 #'
 #' @return updated representation of each topic
 #' @export
 #'
-bt_representation_hf <- function(...,
-                                 fitted_model,
+#' @usage bt_representation_hf(
+#' fitted_model,
+#' documents,
+#' task,
+#' hf_model,
+#' ...,
+#' default_prompt = "keywords",
+#' nr_samples = 500,
+#' nr_repr_docs = 20,
+#' diversity = 10,
+#' custom_prompt = NULL
+#' )
+bt_representation_hf <- function(fitted_model,
                                  documents,
                                  task,
                                  hf_model,
+                                 ...,
                                  default_prompt = "keywords",
-                                 custom_prompt = NULL,
-                                 nr_samples = 500,
-                                 nr_repr_docs = 20,
-                                 diversity = 10){
+                                 nr_samples = 500L,
+                                 nr_repr_docs = 20L,
+                                 diversity = 10L,
+                                 custom_prompt = NULL){
   
   #### Validation ####
   stopifnot(!is.null(default_prompt) | !is.null(custom_prompt),

@@ -28,10 +28,10 @@ test_that("bt_compile_model works with Python objects and doesn't with non-Pytho
 
 test_that("bt_compile_model accepts the inputs from the various bt_make_* functions and the parameters are set appropriately", {
 
-  embedding_model <- bt_make_embedder("all-minilm-l6-v2")
+  embedding_model <- bt_make_embedder_st("all-minilm-l6-v2")
 
-  reduction_model <- bt_make_reducer_umap(n_neighbors = 10L, n_components = 4L)
-  clustering_model <- bt_make_clusterer(clustering_method = "kmeans")
+  reduction_model <- bt_make_reducer_umap(n_neighbours = 10L, n_components = 4L)
+  clustering_model <- bt_make_clusterer_kmeans()
   vectoriser_model <- bt_make_vectoriser(ngram_range = c(1, 3))
 
 model <- bt_compile_model(embedding_model = embedding_model, reduction_model = reduction_model, vectoriser_model = vectoriser_model, clustering_model = clustering_model)
