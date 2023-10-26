@@ -55,8 +55,7 @@ jobs:
 
       - name: Debug Path
         run: |
-          ls /Users/runner/Library/r-miniconda/envs/BertopicR
-          conda info --envs
+          ls /Users/runner/Library/r-miniconda/envs
 
       - name: setup env
         shell: Rscript {0}
@@ -75,12 +74,7 @@ jobs:
             print(conda_path)
             print(R.Version()$platform)
 
-            writeLines(
-              paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
-              Sys.getenv("GITHUB_ENV"))
           } else {
-            print(reticulate::conda_list()) # Debugging
-            print(conda_path)
             writeLines(
               paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
               Sys.getenv("GITHUB_ENV")
@@ -90,8 +84,11 @@ jobs:
       - name: check RETICULATE_PYTHON
         run: echo $RETICULATE_PYTHON
 
-      - name: activate conda ENV
-        run: conda activate BertopicR
+      - name: Initialize Conda
+        run: conda init bash
+
+       - name: activate conda ENV
+        run: source /Users/runner/Library/r-miniconda/envs/BertopicR/bin/activate
 
       - name: Install BertopicR
         run: |
