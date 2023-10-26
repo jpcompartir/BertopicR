@@ -56,7 +56,7 @@ jobs:
       - name: setup env
         shell: Rscript {0}
         run: |
-          conda_env_path <- "/Users/runner/Library/r-miniconda/envs/BertopicR"
+          conda_path <- "/Users/runner/Library/r-miniconda/envs/BertopicR"
           if(!dir.exists(conda_env_path)) {
             reticulate::install_miniconda()
 
@@ -73,6 +73,12 @@ jobs:
             writeLines(
               paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
               Sys.getenv("GITHUB_ENV"))
+          } else {
+            print(conda_path)
+            writelines(
+              paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
+              Sys.getnev("GITHUB_ENV")
+            )
           }
 
       - name: Install BertopicR
