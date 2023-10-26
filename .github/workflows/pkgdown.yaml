@@ -101,14 +101,17 @@ jobs:
             )
           }
 
+      - name: Initialize and activate conda
+        run: conda init bash && source ~/.bash_profile && conda activate /Users/runner/Library/r-miniconda/envs/BertopicR
+
       - name: Debug Conda Path
         run: |
+          which conda
+          conda env list
           ls /Users/runner/Library/r-miniconda/bin/
           echo $RETICULATE_PYTHON
           echo $BERTOPICR_ENV
 
-      - name: Initialize and activate conda
-        run: conda init bash && source ~/.bash_profile && conda activate /Users/runner/Library/r-miniconda/envs/BertopicR
 
       - name: Install BertopicR
         run: |
