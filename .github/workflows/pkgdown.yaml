@@ -67,8 +67,10 @@ jobs:
             install_miniconda()
           } else {
             cat("Miniconda is already installed at", miniconda_path, "\n")
-            Sys.setenv("BERTOPICR_ENV=/Users/runner/Library/r-miniconda/envs/BertopicR")
           }
+
+      - name: Set BERTOPICR_ENV variable
+        run: echo "BERTOPICR_ENV=/Users/runner/Library/r-miniconda/envs/BertopicR" >> $GITHUB_ENV
 
       - name: setup env
         shell: Rscript {0}
@@ -87,6 +89,10 @@ jobs:
             print(conda_path)
             print(R.Version()$platform)
 
+            writeLines(
+              paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
+              Sys.getenv("GITHUB_ENV")
+
           } else {
             writeLines(
               paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
@@ -102,6 +108,7 @@ jobs:
 
       - name: Install BertopicR
         run: |
+          Sys.setenv(BERTOPICR_ENV = "/Users/runner/Library/r-miniconda/envs/BertopicR")
           remotes::install_local(".", verbose = TRUE)  # install the package from the current repository
         shell: Rscript {0}
 
