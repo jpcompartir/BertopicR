@@ -3,6 +3,7 @@
 .onAttach <- function(libname, pkgname) {
 
   bertopicr_env <- Sys.getenv("BERTOPICR_ENV")
+  print(bertopicr_env)
 
   if(bertopicr_env == "") {
     bertopicr_env <- "BertopicR"
@@ -32,13 +33,15 @@
     }
   }
 
-  #Get correct Python path
-  python_path <- reticulate::conda_list()
-  python_path <- python_path[python_path["name"] == bertopicr_env, 2]
+  if(!interactive()){
 
+    #Get correct Python path
+    python_path <- reticulate::conda_list()
+    python_path <- python_path[python_path["name"] == bertopicr_env, 2]
 
-  #Set correct Python path for reticulate
-  Sys.setenv(RETICULATE_PYTHON = python_path)
+    #Set correct Python path for reticulate
+    Sys.setenv(RETICULATE_PYTHON = python_path)
+  }
 
   #Load the conda env
   reticulate::use_condaenv(condaenv = bertopicr_env, required = TRUE)
