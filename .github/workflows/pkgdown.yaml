@@ -53,6 +53,11 @@ jobs:
             macOS-conda-
             macOS
 
+      - name: Debug Path
+        run: |
+          ls /Users/runner/Library/r-miniconda/envs/BertopicR
+          conda info --envs
+
       - name: setup env
         shell: Rscript {0}
         run: |
@@ -75,7 +80,6 @@ jobs:
               Sys.getenv("GITHUB_ENV"))
           } else {
             print(reticulate::conda_list()) # Debugging
-            reticulate::use_condaenv("BertopicR", required = TRUE)
             print(conda_path)
             writeLines(
               paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
@@ -83,9 +87,16 @@ jobs:
             )
           }
 
+      - name: check RETICULATE_PYTHON
+        run: |
+          echo $RETICULATE_PYTHON
+      -name: activate conda ENV
+        run: |
+          conda activate BertopicR
+
       - name: Install BertopicR
         run: |
-          remotes::install_local(".")  # install the package from the current repository
+          remotes::install_local(".", verbose = TRUE)  # install the package from the current repository
         shell: Rscript {0}
 
       - name: Build site
