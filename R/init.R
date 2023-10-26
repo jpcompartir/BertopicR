@@ -36,9 +36,10 @@
   python_path <- reticulate::conda_list()
   python_path <- python_path[python_path["name"] == bertopicr_env, 2]
 
-
   #Set correct Python path for reticulate
-  Sys.setenv(RETICULATE_PYTHON = python_path)
+  if(Sys.getenv("RETICULATE_PYTHON") == ""){
+    Sys.setenv(RETICULATE_PYTHON = python_path)
+  }
 
   #Load the conda env
   reticulate::use_condaenv(condaenv = bertopicr_env, required = TRUE)
