@@ -101,8 +101,11 @@ jobs:
             )
           }
 
-      - name: check RETICULATE_PYTHON
-        run: echo $RETICULATE_PYTHON
+      - name: Debug Conda Path
+        run: |
+          ls /Users/runner/Library/r-miniconda/bin/
+          echo $RETICULATE_PYTHON
+          echo $BERTOPICR_ENV
 
       - name: Initialize and activate conda
         run: conda init bash && source ~/.bash_profile && conda activate /Users/runner/Library/r-miniconda/envs/BertopicR
@@ -110,6 +113,8 @@ jobs:
       - name: Install BertopicR
         run: |
           Sys.setenv(BERTOPICR_ENV = "/Users/runner/Library/r-miniconda/envs/BertopicR")
+          reticulate::use_miniconda(Sys.getenv("BERTOPICR_ENV"))
+          reticulate::py_config()
           remotes::install_local(".", verbose = TRUE, force = TRUE)  # install the package from the current repository
         shell: Rscript {0}
 
