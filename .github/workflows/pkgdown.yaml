@@ -110,7 +110,7 @@ jobs:
       - name: Install BertopicR
         run: |
           Sys.setenv(BERTOPICR_ENV = "/Users/runner/Library/r-miniconda/envs/BertopicR")
-          remotes::install_local(".", verbose = TRUE)  # install the package from the current repository
+          remotes::install_local(".", verbose = TRUE, force = TRUE)  # install the package from the current repository
         shell: Rscript {0}
 
       - name: Build site
