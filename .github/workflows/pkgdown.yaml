@@ -67,6 +67,7 @@ jobs:
             install_miniconda()
           } else {
             cat("Miniconda is already installed at", miniconda_path, "\n")
+            Sys.setenv("BERTOPICR_ENV=/Users/runner/Library/r-miniconda/envs/BertopicR")
           }
 
       - name: setup env
