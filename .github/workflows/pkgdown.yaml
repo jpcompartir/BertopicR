@@ -57,7 +57,7 @@ jobs:
         shell: Rscript {0}
         run: |
           conda_path <- "/Users/runner/Library/r-miniconda/envs/BertopicR"
-          if(!dir.exists(conda_env_path)) {
+          if(!dir.exists(conda_path)) {
             reticulate::install_miniconda()
 
             conda_path <- reticulate::conda_create(envname = "BertopicR",
