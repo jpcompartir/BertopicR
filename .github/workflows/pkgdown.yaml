@@ -87,7 +87,7 @@ jobs:
       - name: Initialize Conda
         run: conda init bash
 
-       - name: activate conda ENV
+      - name: activate conda ENV
         run: source /Users/runner/Library/r-miniconda/envs/BertopicR/bin/activate
 
       - name: Install BertopicR
