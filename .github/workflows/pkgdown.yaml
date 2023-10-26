@@ -75,7 +75,7 @@ jobs:
               Sys.getenv("GITHUB_ENV"))
           } else {
             print(conda_path)
-            writelines(
+            writeLines(
               paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
               Sys.getnev("GITHUB_ENV")
             )
