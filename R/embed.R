@@ -12,21 +12,21 @@
 #'
 #' embedder <- bt_make_embedder_st("aLL-minilm-l6-v2")
 bt_make_embedder_st <- function(model) {
-  
+
   #Can leave space for a second argument, which is model_source and then use switch() to allow for embedding models other than sentence_transformers if the need arises.
-  
+
   if(!is.character(model)){
     stop("'model' should be a string of text e.g. 'all-miniLM-L6-v2")
   }
-  
+
   #Import sentence transformers to embed documents. In the future we might want to use an argument + switch to allow the user to use other platforms for embeddings.
   sentence_transformers <- reticulate::import("sentence_transformers")
-  
+
   #Instantiate embedding model, pass ellipsis here
   embedder <- sentence_transformers$SentenceTransformer(model_name_or_path = model)
-  
+
   attr(embedder, "embedding_model") <- model
-  
+
   return(embedder)
 }
 
@@ -44,72 +44,72 @@ bt_make_embedder_st <- function(model) {
 #' \donttest{
 #' # specify a non-transformer model, excluding features not required
 #' embedder <- bt_make_embedder_spacy(model = "en_core_web_md", exclude = c("tagger", "parser", "ner", "attribute_ruler", "lemmatizer"))
-#' 
+#'
 #' # specify a transformer model and exclude features not required
 #' embedder <- bt_make_embedder_spacy(model = "en_core_web_trf", exclude = c("tagger", "parser", "ner", "attribute_ruler", "lemmatizer"))
 #' }
 bt_make_embedder_spacy <- function(model, ..., prefer_gpu = TRUE, exclude = NULL){
-  
+
   # input argument validation ----
   # is spacy in installed packages?
   installed_packages <- reticulate::py_list_packages()
-  
+
   if(!"spacy" %in% installed_packages[["package"]]){
     message("spacy is not in installed packages of current environment, run reticulate::py_install(\"spacy\").")
-  } 
-  
+  }
+
   stopifnot(is.character(model),
             is.null(exclude) | is.character(exclude) | is.list(exclude),
             is.logical(prefer_gpu))
   # end validation ----
-  
+
   spacy <- reticulate::import("spacy")
-  
+
   if (prefer_gpu){
-    spacy$prefer_gpu() # use gpu 
+    spacy$prefer_gpu() # use gpu
   }
-  
+
   # Try loading the requested model - sometimes the model will have to be downloaded
   if (!is.null(exclude)){ # if exclude is null, do not enter as argument as default is from spacy utils
-    nlp <- try(spacy$load(name = model, exclude = exclude, ...), silent = TRUE) 
+    nlp <- try(spacy$load(name = model, exclude = exclude, ...), silent = TRUE)
   } else{
-    nlp <- try(spacy$load(name = model, ...), silent = TRUE) 
+    nlp <- try(spacy$load(name = model, ...), silent = TRUE)
   }
-  
+
   # if there is an error loading the model, two possible reasons are:
   # 1. bad argument keyword argument
-  # 2. Model needs to be downloaded 
+  # 2. Model needs to be downloaded
   if(any(class(nlp) == "try-error")){
-    
+
     # check if bad keyword argument - py_call error only returns the first bad argument even if there are many, which is a limitation
     if(grepl(".*unexpected keyword argument.*", nlp[1])){
-      bad_arg <- regmatches(nlp[1], regexec("'(\\w+)'", nlp[1]))[[1]][1] 
+      bad_arg <- regmatches(nlp[1], regexec("'(\\w+)'", nlp[1]))[[1]][1]
       bad_arg <- gsub("'", "", bad_arg)
       stop("Bad argument(s) attempted to be sent to spacy.load(): ", bad_arg)
     }
-    
+
     # if there is no issue with the keyword args, check if model needs to be downloaded
     else if (grepl(".*Can't find model.*", nlp[1])){
       attempt_download <- try(spacy$cli$download(model), silent = TRUE)
-      
+
       # if can't download model, send error message
       if(any(class(attempt_download) == "try-error")){
         stop("It doesn't look like ", model, " is a valid model from the spacy library")
       }
-      
+
       # if there us no issues, run spacy$load with the now downloaded model, checking if there is any exclusions specified
       else {
         if (!is.null(exclude)){
-          nlp <- try(spacy$load(name = model, exclude = exclude, ...)) 
+          nlp <- try(spacy$load(name = model, exclude = exclude, ...))
         } else{
-          nlp <- try(spacy$load(name = model, ...)) 
+          nlp <- try(spacy$load(name = model, ...))
         }
       }
     }
-  }  
-  
+  }
+
   attr(nlp, "embedding_model") <- model
-  
+
   return(nlp)
 }
 
@@ -127,7 +127,7 @@ bt_make_embedder_spacy <- function(model, ..., prefer_gpu = TRUE, exclude = NULL
 #' \donttest{
 #' # Flair Embedding, reducing chars_per_chunk to help with memory issues
 #' embedder <- bt_make_embedder_flair(model = "news-forward", flair_class = "FlairEmbeddings", chars_per_chunk = 400L)
-#' 
+#'
 #' # Transformer Document Embedding
 #' embedder <- bt_make_embedder_flair(model = "roberta-base", flair_class = "TransformerDocumentEmbeddings")
 #' }
@@ -137,51 +137,51 @@ bt_make_embedder_flair <- function(model,
                                                    "TransformerWordEmbeddings",
                                                    "TransformerDocumentEmbeddings",
                                                    "WordEmbeddings")){
-  
+
   # input argument validation ----
   # is spacy in installed packages?
   installed_packages <- reticulate::py_list_packages()
-  
+
   if(!"flair" %in% installed_packages[["package"]]){
     stop("flair is not in installed packages of current environment, run reticulate::py_install(\"flair\").\n
             Note that if you receive a module not found error, you may need to instead run reticulate::py_install(\"flair\", pip = TRUE) to force installation with pip instead of conda.")
-  } 
-  
+  }
+
   stopifnot(is.character(model))
   flair_class <- match.arg(flair_class)
   # end of initial validation steps ----
-  
+
   flair <- reticulate::import("flair")
-  
+
   embedding_constructors <- c(
     FlairEmbeddings = flair$embeddings$FlairEmbeddings,
     TransformerWordEmbeddings = flair$embeddings$TransformerWordEmbeddings,
     TransformerDocumentEmbeddings = flair$embeddings$TransformerDocumentEmbeddings,
     WordEmbeddings = flair$embeddings$WordEmbeddings
   )
-  
+
   constructor_matched <- embedding_constructors[flair_class]
-  
+
   embedder <- try(unlist(constructor_matched, use.names = FALSE)[[1]](model, ...), silent = TRUE)
-  
+
   # check if bad keyword argument - py_call error only returns the first bad argument even if there are many, which is a limitation
   if(any(class(embedder) == "try-error")){
     if(grepl(".*The given model.*", embedder[1])){
       stop("It doesn't look like ", model, " is a valid model from the flair library")
-    } 
+    }
     # check if bad keyword argument - py_call error only returns the first bad argument even if there are many, which is a limitation
     else if (grepl(".*unexpected keyword argument.*|.*unused argument", embedder[1])){
-      bad_arg <- regmatches(embedder[1], regexec("'(\\w+)'", embedder[1]))[[1]][1] 
+      bad_arg <- regmatches(embedder[1], regexec("'(\\w+)'", embedder[1]))[[1]][1]
       bad_arg <- gsub("'", "", bad_arg)
       constructor_message <- stringr::str_match(as.character(unlist(constructor_matched, use.names = FALSE)[[1]]), "'([^']+)'")[, 2]
       stop("Bad argument(s) attempted to be sent to ", constructor_message,": ", bad_arg)
     } else{
       stop(embedder)
     }
-  } 
-  
+  }
+
   attr(embedder, "embedding_model") <- model
-  
+
   return(embedder)
 }
 
@@ -202,30 +202,30 @@ bt_make_embedder_openai <- function(model = "text-embedding-ada-002",
   # input validation ---
   stopifnot(is.character(model),
             is.character(openai_api_key))
-  
+
   bt_backend <- reticulate::import("bertopic.backend")
   openai <- reticulate::import("openai")
   openai$api_key <- openai_api_key
-  
-  models <- openai$Model$list()$data %>% 
-    lapply(function(sublist) sublist$id) %>% 
+
+  models <- openai$Model$list()$data %>%
+    lapply(function(sublist) sublist$id) %>%
     unlist() # all openai models
-  
+
   # there is currently only 1 embedding model available the adheres to this rule - future implementations might not adhere?
   openai_embedding_models <- models[grep("embedding", models, ignore.case = TRUE)]
-  
+
   # Is the input model available?
   if (!model %in% models){
     stop("The input model, ", model, ", is not an available OpenAI embedding model.")
   }
   # end of input validation ----
-  
+
   embedding_model <- bt_backend$OpenAIBackend(model)
-  
+
   attr(embedding_model, "embedding_model") <- model
-  
+
   return(embedding_model)
-  
+
 }
 #' Embed your documents
 #'
@@ -243,28 +243,30 @@ bt_make_embedder_openai <- function(model = "text-embedding-ada-002",
 #'
 #' @return An array of floating point numbers
 #' @export
-#' 
+#'
 #' @examples
+#' if(interactive()){
 #' docs <- c("i am", "a list of", "documents", "to be embedded")
-#' 
+#'
 #' embedder <- bt_make_embedder_st("aLL-minilm-l6-v2")
-#' 
+#'
 #' embeddings <- bt_do_embedding(embedder, docs, accelerator = NULL)
-#' 
+#' }
+#'
 bt_do_embedding <- function(embedder, documents, ..., accelerator = NULL, progress_bar = TRUE) {
-  
+
   # update this to be compatible with compatible embedding models
   # if(!grepl("^sentence_tran",class(embedder)[[1]])){
   #   stop("This package currently only supports embedding models from the sentence transformer library, embedder should be a sentence transformers model")
   # }
-  
+
   #Store the attributes associated with the embedder for adding the embedding_model later
   embedder_attributes <- attributes(embedder)
-  
+
   #Stop early if conditions aren't met
   stopifnot(is.character(accelerator) | is.null(accelerator),
             is.logical(progress_bar))
-  
+
   #Create embeddings for sentence transformer
   if(grepl("^sentence_tran",class(embedder)[[1]])){
     embeddings <-
@@ -277,14 +279,14 @@ bt_do_embedding <- function(embedder, documents, ..., accelerator = NULL, progre
   }
   else if(grepl("^spacy",class(embedder)[[1]])){
     # print("spacy found")
-    
+
     embeddings <- c()
-    
+
     for (doc in 1:length(documents)){
-      
+
       embedding <- embedder(documents[doc])
       # print("embedding initiated")
-      
+
       if (embedding$has_vector){
         embedding = embedding$vector
         # print("embedding has vec")
@@ -305,21 +307,21 @@ bt_do_embedding <- function(embedder, documents, ..., accelerator = NULL, progre
   }
   else if(grepl("^flair",class(embedder)[[1]])){
     flair <- reticulate::import("flair")
-    
+
     if (!is.null(accelerator)){
       flair$device <- flair$torch$device("mps")
     }
-    
+
     # disable fine tune to prevent CUDA OOM error (have not experienced this myself - from BERTopic python package)
     if ("fine_tune" %in% names(embedder)){
-      embedder$fine_tune <- FALSE 
+      embedder$fine_tune <- FALSE
     }
-    
+
     # want document embeddings, not token embeddings so using mean pooling to convert token to document embeddings
     if (grepl("TokenEmbeddings", class(embedder)[[2]])){
-      embedder <- flair$embeddings$DocumentPoolEmbeddings(embedder) 
+      embedder <- flair$embeddings$DocumentPoolEmbeddings(embedder)
     }
-    
+
     embeddings <- c()
     for (doc in 1:length(documents)){
       sentence <- flair$data$Sentence(documents[doc]) # convert document to flair object
@@ -339,23 +341,23 @@ bt_do_embedding <- function(embedder, documents, ..., accelerator = NULL, progre
             - OpenAI\n
             - spacy")
   }
-  
-  
+
+
   # implement this if we introduce a hugging face embedder function
   # else if(grepl("transformers.*pipelines",class(embedder)[[1]])){
-  #   
+  #
   # }
-  
-  
-  
+
+
+
   #Give the user a quick console nudge that the embeddings are ready
   message("\nEmbedding proccess finished")
-  
+
   #Keep track of the number of documents that were fed into the bt_embed function, should be useful later when merging data frames and documents aren't present any more. Should we just return a data frame with the documents, and nested embeddings?
   n_documents <- length(documents)
   attr(embeddings, "n_documents") <- n_documents
-  
-  
+
+
   #Add the embedding_model attribute if we can (this will help later on, or when debugging for other users.)
   if("embedding_model" %in% names(embedder_attributes)){
     attr(embeddings, "embedding_model") <- embedder_attributes$embedding_model
@@ -363,9 +365,9 @@ bt_do_embedding <- function(embedder, documents, ..., accelerator = NULL, progre
   } else{
     message("No embedding_model attribute found on embedder, proceeding without adding")
   }
-  
+
   return(embeddings)
-  
+
 }
 
 # do we need a bt_make_embedder_hf when we have st? Should I be using pipeline or different function to make the embedder ----
@@ -381,40 +383,40 @@ bt_do_embedding <- function(embedder, documents, ..., accelerator = NULL, progre
 #' @examples
 #' # define task and use default model for that task
 #' embedder <- bt_make_embedder_hf(task = "feature-extraction")
-#' 
+#'
 #' # define model and use task specified for that model
 #' embedder <- bt_make_embedder_hf(model = "distilbert-base-cased")
-#' 
+#'
 #' # define task and model
 #' embedder <- bt_make_embedder_hf(task = "feature-extraction", model = "facebook/bart-base")
-#' 
-#' # define 
+#'
+#' # define
 # bt_make_embedder_hf <- function(..., task = "feature-extraction", model = NULL){
 #   # input argument validation
 #   if (is.null(model) & is.null(task)){
 #     stop("Either model or task input argument must be specified.")
 #   }
-#   
+#
 #   stopifnot(is.null(task)| is.character(task),
 #             is.null(model) | is.character(model))
-#   
+#
 #   dots <- rlang::list2(...) # extra inputs as list
 #   transformers <- reticulate::import("transformers") # import transformers library
 #   inspect <- reticulate::import("inspect") # import inspect to validate extra arguments
 #   empty_model <- transformers$pipeline # function to be used with no arguments
 #   available_args <- inspect$getfullargspec(empty_model)$args # arguments allowed
-#   
+#
 #   if(any(!names(dots) %in% available_args)){
 #     bad_args <- names(dots)[!names(dots) %in% names(empty_model)] # non-applicable args
 #     stop(paste("Bad argument(s) attempted to be sent to transformers.pipeline():", bad_args, sep = ' '))
 #   }
-#   
+#
 #   # end input validation
-#   
+#
 #   pipeline <- transformers$pipeline(task = task,
 #                                     model = model,
 #                                     ...)
-#   
+#
 #   return(pipeline)
-#   
+#
 # }
