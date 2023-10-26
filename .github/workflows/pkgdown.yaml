@@ -88,7 +88,7 @@ jobs:
         run: conda init bash
 
       - name: activate conda ENV
-        run: source /Users/runner/Library/r-miniconda/envs/BertopicR/bin/activate
+        run: conda activate /Users/runner/Library/r-miniconda/envs/BertopicR
 
       - name: Install BertopicR
         run: |
