@@ -164,7 +164,6 @@ bt_representation_keybert <- function(fitted_model,
   # 4. extract the representations ----
   vocab <- unlist(sapply(topics_list, "[")) %>% unique()
   word_embeddings <- embedding_model$encode(vocab) %>% np$asarray()
-  topic_embeddings <- topic_embeddings 
   cosine_sim <- reticulate::import("sklearn.metrics.pairwise")
   similarity_matrix <- cosine_sim$cosine_similarity(topic_embeddings, word_embeddings)
   
@@ -172,7 +171,6 @@ bt_representation_keybert <- function(fitted_model,
   indices_list <- lapply(topics_list, function(topic_words) { # iterate over sublists
     sapply(topic_words, function(word) { # iterate over words in sublist
       which(vocab == word) # get index of words in vocab vector
-      # print(word)
     })
   })
   
@@ -180,7 +178,6 @@ bt_representation_keybert <- function(fitted_model,
   # and output a list with scores for each topic in a sublist
   updated_representation <- list()
   for (i in seq_along(indices_list)){
-    # words_sim_score <- similarity_matrix[i, indices_list[[i]]] # get the similarity scores for each word
     join_data <- data.frame(words = vocab[indices_list[[i]]],
                             score = similarity_matrix[i, indices_list[[i]]]) %>%
       dplyr::arrange(dplyr::desc(score)) %>%
