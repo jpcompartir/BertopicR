@@ -165,15 +165,44 @@ bt_outliers_embeddings <- function(fitted_model,
     message("No embedding model provided, using current sentence embedding model:\n", fitted_model$embedding_model$embedding_model)
   }
   
-  new_topics <- fitted_model$reduce_outliers(documents = documents,
-                                             topics = topics,
-                                             embeddings = embeddings,
-                                             strategy = "embeddings",
-                                             threshold = threshold)
+  # get outlier embeddings ----
+  outliers_index <- which(topics == -1)
+  outlier_embeddings <- embeddings[outliers_index,]
+  
+  # calculate topic embeddings ----
+  topic_embeddings <- list()
+  
+  for (topic in sort(unique(topics))){
+    if (topic != -1){
+      index <- which(topics == topic) # index of topic
+      embeddings_segmented = embeddings[index, ]
+      topic_embeddings[[topic + 1]] = colMeans(embeddings_segmented)
+    }
+  }
+  
+  topic_embeddings_matrix <- do.call(rbind, topic_embeddings)
+  
+  # find cosine similarity ----
+  sklearn <- reticulate::import("sklearn")
+  sim_matrix <- sklearn$metrics$pairwise$cosine_similarity(outlier_embeddings, topic_embeddings_matrix)
+  
+  # update topics ----
+  sim_matrix[sim_matrix < threshold] <- 0 # set anything below threshold to 0
+  new_topic_list <- list()
+  for (i in 1:dim(sim_matrix)[1]){
+    if (sum(sim_matrix[i,]) > 0){
+      index <- which.max(sim_matrix[i,])
+      new_topic_list[[i]] <- index - 1 # topic numbers start at 0
+    }
+    else {new_topic_list[[i]] <- -1}
+  }
+  
+  new_topics <- topics # create new_topics list
+  new_topics[new_topics == -1] <- unlist(new_topic_list) # update outliers topics in new_topics list
   
   new_topics_matched <- data.frame(message = documents,
                                    current_topics = topics,
-                                   new_topics = unlist(new_topics))
+                                   new_topics = new_topics)
   
   return(new_topics_matched)
   
