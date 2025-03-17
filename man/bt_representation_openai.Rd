@@ -7,10 +7,10 @@
 bt_representation_openai(
 fitted_model,
 documents,
-openai_model = "text-ada-001",
+openai_model = "gpt-4o-mini",
 nr_repr_docs = 10,
 nr_samples = 500,
-chat = FALSE,
+chat = TRUE,
 api_key = "sk-",
 delay_in_seconds = NULL,
 prompt = NULL,
@@ -21,7 +21,7 @@ diversity = NULL)
 
 \item{documents}{documents used to fit the fitted_model}
 
-\item{openai_model}{openai model to use. If using a gpt-3.5 model, set chat = TRUE}
+\item{openai_model}{openai model to use. If using a chat model, set chat = TRUE}
 
 \item{nr_repr_docs}{number of representative documents per topic to send to the openai model}
 
