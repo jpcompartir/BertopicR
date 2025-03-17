@@ -13,7 +13,7 @@ name: pkgdown
 
 jobs:
   pkgdown:
-    runs-on: MacOS-latest
+    runs-on: ubuntu-latest
     # Only restrict concurrency for non-PR jobs
     concurrency:
       group: pkgdown-${{ github.workflow }}-${{ github.ref }}
@@ -32,7 +32,6 @@ jobs:
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: latest
-          platform: 'aarch64-apple-darwin20'
           use-public-rspm: true      
 
       - uses: r-lib/actions/setup-r-dependencies@v2
@@ -42,7 +41,7 @@ jobs:
 
       - uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.config.python }}
+          python-version: '3.10.16'
           
       - name: setup env
         shell: Rscript {0}
@@ -54,7 +53,7 @@ jobs:
             packages = c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29",
               "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2",
               "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2",
-              "plotly==5.15.0", "openai==0.27.8"))
+              "plotly==5.15.0", "openai==0.27.8", "huggingface_hub==0.25.0", "transformers==4.47.0"))
 
           print(conda_path)
           print(R.Version()$platform)

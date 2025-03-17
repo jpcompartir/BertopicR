@@ -29,7 +29,7 @@ for manifold approximation (default: 15).}
 
 \item{random_state}{The seed used by the random number generator (default: 42).}
 
-\item{low_memory}{Loogical, use a low memory version of UMAP (default: FALSE)}
+\item{low_memory}{Logical, use a low memory version of UMAP (default: FALSE)}
 
 \item{verbose}{Logical flag indicating whether to report progress during the dimension reduction (default: TRUE).}
 }
