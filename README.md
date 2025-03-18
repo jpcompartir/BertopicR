@@ -9,6 +9,7 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/jpcompartir/BertopicR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jpcompartir/BertopicR/actions/workflows/R-CMD-check.yaml)
 [![pkgdown](https://github.com/jpcompartir/BertopicR/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/jpcompartir/BertopicR/actions/workflows/pkgdown.yaml)
+
 <!-- badges: end -->
 
 The goal of BertopicR is to allow R users to access bertopic’s topic
@@ -43,7 +44,6 @@ if you don’t:
 
 ``` r
 library(reticulate) #install.packages("reticulate") if you don't have this already or aren't sure how to install.
-
 reticulate::install_miniconda()
 ```
 
@@ -70,18 +70,20 @@ BertopicR::install_python_dependencies()
 
 ## Quickstart
 
+    #> Python package 'bertopic' is installed, setup looks good.
+    #> BertopicR: Using virtual environment 'BertopicR'
+
 BertopicR ships with a dataset of unstructured text data
 `bert_example_data`
 
 ``` r
 data <- BertopicR::bert_example_data
 
-embedder <- bt_make_embedder("all-minilm-l6-v2")
+embedder <- bt_make_embedder_st("all-minilm-l6-v2")
 embeddings <- bt_do_embedding(embedder, documents = data$message,  batch_size = 16L)
 #> 
 #> Embedding proccess finished
 #> all-minilm-l6-v2 added to embeddings attributes
-
 
 reducer <- bt_make_reducer_umap(n_neighbours = 10L, n_components = 10L, metric = "cosine")
 clusterer <- bt_make_clusterer_hdbscan(min_cluster_size = 20L, metric = "euclidean", cluster_selection_method = "eom", min_samples = 10L)
@@ -96,33 +98,35 @@ topic_model <- bt_compile_model(embedding_model = embedder,
 #> 
 #> Model built
 
-#Fit the model
-fitted_model <- bt_fit_model(model = topic_model, 
-                             documents = data$message, 
-                             embeddings = embeddings)
+# fits the model, changing it in-place
+bt_fit_model(model = topic_model, 
+             documents = data$message, 
+             embeddings = embeddings)
 #> UMAP(angular_rp_forest=True, low_memory=False, metric='cosine', min_dist=0.0, n_components=10, n_neighbors=10, random_state=42, verbose=True)
-#> Fri Sep 15 12:58:15 2023 Construct fuzzy simplicial set
-#> Fri Sep 15 12:58:27 2023 Finding Nearest Neighbors
-#> Fri Sep 15 12:58:29 2023 Finished Nearest Neighbor Search
-#> Fri Sep 15 12:58:31 2023 Construct embedding
-#> Fri Sep 15 12:58:37 2023 Finished embedding
+#> Tue Mar 18 18:09:21 2025 Construct fuzzy simplicial set
+#> Tue Mar 18 18:09:26 2025 Finding Nearest Neighbors
+#> Tue Mar 18 18:09:28 2025 Finished Nearest Neighbor Search
+#> Tue Mar 18 18:09:29 2025 Construct embedding
+#> Tue Mar 18 18:09:32 2025 Finished embedding
+#> 
+#> The input model has been fitted to the data and updated accordingly
 
-fitted_model$get_topic_info() %>%
+topic_model$get_topic_info() %>%
   dplyr::tibble()
-#> # A tibble: 36 × 5
+#> # A tibble: 33 × 5
 #>    Topic Count Name                           Representation Representative_Docs
 #>    <dbl> <dbl> <chr>                          <list>         <list>             
-#>  1    -1  1750 -1_hispanicheritagemonth_mont… <chr [10]>     <chr [3]>          
-#>  2     0   278 0_beto_trump_vote_fake         <chr [10]>     <chr [3]>          
-#>  3     1   238 1_night_heritage night_herita… <chr [10]>     <chr [3]>          
-#>  4     2   168 2_dance_salsa_music_tito       <chr [10]>     <chr [3]>          
-#>  5     3   150 3_heritage month_month_octobe… <chr [10]>     <chr [3]>          
-#>  6     4   126 4_students_school_grade_proje… <chr [10]>     <chr [3]>          
-#>  7     5   109 5_latinx_latina_uber_latinas   <chr [10]>     <chr [3]>          
-#>  8     6    94 6_mdcps_mdcpscentral_celebrat… <chr [10]>     <chr [3]>          
-#>  9     7    90 7_good thread_thread_yup_yes   <chr [10]>     <chr [3]>          
-#> 10     8    90 8_hispanicheritagemonth hispa… <chr [10]>     <chr [3]>          
-#> # ℹ 26 more rows
+#>  1    -1  1698 -1_hispanicheritagemonth_hisp… <chr [10]>     <chr [3]>          
+#>  2     0   278 0_heritage month_month_latino… <chr [10]>     <chr [3]>          
+#>  3     1   234 1_hhm_mytimenow_andresdavid_k… <chr [10]>     <chr [3]>          
+#>  4     2   214 2_heritage night_night_herita… <chr [10]>     <chr [3]>          
+#>  5     3   140 3_students_school_elementary_… <chr [10]>     <chr [3]>          
+#>  6     4   137 4_beto_rourke_fake_warren      <chr [10]>     <chr [3]>          
+#>  7     5   122 5_latinx_latina_uber_latinas   <chr [10]>     <chr [3]>          
+#>  8     6   121 6_hispanicheritagemonth hispa… <chr [10]>     <chr [3]>          
+#>  9     7    99 7_mdcps_mdcpscentral_celebrat… <chr [10]>     <chr [3]>          
+#> 10     8    97 8_celebrating hispanicheritag… <chr [10]>     <chr [3]>          
+#> # ℹ 23 more rows
 ```
 
 ## Error Messages and causes
@@ -133,6 +137,15 @@ function used. If you get an error that begins with “Error in
 py_call_impl(callable, call_args\$unnamed, call_args\$named) :”, you can
 use reticulate::py_last_error() to trace the origin of the error
 message.
+
+If your console starts being spammed by a message similar to:
+\>uggingface/tokenizers: The current process just got forked, after
+parallelism has already been used. Disabling parallelism to avoid
+deadlocks… To disable this warning, you can either: - Avoid using
+`tokenizers` before the fork if possible - Explicitly set the
+environment variable TOKENIZERS_PARALLELISM=(true \| false)
+
+You can ignore it with: `Sys.setenv("TOKENIZERS_PARALLELISM"="0")`
 
 Note that one common cause of error messages when working with python
 functions in R arises when the user fails to specify integer numbers as
