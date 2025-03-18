@@ -28,7 +28,7 @@ test_that("bt_fit_model raises an error if the dimensions of documents and (embe
   correct_embeddings <- array(runif(200), dim = c(100, 2))
 
   #Run without raising an error
-  expect_message(bt_fit_model(model = model, documents = documents, embeddings = correct_embeddings))
+  expect_no_error(bt_fit_model(model = model, documents = documents, embeddings = correct_embeddings))
 
   #Check we error if not array or data.frame provided
   expect_error(bt_fit_model(model = model, documents = "hello",
@@ -48,7 +48,7 @@ test_that("bt_fit_model raises an error if the dimensions of documents and (embe
       )
     )
 
-  expect_message(
+  expect_no_error(
     bt_fit_model(model,
                  documents = documents,
                  embeddings = NULL,
