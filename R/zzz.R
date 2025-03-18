@@ -111,3 +111,10 @@ openai_api_call <- function(updated_prompt,
   
   return(updated_representation)
 }
+
+stop_tokenizers_warning<- function(){
+  Sys.setenv("TOKENIZERS_PARALLELISM" = "0")
+  
+  message("TOKENIZERS_PARALLELISM set to '0'")
+  invisible()
+}
