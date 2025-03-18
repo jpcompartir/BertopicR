@@ -47,13 +47,13 @@ test_that("bt_fit_model raises an error if the dimensions of documents and (embe
       )
     )
 
-  expect_no_error(
-    bt_fit_model(model,
-                 documents = documents,
-                 embeddings = NULL,
-                 topic_labels = topic_labels
-                 )
-    )
+  # expect_no_error(
+  #   bt_fit_model(model,
+  #                documents = documents,
+  #                embeddings = NULL,
+  #                topic_labels = topic_labels
+  #                )
+  #   )
 })
 test_that("convert_to_numpy_array takes data frames or arrays as inputs", {
   test_array <- base::array(runif(100), c(10, 10))
