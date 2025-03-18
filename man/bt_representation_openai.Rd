@@ -27,7 +27,7 @@ diversity = NULL)
 
 \item{nr_samples}{Number of sample documents from which the representative docs are chosen}
 
-\item{chat}{set to TRUE if using gpt-3.5 model}
+\item{chat}{set to TRUE if using gpt-4o-mini model}
 
 \item{api_key}{OpenAI API key is required to use the OpenAI API and can be found on the OpenAI website}
 

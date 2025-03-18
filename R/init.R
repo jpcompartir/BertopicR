@@ -60,12 +60,33 @@ install_python_dependencies <- function(){
 
   #Taken from BERTOPIC setup.py
   #https://github.com/MaartenGr/BERTopic/blob/master/setup.py
-  bertopic_0_15_0_deps <- c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29", "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2", "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2","plotly==5.15.0", "openai==0.27.8", "huggingface_hub==0.25.0", "transformers==4.47.0")
+  # bertopic_0_15_0_deps <- c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29", "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2", "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2","plotly==5.15.0", "openai==0.27.8", "huggingface_hub==0.25.0", "transformers==4.47.0", "scipy==1.11.3")
+  
+  pip_dependencies = c("torch==2.0.1", 
+                       "transformers==4.30.2",
+                       "transformer-smaller-training-vocab==0.3.2",
+                       "pytorch-revgrad==0.2.0", 
+                       "spacy-transformers==1.2.5" )
+  
+  conda_dependencies = c(
+    "bertopic==0.15.0", 
+    "numpy==1.24.3", 
+    "hdbscan==0.8.29", 
+    "umap-learn==0.5.3", 
+    "pandas==2.0.2", 
+    "scikit-learn==1.2.2", 
+    "datasets==2.14.4",
+    "tqdm==4.65.0", 
+    "pytorch==2.0.0",
+    "scipy==1.11.3",
+    "sentence-transformers==2.2.2", 
+    "torchvision==0.15.2", 
+    "sentence-transformers==2.2.2","plotly==5.15.0",
+    "openai==0.27.8")
+  
+  reticulate::py_install(envname = bertopicr_env, packages = pip_dependencies, pip = TRUE)
 
-  reticulate::py_install(
-    bertopicr_env,
-    packages = bertopic_0_15_0_deps,
-  )
+  reticulate::py_install(envname =bertopicr_env,packages = conda_dependencies, method = "conda")
 }
 
 #' Check that dependencies are loaded
