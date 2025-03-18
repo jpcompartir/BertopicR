@@ -16,6 +16,7 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  eval = FALSE,
   comment = "#>"
 )
 ```
@@ -25,6 +26,9 @@ library(BertopicR)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+
+Sys.setenv("TOKENIZERS_PARALLELISM" = "0")
+# reticulate::py_run_string("import torch; torch.cuda.is_available = lambda: False; torch.backends.mps.is_available = lambda: False")
 ```
 
 # Changing the Model Representation
@@ -67,14 +71,13 @@ Once you are happy with the topics/clusters that have been formed, there are a f
 
 The representation methods currently available are:
 
-1. **KeyBERT** is a keyword extraction technique that uses BERT embeddings to represent our topics with appropriate keywords and phrases.
+1.  **KeyBERT** is a keyword extraction technique that uses BERT embeddings to represent our topics with appropriate keywords and phrases.
 
-2. **MaximalMarginalRelevance** is a concept used to select the most relevant keywords or phrases while promoting diversity in keywords. It balances relevance to the topic with distinctiveness from previously chosen keywords or phrases using a trade-off parameter called lambda.
+2.  **MaximalMarginalRelevance** is a concept used to select the most relevant keywords or phrases while promoting diversity in keywords. It balances relevance to the topic with distinctiveness from previously chosen keywords or phrases using a trade-off parameter called lambda.
 
-3. **OpenAI** allows us to use their available models to generate topic summaries. An OpenAI API key is required to access their api and models (to set this you should use Sys.setenv("OPENAI_API_KEY" = "sk-")).
+3.  **OpenAI** allows us to use their available models to generate topic summaries. An OpenAI API key is required to access their api and models (to set this you should use Sys.setenv("OPENAI_API_KEY" = "sk-")).
 
-4. **HuggingFace** allows us to use their available models to generate topic summaries. Unlike with OpenAI, you will not need an API key and this is completely free. However, the models are not as sophisticated as some of OpenAI's.
-
+4.  **HuggingFace** allows us to use their available models to generate topic summaries. Unlike with OpenAI, you will not need an API key and this is completely free. However, the models are not as sophisticated as some of OpenAI's.
 
 ```{r keybert, eval = FALSE}
 representation_keybert <- bt_representation_keybert(fitted_model = topic_model,
@@ -92,17 +95,17 @@ representation_mmr <- bt_representation_mmr(fitted_model = topic_model,
 
 representation_openai <- bt_representation_openai(fitted_model = topic_model,
                                                   documents = sentences,
-                                                  openai_model = "gpt-3.5-turbo",
+                                                  openai_model = "gpt-4o-mini",
                                                   nr_repr_docs = 10,
                                                   chat = TRUE,
                                                   api_key = "sk-")
 
+# torch <- reticulate::import('torch')
 representation_hf <- bt_representation_hf(fitted_model = topic_model,
                                           documents = sentences,
-                                          task = "text2text-generation",
-                                          hf_model = "google/flan-t5-base",
+                                          task = "text-generation",
+                                          hf_model = "gpt2",
                                           default_prompt = "keywords")
-
 
 ```
 
@@ -122,7 +125,7 @@ representation_mmr <- bt_representation_mmr(fitted_model = topic_model,
 # 
 # representation_openai <- bt_representation_openai(fitted_model = topic_model,
 #                                                   documents = sentences,
-#                                                   openai_model = "gpt-3.5-turbo",
+#                                                   openai_model = "gpt-4o-mini",
 #                                                   nr_repr_docs = 10,
 #                                                   chat = TRUE,
 #                                                   api_key = Sys.getenv("OPENAI_API_KEY"))
@@ -130,12 +133,12 @@ representation_mmr <- bt_representation_mmr(fitted_model = topic_model,
 
 representation_hf <- bt_representation_hf(fitted_model = topic_model,
                                           documents = sentences,
-                                          task = "text2text-generation",
-                                          hf_model = "google/flan-t5-base",
+                                          task = "text-generation",
+                                          hf_model = "distilgpt2",
                                           default_prompt = "keywords")
 ```
 
-Now that we have trialled a few representation methods, we can look at how they compare to default representations and we should be able to get a good idea of what each topic is about. You will notice that the gpt-3.5 model gives the most coherent topic representation and it would be easy to just take that as gospel and chose a topic title based on that. It is important to remember, like with the other representation methods, only the number you input for nr_repr_docs in bt_representation_openai has been sent to the model and for a large topic, these documents may not represent the topic as a whole.
+Now that we have trialled a few representation methods, we can look at how they compare to default representations and we should be able to get a good idea of what each topic is about. You will notice that the gpt-4o-mini gives the most coherent topic representation and it would be easy to just take that as gospel and chose a topic title based on that. It is important to remember, like with the other representation methods, only the number you input for nr_repr_docs in bt_representation_openai has been sent to the model and for a large topic, these documents may not represent the topic as a whole.
 
 ```{r update_keybert}
 topic_representations <- topic_model$get_topic_info() %>%
@@ -154,7 +157,8 @@ topic_representations %>% select(-Topic, -Count, -Name) %>%
 ```
 
 # Modifying Topics
-Two of the biggest inconveniences that using hdbscan clustering introduces is the generation of large numbers of clusters (topics) and the presence of what can be huge numbers of outliers. In order for our topic analysis to be practical and digestible, we will likely want to reduce the number of topics and, depending on our use case, we may want to reduce the number of outliers. 
+
+Two of the biggest inconveniences that using hdbscan clustering introduces is the generation of large numbers of clusters (topics) and the presence of what can be huge numbers of outliers. In order for our topic analysis to be practical and digestible, we will likely want to reduce the number of topics and, depending on our use case, we may want to reduce the number of outliers.
 
 ## Merging Topics
 
@@ -212,13 +216,13 @@ One feature of hdbscan is the outlier category, which can be quite large. Someti
 
 The methods currently available to us are:
 
-1. **Tokenset Similarity:** Divides each documents into tokensets and calculates the c-TF-IDF cosine similarity between each tokenset and each topic. The summation of each cosine similarity score for each topic across each outlier document gives the most similar topic for each outlier document.
+1.  **Tokenset Similarity:** Divides each documents into tokensets and calculates the c-TF-IDF cosine similarity between each tokenset and each topic. The summation of each cosine similarity score for each topic across each outlier document gives the most similar topic for each outlier document.
 
-2. **Embeddings:** Measures the cosine similarity between embeddings for each outlier document and each topic. If we have passed an empty embedding model to bt_compile_model (which we did), we must specify an embedding model to be used with this function.
+2.  **Embeddings:** Measures the cosine similarity between embeddings for each outlier document and each topic. If we have passed an empty embedding model to bt_compile_model (which we did), we must specify an embedding model to be used with this function.
 
-3. **c-TF-IDF:** Calculates the c-TF-IDF cosine similarity for each outlier document and topic and redistributes outliers based on the topic with which it has the highest similarity.
+3.  **c-TF-IDF:** Calculates the c-TF-IDF cosine similarity for each outlier document and topic and redistributes outliers based on the topic with which it has the highest similarity.
 
-We can play with all outlier strategies as, unlike when we merge topics or fit the model, the bt_outlier_* functions do not update the model, they only output a df with each document, their current topic classification and the potential new topics. We must update the model using bt_update_topics to actually change the topics within the model.
+We can play with all outlier strategies as, unlike when we merge topics or fit the model, the bt_outlier\_\* functions do not update the model, they only output a df with each document, their current topic classification and the potential new topics. We must update the model using bt_update_topics to actually change the topics within the model.
 
 ```{r}
 outliers_ts_sim <- bt_outliers_tokenset_similarity(fitted_model = topic_model,
@@ -286,4 +290,4 @@ bt_update_topics(fitted_model = topic_model,
                  new_topics = outliers_ts_sim$new_topics)
 ```
 
-If you would like to have a deeper look at what else we can do using bertopic, refer to the BertopicR function documentation and the BERTopic python library, https://maartengr.github.io/BERTopic/index.html.
+If you would like to have a deeper look at what else we can do using bertopic, refer to the BertopicR function documentation and the BERTopic python library, <https://maartengr.github.io/BERTopic/index.html>.

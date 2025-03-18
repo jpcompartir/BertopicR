@@ -316,7 +316,7 @@ bt_representation_mmr <- function(fitted_model,
 #' @param openai_model openai model to use. If using a chat model, set chat = TRUE
 #' @param nr_repr_docs number of representative documents per topic to send to the openai model
 #' @param nr_samples Number of sample documents from which the representative docs are chosen
-#' @param chat set to TRUE if using gpt-3.5 model
+#' @param chat set to TRUE if using gpt-4o-mini model
 #' @param api_key OpenAI API key is required to use the OpenAI API and can be found on the OpenAI website
 #' @param delay_in_seconds The delay in seconds between consecutive prompts, this is to avoid rate limit errors.
 #' @param prompt The prompt to be used with the openai model. If NULL, the default prompt is used.
@@ -556,11 +556,9 @@ bt_representation_hf <- function(fitted_model,
   # Set prompt to use
   if (!is.null(custom_prompt)){
     prompt <- custom_prompt
-  }
-  else if (default_prompt == "keywords"){
+  } else if (default_prompt == "keywords"){
     prompt <- "I have a topic described by the following keywords: [KEYWORDS]. The name of this topic is:"
-  }
-  else if (default_prompt == "documents"){
+  } else if(default_prompt == "documents"){
     prompt <- "I have a topic described by the following documents: [DOCUMENTS]. The name of this topic is:"
   }
   
