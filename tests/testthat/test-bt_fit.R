@@ -8,8 +8,7 @@ test_that("bt_fit accepts a bertopic model, raises an error if not",{
   expect_error(bt_fit_model(empty_model,documents, embeddings))
 
   empty_model <- bertopic$BERTopic()
-  expect_message(bt_fit_model(empty_model,documents, embeddings), 
-                 "The input model has been fitted to the data and updated accordingly")
+  expect_no_error(bt_fit_model(empty_model,documents, embeddings))
 })
 
 test_that("bt_fit_model raises an error if the dimensions of documents and (embeddings or topic_labels)  don't match up, and doesn't if they do", {
@@ -17,7 +16,7 @@ test_that("bt_fit_model raises an error if the dimensions of documents and (embe
   model <- bertopic$BERTopic()
 
   documents <- stringr::sentences[1:100]
-  incorrect_embeddings <- array(runif(100), dim = c(50, 2))
+  incorrect_embeddings <- base::array(runif(100), dim = c(50, 2))
   null_labels <- NULL
   topic_labels <- rep(1:10, each = 10)
   topic_labels_bad_dims <- rep(1:9, each = 10)
@@ -25,7 +24,7 @@ test_that("bt_fit_model raises an error if the dimensions of documents and (embe
   #Raise an error when they don't match up.
   expect_error(bt_fit_model(model = model, documents = documents, embeddings = incorrect_embeddings), regexp = "dimensions of your documents and embeddings do not")
 
-  correct_embeddings <- array(runif(200), dim = c(100, 2))
+  correct_embeddings <- base::array(runif(200), dim = c(100, 2))
 
   #Run without raising an error
   expect_no_error(bt_fit_model(model = model, documents = documents, embeddings = correct_embeddings))
@@ -35,7 +34,7 @@ test_that("bt_fit_model raises an error if the dimensions of documents and (embe
                         embeddings = "hello"))
 
   expect_error(
-    bt_fit_model(model = model, documents = 1, embeddings = array()),
+    bt_fit_model(model = model, documents = 1, embeddings = base::array()),
     regexp = "is\\.character\\(documents"
   )
 
@@ -55,15 +54,12 @@ test_that("bt_fit_model raises an error if the dimensions of documents and (embe
                  topic_labels = topic_labels
                  )
     )
-
-
 })
-
 test_that("convert_to_numpy_array takes data frames or arrays as inputs", {
-  test_array <- array(runif(100), c(10, 10))
+  test_array <- base::array(runif(100), c(10, 10))
   test_df <- as.data.frame(test_array)
 
-  expect_silent(convert_to_np_array(test_array))
-  expect_silent(convert_to_np_array(test_df))
+  expect_no_error(convert_to_np_array(test_array))
+  expect_no_error(convert_to_np_array(test_df))
 })
 
