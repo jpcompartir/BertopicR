@@ -1,51 +1,41 @@
 # This script is for setting up the Python environment:
 # https://rstudio.github.io/reticulate/articles/package.html
-.onAttach <- function(libname, pkgname) {
 
-  bertopicr_env <- Sys.getenv("BERTOPICR_ENV")
-
-  if(bertopicr_env == "") {
-    bertopicr_env <- "BertopicR"
+.onLoad <- function(libname, pkgname) {
+  bertopicr_env <- bertopic_env_set()
+  
+  if (!reticulate:::miniconda_exists()) {
+    warning("Miniconda is not installed. Install with `reticulate::install_miniconda()` and try again.")
+    return(invisible())
   }
-
-  #Try to use miniconda to
-  result <- tryCatch(
-    {reticulate::use_miniconda(bertopicr_env, required = TRUE)},
-    error = function(e) {e}
-  )
-  if ("error" %in% class(result)) {
-    if(stringr::str_detect(result$message, "Minicoda is not installed")){
-      stop(
-        paste0( result$message, "\nInstall Miniconda with `reticulate::install_miniconda()` and try again."))
-    }
-    if(stringr::str_detect(result$message, "Unable to locate conda environment")){
-      packageStartupMessage(paste0("\nCreating environment, ", bertopicr_env))
-
-      reticulate::conda_create(
-        envname = bertopicr_env,
-        conda = paste0(reticulate::miniconda_path(), "/condabin/conda")
-      )
-      packageStartupMessage(paste0("\nSuccessfully created environment ", bertopicr_env))
-    }
-    if(!("bertopic" %in% reticulate::py_list_packages(envname = bertopicr_env)[["package"]])){
-      warning("Missing Python dependencies. Run `bertopicr::install_python_dependencies()` to install.")
-    }
+  
+  conda_envs <- reticulate::conda_list()
+  if (!bertopicr_env %in% conda_envs$name) {
+    message(paste0("Creating environment ", bertopicr_env))
+    
+    reticulate::conda_create(
+      envname = bertopicr_env,
+      python_version = "3.10.16",
+      additional_create_args = c("--no-default-packages")
+    )
   }
-
-  #Get correct Python path
+  
   python_path <- reticulate::conda_list()
   python_path <- python_path[python_path["name"] == bertopicr_env, 2]
-
-
-  #Set correct Python path for reticulate
   Sys.setenv(RETICULATE_PYTHON = python_path)
-
-  #Load the conda env
   reticulate::use_condaenv(condaenv = bertopicr_env, required = TRUE)
-
+  
+  if(!check_python_dependencies()) {
+    warning("Missing Python dependencies. Run `bertopicr::install_python_dependencies()` to install.")
+  }
+  
   invisible()
 }
 
+.onAttach <- function(libname, pkgname) {
+  packageStartupMessage("BertopicR: Using virtual environment '", bertopic_env_set(), "'")
+  invisible()
+}
 
 #' Install Python Dependencies
 #'
@@ -53,20 +43,37 @@
 #' @export
 #'
 install_python_dependencies <- function(){
-  bertopicr_env <- Sys.getenv("BERTOPICR_ENV")
-  if(bertopicr_env == "") {
-    bertopicr_env <- "BertopicR"
+  bertopicr_env <- bertopic_env_set()
+
+  # First we'll try with the environment.yml, then with the package versions set up
+  package_dir <- system.file(package = "BertopicR")
+
+  
+  top_level_files <- list.files(package_dir, full.names = TRUE)
+  has_environment_yml <- grepl("environment.yml", top_level_files)
+  if(any(has_environment_yml)) {
+    environment_yml_path <- top_level_files[has_environment_yml]
+    
+    reticulate::conda_create(
+      envname = bertopicr_env,
+      file = environment_yml_path
+    )
+    
+    if(check_python_dependencies()){
+      return(TRUE)
+    }
   }
 
   #Taken from BERTOPIC setup.py
   #https://github.com/MaartenGr/BERTopic/blob/master/setup.py
   # bertopic_0_15_0_deps <- c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29", "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2", "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2","plotly==5.15.0", "openai==0.27.8", "huggingface_hub==0.25.0", "transformers==4.47.0", "scipy==1.11.3")
   
-  pip_dependencies = c("torch==2.0.1", 
-                       "transformers==4.30.2",
-                       "transformer-smaller-training-vocab==0.3.2",
-                       "pytorch-revgrad==0.2.0", 
-                       "spacy-transformers==1.2.5" )
+  pip_dependencies = c(
+    "torch==2.0.1", 
+    "transformers==4.30.2",
+    # "transformer-smaller-training-vocab==0.3.2",
+    "pytorch-revgrad==0.2.0", 
+    "spacy-transformers==1.2.5" )
   
   conda_dependencies = c(
     "bertopic==0.15.0", 
@@ -80,13 +87,14 @@ install_python_dependencies <- function(){
     "pytorch==2.0.0",
     "scipy==1.11.3",
     "sentence-transformers==2.2.2", 
+    "huggingface_hub==0.16.4",
     "torchvision==0.15.2", 
-    "sentence-transformers==2.2.2","plotly==5.15.0",
+    "plotly==5.15.0",
     "openai==0.27.8")
   
-  reticulate::py_install(envname = bertopicr_env, packages = pip_dependencies, pip = TRUE)
+  reticulate::py_install(envname = "BertopicR", packages = pip_dependencies, pip = TRUE)
 
-  reticulate::py_install(envname =bertopicr_env,packages = conda_dependencies, method = "conda")
+  reticulate::py_install(envname ="BertopicR", packages = conda_dependencies, method = "conda")
 }
 
 #' Check that dependencies are loaded
@@ -95,12 +103,19 @@ install_python_dependencies <- function(){
 #' @export
 #'
 check_python_dependencies <- function(){
-  installed_packages <- reticulate::py_list_packages()
+  # browser()
+  bertopicr_env <- bertopic_env_set()
+  installed_packages_auto <- reticulate::py_list_packages(envname = bertopicr_env)
+  installed_packages_conda <- reticulate::py_list_packages(envname = bertopicr_env, type = "conda")
 
-  if("bertopic" %in% installed_packages[["package"]]){
-    message("bertopic is installed, setup looks good.")
+  env_packages <- unique(c(installed_packages_auto$package, installed_packages_conda$package))
+  if("bertopic" %in% env_packages){
+    message("Python package 'bertopic' is installed, setup looks good.")
+    
+    return(TRUE)
   } else {
     message("bertopic not in installed packages of current environment.\nEither load BertopicR environment or run `bertopicr::install_python_dependencies()`")
+    return(FALSE)
   }
 }
 
@@ -174,3 +189,14 @@ bertopic_detach <- function(){
 
 }
 
+
+bertopic_env_set <- function(){
+  # check if the user has already set an environment variable for BERTOPICR_ENV
+  bertopicr_env <- Sys.getenv("BERTOPICR_ENV")
+  
+  if(bertopicr_env == "") {
+    bertopicr_env <- "BertopicR"
+  } 
+  
+  return(bertopicr_env)
+}
