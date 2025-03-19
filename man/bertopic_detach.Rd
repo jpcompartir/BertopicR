@@ -10,11 +10,7 @@ bertopic_detach()
 }
 \value{
 Nothing
-
-Nothing
 }
 \description{
-Call this when you're finished with the topic modelling process. Although, safer may be to simply save your work and then restart your R session, as the Python session is still running (and as far as I know, there's no way to safely close)
-
 Call this when you're finished with the topic modelling process. Although, safer may be to simply save your work and then restart your R session, as the Python session is still running (and as far as I know, there's no way to safely close)
 }
