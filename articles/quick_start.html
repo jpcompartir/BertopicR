@@ -95,19 +95,7 @@ etc.) and fed those to bt_compile_model. If we wish, we can use entirely
 default parameters (or a combination of default parameters and specified
 components) with the same function.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bt_compile_model.html">bt_compile_model</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; No embedding model provided, defaulting to 'all-miniLM-L6-v2' model as embedder.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; No reduction_model provided, using default 'bt_reducer_umap' parameters.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; No clustering model provided, using hdbscan with default parameters.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; No vectorising model provided, creating model with default parameters</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; No ctfidf model provided, creating model with default parameters</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Model built</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bt_compile_model.html">bt_compile_model</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="fitting-the-model">Fitting the Model<a class="anchor" aria-label="anchor" href="#fitting-the-model"></a>
@@ -128,32 +116,8 @@ section in the <a href="modular_approach.html">Interacting with
 Individual Modules</a> vignette for more detail.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/bt_fit_model.html">bt_fit_model</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">sentences</span><span class="op">)</span></span>
-<span><span class="co">#&gt; UMAP(low_memory=False, min_dist=0.0, n_components=5, random_state=42, verbose=True)</span></span>
-<span><span class="co">#&gt; Tue Mar 18 18:01:09 2025 Construct fuzzy simplicial set</span></span>
-<span><span class="co">#&gt; Tue Mar 18 18:01:10 2025 Finding Nearest Neighbors</span></span>
-<span><span class="co">#&gt; Tue Mar 18 18:01:20 2025 Finished Nearest Neighbor Search</span></span>
-<span><span class="co">#&gt; Tue Mar 18 18:01:22 2025 Construct embedding</span></span>
-<span><span class="co">#&gt; Tue Mar 18 18:01:24 2025 Finished embedding</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; The input model has been fitted to the data and updated accordingly</span></span>
 <span></span>
-<span><span class="va">model</span><span class="op">$</span><span class="fu">get_topic_info</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">Representative_Docs</span>, <span class="op">-</span> <span class="va">Representation</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    Topic Count                                Name</span></span>
-<span><span class="co">#&gt; 1     -1   290             -1_tall_wall_broke_door</span></span>
-<span><span class="co">#&gt; 2      0    67               0_tea_corn_ripe_taste</span></span>
-<span><span class="co">#&gt; 3      1    57                 1_ink_box_pack_cord</span></span>
-<span><span class="co">#&gt; 4      2    54             2_store_pearl_ring_bank</span></span>
-<span><span class="co">#&gt; 5      3    52               3_sun_wind_leaves_sky</span></span>
-<span><span class="co">#&gt; 6      4    38               4_men_words_laugh_fun</span></span>
-<span><span class="co">#&gt; 7      5    30              5_smell_soap_dust_wood</span></span>
-<span><span class="co">#&gt; 8      6    29            6_book_wrote_seven_write</span></span>
-<span><span class="co">#&gt; 9      7    18              7_fell_storm_river_log</span></span>
-<span><span class="co">#&gt; 10     8    18                8_cat_mouse_dog_cats</span></span>
-<span><span class="co">#&gt; 11     9    16              9_ship_loss_boat_shore</span></span>
-<span><span class="co">#&gt; 12    10    15            10_strong_march_end_just</span></span>
-<span><span class="co">#&gt; 13    11    14         11_score_play_player_struck</span></span>
-<span><span class="co">#&gt; 14    12    11      12_school_child_children_young</span></span>
-<span><span class="co">#&gt; 15    13    11 13_music_talked_straight home_swing</span></span></code></pre></div>
+<span><span class="va">model</span><span class="op">$</span><span class="fu">get_topic_info</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">Representative_Docs</span>, <span class="op">-</span> <span class="va">Representation</span><span class="op">)</span></span></code></pre></div>
 <p>That’s it, you have a topic model up and running! If you decided that
 you wanted to adjust factors, like the minimum size of a topic, or the
 number of topics you want, you should refer to the <a href="modular_approach.html">Interacting with Individual Modules</a>
