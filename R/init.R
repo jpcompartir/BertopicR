@@ -120,6 +120,8 @@ install_python_dependencies <- function(quietly = TRUE) {
     result <- tryCatch({
       reticulate::conda_create(
         envname = bertopicr_env,
+        python_version = "3.10.16", 
+        additional_create_args = c("--no-default-packages"),
         file = environment_yml_path
       )
       TRUE
@@ -136,7 +138,7 @@ install_python_dependencies <- function(quietly = TRUE) {
     }
   }
   
-  # it still looks bad to me to get torch from pip and a separte version from conda...
+  # it still looks bad to me to get torch from pip and a separate version from conda...
   pip_dependencies = c(
     "torch==2.0.1",
     "transformers==4.30.2",
@@ -163,13 +165,16 @@ install_python_dependencies <- function(quietly = TRUE) {
     "openai==0.27.8"
   )
   
+
   conda_envs <- tryCatch({
     reticulate::conda_list()
   }, error = function(e) data.frame(name = character()))
   
   if (!bertopicr_env %in% conda_envs$name) {
     message("Creating conda environment: ", bertopicr_env)
-    reticulate::conda_create(bertopicr_env, python_version = "3.10")
+    reticulate::conda_create(bertopicr_env, 
+                             python_version = "3.10.16", 
+                             additional_create_args = c("--no-default-packages"))
   }
   
   message("Installing pip dependencies...")
