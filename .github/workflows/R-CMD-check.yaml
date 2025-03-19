@@ -76,8 +76,10 @@ jobs:
           R -e 'Sys.setenv(R_BERTOPICR_INSTALL_CHOICE = "TRUE"); BertopicR::install_bertopic()'
 
       - name: Set OPENAI_API_KEY
-        if: secrets.OPENAI_API_KEY != ''
-        run: echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> $GITHUB_ENV
+        run: |
+          if [ -n "$OPENAI_API_KEY" ]; then
+            echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> $GITHUB_ENV
+          fi
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
