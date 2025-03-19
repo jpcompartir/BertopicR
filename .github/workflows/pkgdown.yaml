@@ -31,8 +31,8 @@ jobs:
 
       - uses: r-lib/actions/setup-r@v2
         with:
-          r-version: 'release'
-          use-public-rspm: true      
+          r-version: latest
+          use-public-rspm: true    
 
       - name: Cache R packages
         uses: actions/cache@v3
@@ -50,17 +50,38 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-python-
 
-      - name: Install required R packages
-        run: |
-          R -e 'install.packages(c("remotes", "pkgdown", "reticulate"))'
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10.16'
 
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: rcmdcheck remotes reticulate
+          cache-version: 3
+          upgrade: 'TRUE'
+      
       - name: Install BertopicR from source
         run: |
           R -e 'options(BertopicR.install_choice = TRUE); remotes::install_local(dependencies = TRUE, upgrade = "never")'
-
-      - name: Install BertopicR Python environment
+      
+      - name: setup env
+        shell: Rscript {0}
         run: |
-          R -e 'Sys.setenv(R_BERTOPICR_INSTALL_CHOICE = "TRUE"); BertopicR::install_bertopic()'
+          reticulate::install_miniconda()
+
+          conda_path <- reticulate::conda_create(envname = "BertopicR",
+            conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
+            packages = c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29",
+              "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2",
+              "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2",
+              "plotly==5.15.0", "openai==0.27.8", "spacy==3.6.1", "huggingface_hub==0.25.0", "transformers==4.47.0", "scipy==1.11.3"))
+
+          print(conda_path)
+          print(R.Version()$platform)
+
+          writeLines(
+            paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
+            Sys.getenv("GITHUB_ENV"))
 
       - name: Build site
         run: |

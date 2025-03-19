@@ -30,6 +30,22 @@ jobs:
         with:
           r-version: latest
           use-public-rspm: true
+          
+      - name: Cache R packages
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: ${{ runner.os }}-r-pkgdown-${{ hashFiles('**/DESCRIPTION', '**/environment.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-r-pkgdown-
+
+      - name: Cache Python environment
+        uses: actions/cache@v3
+        with:
+          path: ~/.conda/envs/BertopicR
+          key: ${{ runner.os }}-python-${{ hashFiles('**/environment.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-python-
       
       - uses: actions/setup-python@v4
         with:

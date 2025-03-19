@@ -252,7 +252,7 @@ check_python_dependencies <- function(quietly = FALSE) {
     "bertopic", "numpy", "hdbscan", "umap-learn", "pandas",
     "scikit-learn", "torch", "tqdm", "sentence-transformers"
   )
-  # finer-grained way to reort what packages are missing.
+  # finer-grained way to report what packages are missing.
   missing_packages <- required_packages[!required_packages %in% env_packages]
   
   if (length(missing_packages) == 0) {
