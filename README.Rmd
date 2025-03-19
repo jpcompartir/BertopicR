@@ -25,13 +25,13 @@ knitr::opts_chunk$set(
 
 Assuming everything is installed ([click here if not](#installation)), you can jump in and start using the package like so
 
-```{r, echo = FALSE}
+```{r, echo = TRUE, eval = FALSE}
 library(BertopicR)
 ```
 
 BertopicR ships with a dataset of unstructured text data `bert_example_data`
 
-```{r}
+```{r, eval = FALSE}
 data <- BertopicR::bert_example_data
 
 embedder <- bt_make_embedder_st("all-minilm-l6-v2")
@@ -83,12 +83,6 @@ devtools::install_github("jpcompartir/BertopicR")
 ```
 
 Step 2 - Follow the setup wizard to configure and install the Python environment. It will instruct you to install Miniconda if it cannot detect your installation. After each step you will need to restart your R session and load the package again.
-
-You only need to do these steps the first time you install the package.=
-
-```{r, eval=FALSE}
-library(BertopicR)
-```
 
 ### I Have Already Setup my Environment
 

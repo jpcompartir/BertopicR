@@ -1,0 +1,82 @@
+---
+title: "representation_c_distributed"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(BertopicR)
+library(reticulate)
+library(testthat)
+
+
+Sys.setenv("TOKENIZERS_PARALLELISM" = "0")
+# reticulate::py_run_string("import torch; torch.cuda.is_available = lambda: False; torch.backends.mps.is_available = lambda: False")
+```
+
+```{r}
+jack_packages <- py_list_packages(envname = "BertopicR") |>  as_tibble()
+# jack_packages |> write_csv("~/Downloads/jack_bt_packages.csv")
+aoife_packages <- read_csv("~/Downloads/aoife_bt_packages.csv")
+# reticulate::py_install("accelerate=0.23.0") # remove this later
+# reticulate::py_inst
+```
+
+```{r}
+aoife_packages |>  
+  filter(!package %in% jack_packages$package) |> 
+  as.data.frame()
+```
+
+```{r}
+package_pattern <- "torch|transfor|bertop|hugging|dataset|tqdm|scipy"
+aoife_packages |>  filter(grepl(package_pattern, package))
+jack_packages |> filter(grepl(package_pattern, package))
+# jack_packages |> select(package) |>  as.data.frame()
+
+```
+
+Iteratively removing all of these packages and making sure versions align:
+
+Can get past the previous error (about torch.\_C.) when we have the same versions of pytorch, torchvision, transformers. Then we get a wandb error, but that looks like it comes from elsewhere. Maybe datasets different versions? But then we can't install because of tqdm, so we remove tqdm and align versions
+
+```{r}
+conda_remove("BertopicR", c("pytorch", "torchvision"))
+conda_remove("BertopicR", c("transformers"))
+conda_remove("BertopicR", "transformers")
+conda_remove("BertopicR", "huggingface_hub")
+py_install(
+  packages = c("torch==2.0.1", "pytorch-revgrad==0.2.0"),
+  pip = TRUE
+)
+conda_remove("BertopicR", "datasets")
+conda_remove("BertopicR", "tqdm")
+```
+
+Then installing matching versions
+
+```{r}
+# py_install(
+#   packages = c("transformers==4.30.2")
+# )
+# py_install(envname = "BertopicR", packages = "bertopic==0.15.0")
+# py_install(envname = "BertopicR", packages = c("transformers==4.30.2"), pip = TRUE)
+# py_install(envname = "BertopicR", packages = c("spacy-transformers==1.2.5", "transformer-smaller-training-vocab==0.3.2"), pip = TRUE)
+# py_install(envname = "BertopicR", "torchvision==0.15.2")
+# py_install(envname = "BertopicR", "huggingface_hub==0.16.4")
+```
+
+This combination actually works:
+
+```{r}
+py_install(envname = "BertopicR", packages = c("pytorch-revgrad==0.2.0","torch==2.0.1", "transformers==4.30.2",   "spacy-transformers==1.2.5"), pip = TRUE)
+py_install(envname = "BertopicR", c(
+  "bertopic==0.15.0", 
+  "datasets==2.14.4",
+  "tqdm==4.65.0", 
+  "pytorch==2.0.0", 
+  "sentence-transformers==2.2.2",
+  "torchvision==0.15.2",
+  "huggingface_hub==0.16.4",
+  ""), method = "conda")
+```

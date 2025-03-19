@@ -17,7 +17,9 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 Assuming everything is installed ([click here if not](#installation)),
 you can jump in and start using the package like so
 
-    #> BertopicR: Using virtual environment 'BertopicR'
+``` r
+library(BertopicR)
+```
 
 BertopicR ships with a dataset of unstructured text data
 `bert_example_data`
@@ -27,9 +29,6 @@ data <- BertopicR::bert_example_data
 
 embedder <- bt_make_embedder_st("all-minilm-l6-v2")
 embeddings <- bt_do_embedding(embedder, documents = data$message,  batch_size = 16L)
-#> 
-#> Embedding proccess finished
-#> all-minilm-l6-v2 added to embeddings attributes
 
 reducer <- bt_make_reducer_umap(n_neighbours = 10L, n_components = 10L, metric = "cosine")
 clusterer <- bt_make_clusterer_hdbscan(min_cluster_size = 20L, metric = "euclidean", cluster_selection_method = "eom", min_samples = 10L)
@@ -37,42 +36,14 @@ clusterer <- bt_make_clusterer_hdbscan(min_cluster_size = 20L, metric = "euclide
 topic_model <- bt_compile_model(embedding_model = embedder,
                                 reduction_model = reducer,
                                 clustering_model = clusterer)
-#> 
-#> No vectorising model provided, creating model with default parameters
-#> 
-#> No ctfidf model provided, creating model with default parameters
-#> 
-#> Model built
 
 # fits the model, changing it in-place
 bt_fit_model(model = topic_model, 
              documents = data$message, 
              embeddings = embeddings)
-#> UMAP(angular_rp_forest=True, low_memory=False, metric='cosine', min_dist=0.0, n_components=10, n_neighbors=10, random_state=42, verbose=True)
-#> Wed Mar 19 13:36:10 2025 Construct fuzzy simplicial set
-#> Wed Mar 19 13:36:14 2025 Finding Nearest Neighbors
-#> Wed Mar 19 13:36:16 2025 Finished Nearest Neighbor Search
-#> Wed Mar 19 13:36:17 2025 Construct embedding
-#> Wed Mar 19 13:36:20 2025 Finished embedding
-#> 
-#> The input model has been fitted to the data and updated accordingly
 
 topic_model$get_topic_info() %>%
   dplyr::tibble()
-#> # A tibble: 33 × 5
-#>    Topic Count Name                           Representation Representative_Docs
-#>    <dbl> <dbl> <chr>                          <list>         <list>             
-#>  1    -1  1698 -1_hispanicheritagemonth_hisp… <chr [10]>     <chr [3]>          
-#>  2     0   278 0_heritage month_month_latino… <chr [10]>     <chr [3]>          
-#>  3     1   234 1_hhm_mytimenow_andresdavid_k… <chr [10]>     <chr [3]>          
-#>  4     2   214 2_heritage night_night_herita… <chr [10]>     <chr [3]>          
-#>  5     3   140 3_students_school_elementary_… <chr [10]>     <chr [3]>          
-#>  6     4   137 4_beto_rourke_fake_warren      <chr [10]>     <chr [3]>          
-#>  7     5   122 5_latinx_latina_uber_latinas   <chr [10]>     <chr [3]>          
-#>  8     6   121 6_hispanicheritagemonth hispa… <chr [10]>     <chr [3]>          
-#>  9     7    99 7_mdcps_mdcpscentral_celebrat… <chr [10]>     <chr [3]>          
-#> 10     8    97 8_celebrating hispanicheritag… <chr [10]>     <chr [3]>          
-#> # ℹ 23 more rows
 ```
 
 # Context
@@ -140,12 +111,6 @@ Step 2 - Follow the setup wizard to configure and install the Python
 environment. It will instruct you to install Miniconda if it cannot
 detect your installation. After each step you will need to restart your
 R session and load the package again.
-
-You only need to do these steps the first time you install the package.=
-
-``` r
-library(BertopicR)
-```
 
 ### I Have Already Setup my Environment
 

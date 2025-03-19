@@ -4,6 +4,7 @@ reference:
   contents:
   - check_python_dependencies
   - install_python_dependencies
+  - install_bertopic
 - title: "Embedding Documents"
   desc: "Functions for creating and manipulating document embeddings."
   contents:
