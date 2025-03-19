@@ -1,10 +1,10 @@
 Package: BertopicR
 Title: Wraps bertopic through reticulate
 Version: 0.0.0.9000
-Authors@R: as.person(c(
-  "Jack Penzer <jack.penzer@sharecreative.com> [cre]",
-  "Aoife Ryan <aoife.ryanr@sharecreative.com> [aut]"
-  ))
+Authors@R: c(
+  person("Jack", "Penzer", email = "jack.penzer@sharecreative.com", role = c("cre", "aut")),
+  person("Aoife", "Ryan", email = "aoife.ryanr@sharecreative.com", role = c("aut"))
+  )
 Description: Convenience wrapper for extracting bertopic topic models in R, using reticulate to interact with Python libraries and objects from the comfort of RStudio.
 License: MIT + file LICENSE
 Suggests: 

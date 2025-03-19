@@ -42,40 +42,29 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-r-pkgdown-
 
-      - name: Cache miniconda and Python environment
+      - name: Cache Python environment
         uses: actions/cache@v3
         with:
-          path: |
-            ~/.conda
-            ~/miniconda3
-            ~/.local/share/r-miniconda
-          key: ${{ runner.os }}-conda-${{ hashFiles('**/environment.yml') }}
+          path: ~/.conda/envs/BertopicR
+          key: ${{ runner.os }}-python-${{ hashFiles('**/environment.yml') }}
           restore-keys: |
-            ${{ runner.os }}-conda-
+            ${{ runner.os }}-python-
 
-      - name: Install miniconda
+      - name: Install required R packages
         run: |
-          if(!dir.exists(reticulate::miniconda_path())) reticulate::install_miniconda()
-        shell: Rscript {0}
+          R -e 'install.packages(c("remotes", "pkgdown", "reticulate"))'
 
-      - name: Install dependencies
+      - name: Install BertopicR from source
         run: |
-          install.packages(c("remotes", "pkgdown", "reticulate"))
-          remotes::install_deps(dependencies = TRUE)
-          remotes::install_local(".")
-        shell: Rscript {0}
+          R -e 'options(BertopicR.install_choice = TRUE); remotes::install_local(dependencies = TRUE, upgrade = "never")'
 
       - name: Install BertopicR Python environment
         run: |
-          options(BertopicR.install_choice = TRUE)
-          Sys.setenv(R_BERTOPICR_INSTALL_CHOICE = "TRUE")
-          BertopicR::install_bertopic()
-        shell: Rscript {0}
+          R -e 'Sys.setenv(R_BERTOPICR_INSTALL_CHOICE = "TRUE"); BertopicR::install_bertopic()'
 
       - name: Build site
         run: |
-          pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
-        shell: Rscript {0}
+          R -e 'pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)'
 
       - name: Deploy to GitHub pages
         if: github.event_name != 'pull_request'
