@@ -1,206 +1,307 @@
-# This script is for setting up the Python environment:
-# https://rstudio.github.io/reticulate/articles/package.html
+bertopic_env_set <- function() {
+  return(Sys.getenv("BERTOPICR_ENV", unset = "BertopicR"))
+}
 
 .onLoad <- function(libname, pkgname) {
-  bertopicr_env <- bertopic_env_set()
+  pkg_env <- new.env(parent = emptyenv())
+  pkg_env$restart_required <- FALSE
+  pkg_env$env_exists <- FALSE
+  pkg_env$deps_installed <- FALSE
+  assign("pkg_env", pkg_env, envir = asNamespace(pkgname))
   
-  if (!reticulate:::miniconda_exists()) {
-    warning("Miniconda is not installed. Install with `reticulate::install_miniconda()` and try again.")
-    return(invisible())
-  }
-  
-  conda_envs <- reticulate::conda_list()
-  if (!bertopicr_env %in% conda_envs$name) {
-    message(paste0("Creating environment ", bertopicr_env))
-    
-    reticulate::conda_create(
-      envname = bertopicr_env,
-      python_version = "3.10.16",
-      additional_create_args = c("--no-default-packages")
-    )
-  }
-  
-  python_path <- reticulate::conda_list()
-  python_path <- python_path[python_path$name == bertopicr_env, "python"]
-  Sys.setenv(RETICULATE_PYTHON = python_path)
-  reticulate::use_condaenv(condaenv = bertopicr_env, required = TRUE)
-  
-  if(!check_python_dependencies(quietly = TRUE)) {
-    warning("Missing Python dependencies. Run `BertopicR::install_python_dependencies()` to install.")
-  }
+  pkg_env$miniconda_available <- tryCatch({
+    dir.exists(reticulate::miniconda_path())
+  }, error = function(e) FALSE)
   
   invisible()
 }
 
 .onAttach <- function(libname, pkgname) {
-  packageStartupMessage("BertopicR: Using virtual environment '", bertopic_env_set(), "'")
+  pkg_env <- get("pkg_env", envir = asNamespace(pkgname))
+  bertopicr_env <- bertopic_env_set()
+  
+  if (!pkg_env$miniconda_available) {
+    packageStartupMessage("BertopicR requires miniconda. Install with `reticulate::install_miniconda()` and then restart your R session.")
+    return(invisible())
+  }
+
+  
+  install_choice <- getOption("BertopicR.install_choice", default = FALSE)
+  
+  conda_envs <- tryCatch({
+    reticulate::conda_list()
+  }, error = function(e) data.frame(name = character()))
+  
+  pkg_env$env_exists <- bertopicr_env %in% conda_envs$name
+  
+  # Only prompt if:
+  # 1. We're in an interactive session.
+  # 2. The user hasn't already made a choice (install_choice is FALSE).
+  # 3. The user hasn't specified a custom environment (BERTOPICR_ENV is unset or "BertopicR").
+  # 4. The environment doesn't already exist.
+  if (interactive() && !install_choice &&
+      Sys.getenv("BERTOPICR_ENV", unset = "BertopicR") == "BertopicR" && !pkg_env$env_exists) {
+    
+    choice <- utils::menu(
+      choices = c("Yes, install the environment and dependencies.", "No, I'll handle it myself."),
+      title = "BertopicR needs a Python environment. Can we set it up for you?"
+    )
+    
+    if (choice == 1) {
+      options("BertopicR.install_choice" = TRUE)  # if user accepts, make sure this persists 
+      install_bertopic()
+      return(invisible()) 
+    } else {
+      options("BertopicR.install_choice" = FALSE) # if user declines, make sure their choice persists
+      packageStartupMessage("Okay, you'll need to set up the environment manually. See the package documentation for details.")
+      return(invisible())
+    }
+  }
+  
+  
+  if (!pkg_env$env_exists) {
+    packageStartupMessage(
+      "BertopicR environment not found. Create with `BertopicR::install_python_dependencies()` and then restart your R session."
+    )
+    return(invisible())
+  }
+  
+  pkg_env$deps_installed <- tryCatch({
+    check_python_dependencies(quietly = TRUE)
+  }, error = function(e) FALSE)
+  
+  if (!pkg_env$deps_installed) {
+    packageStartupMessage(
+      "BertopicR environment exists but required Python packages are missing. Install with `BertopicR::install_python_dependencies()` and then restart your R session."
+    )
+    return(invisible())
+  }
+  
+  tryCatch({
+    reticulate::use_condaenv(condaenv = bertopicr_env, required = FALSE)
+    packageStartupMessage("BertopicR: Using virtual environment '", bertopicr_env, "'")
+  }, error = function(e) {
+    packageStartupMessage("BertopicR: Error loading environment: ", e$message)
+  })
+  
   invisible()
+}
+
+#' Install BertopicR's Python Environment and Dependencies
+#'
+#' This function installs Miniconda and creates a Conda
+#' environment named "BertopicR" (or the value of the `BERTOPICR_ENV`
+#' environment variable if user has set it/installed individually), and installs the required Python packages.
+#'
+#' @export
+install_bertopic <- function() {
+  if (!dir.exists(reticulate::miniconda_path())) {
+    reticulate::install_miniconda()
+  }
+  options("BertopicR.install_choice" = TRUE) # set even if miniconda was just installed 
+  install_python_dependencies()
 }
 
 #' Install Python Dependencies
 #'
+#' @param quietly Whether to suppress function's own warnings
 #' @return Nothing
 #' @export
-#'
-install_python_dependencies <- function(){
+install_python_dependencies <- function(quietly = TRUE) {
+  message("Installing Python dependencies for BertopicR, this may take several minutes...")
   bertopicr_env <- bertopic_env_set()
-
-  # First we'll try with the environment.yml, then with the package versions set up
-  package_dir <- system.file(package = "BertopicR")
-
   
-  top_level_files <- list.files(package_dir, full.names = TRUE)
-  has_environment_yml <- grepl("environment.yml", top_level_files)
-  if(any(has_environment_yml)) {
-    environment_yml_path <- top_level_files[has_environment_yml]
+  # get what we can from environment.yml
+  package_dir <- system.file(package = "BertopicR")
+  environment_yml_path <- file.path(package_dir, "environment.yml")
+  
+  if (file.exists(environment_yml_path)) {
+    message("Installing dependencies from `environment.yml`...")
+    result <- tryCatch({
+      reticulate::conda_create(
+        envname = bertopicr_env,
+        file = environment_yml_path
+      )
+      TRUE
+    }, error = function(e) {
+      message("Error installing from environment.yml: ", e$message)
+      FALSE
+    })
     
-    reticulate::conda_create(
-      envname = bertopicr_env,
-      file = environment_yml_path
-    )
-    
-    if(check_python_dependencies(quietly = TRUE)){
-      return(TRUE)
+    if (result && check_python_dependencies(quietly = TRUE)) {
+      packageStartupMessage(
+        "Dependencies installed successfully. Restart your R session and call `library(BertopicR)` to get started."
+      )
+      return(invisible())
     }
   }
-
-  #Taken from BERTOPIC setup.py
-  #https://github.com/MaartenGr/BERTopic/blob/master/setup.py
-  # bertopic_0_15_0_deps <- c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29", "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2", "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2","plotly==5.15.0", "openai==0.27.8", "huggingface_hub==0.25.0", "transformers==4.47.0", "scipy==1.11.3")
   
+  # it still looks bad to me to get torch from pip and a separte version from conda...
   pip_dependencies = c(
-    "torch==2.0.1", 
+    "torch==2.0.1",
     "transformers==4.30.2",
-    # "transformer-smaller-training-vocab==0.3.2",
-    "pytorch-revgrad==0.2.0", 
-    "spacy-transformers==1.2.5" )
+    #"transformer-smaller-training-vocab==0.3.2",
+    "pytorch-revgrad==0.2.0",
+    "spacy-transformers==1.2.5"
+  )
   
   conda_dependencies = c(
-    "bertopic==0.15.0", 
-    "numpy==1.24.3", 
-    "hdbscan==0.8.29", 
-    "umap-learn==0.5.3", 
-    "pandas==2.0.2", 
-    "scikit-learn==1.2.2", 
+    "bertopic==0.15.0",
+    "numpy==1.24.3",
+    "hdbscan==0.8.29",
+    "umap-learn==0.5.3",
+    "pandas==2.0.2",
+    "scikit-learn==1.2.2",
     "datasets==2.14.4",
-    "tqdm==4.65.0", 
+    "tqdm==4.65.0",
     "pytorch==2.0.0",
     "scipy==1.11.3",
-    "sentence-transformers==2.2.2", 
+    "sentence-transformers==2.2.2",
     "huggingface_hub==0.16.4",
-    "torchvision==0.15.2", 
+    "torchvision==0.15.2",
     "plotly==5.15.0",
-    "openai==0.27.8")
+    "openai==0.27.8"
+  )
   
-  reticulate::py_install(envname = "BertopicR", packages = pip_dependencies, pip = TRUE)
-
-  reticulate::py_install(envname ="BertopicR", packages = conda_dependencies, method = "conda")
+  conda_envs <- tryCatch({
+    reticulate::conda_list()
+  }, error = function(e) data.frame(name = character()))
+  
+  if (!bertopicr_env %in% conda_envs$name) {
+    message("Creating conda environment: ", bertopicr_env)
+    reticulate::conda_create(bertopicr_env, python_version = "3.10")
+  }
+  
+  message("Installing pip dependencies...")
+  tryCatch({
+    reticulate::py_install(
+      envname = bertopicr_env,
+      packages = pip_dependencies,
+      pip = TRUE,
+      pip_args = "--quiet"
+    )
+  }, error = function(e) {
+    message(e)
+  })
+  
+  message("Installing conda dependencies...")
+  tryCatch({
+    reticulate::py_install(
+      envname = bertopicr_env,
+      packages = conda_dependencies,
+      method = "conda",
+      conda_args = "--quiet"
+    )
+  }, error = function(e) {
+    message(e)
+  })
+  
+  if (check_python_dependencies(quietly = TRUE)) {
+    packageStartupMessage(
+      "✓ Dependencies successfully installed! Restart your R session and call `library(BertopicR)` to get started."
+    )
+    
+  } else {
+    packageStartupMessage("× Installation completed but some dependencies may be missing.")
+  }
+  invisible()
 }
 
 #' Check that dependencies are loaded
 #'
+#' @param quietly Whether to suppress function's own warnings
 #' @return A message confirming whether or not dependencies are loaded
 #' @export
-#'
-check_python_dependencies <- function(quietly = FALSE){
-  # browser()
+check_python_dependencies <- function(quietly = FALSE) {
   bertopicr_env <- bertopic_env_set()
-  installed_packages_auto <- reticulate::py_list_packages(envname = bertopicr_env)
-  installed_packages_conda <- reticulate::py_list_packages(envname = bertopicr_env, type = "conda")
-
-  env_packages <- unique(c(installed_packages_auto$package, installed_packages_conda$package))
-  if("bertopic" %in% env_packages){
-    if(!quietly){
-      message("Python package 'bertopic' is installed, setup looks good.")  
+  
+  conda_envs <- tryCatch({
+    reticulate::conda_list()
+  }, error = function(e) data.frame(name = character()))
+  
+  if (!bertopicr_env %in% conda_envs$name) {
+    if (!quietly) {
+      message("BertopicR environment '", bertopicr_env, "' not found.")
     }
-    
-    
+    return(FALSE)
+  }
+  
+  # py_list_packages() returns different packages for auto vs conda, so we need to check both, as that's what the environment has access to. Checking for one not the other will lead us to the wrong idea about what's installed/available in the environment.
+  installed_packages_auto <- tryCatch({
+    reticulate::py_list_packages(envname = bertopicr_env)
+  }, error = function(e) {
+    data.frame(package = character())
+  })
+  installed_packages_conda <- tryCatch({
+    reticulate::py_list_packages(envname = bertopicr_env, type = "conda")
+  }, error = function(e) {
+    data.frame(package = character())
+  })
+  
+  env_packages <- unique(c(
+    installed_packages_auto$package, installed_packages_conda$package
+  ))
+  
+  
+  required_packages <- c(
+    "bertopic", "numpy", "hdbscan", "umap-learn", "pandas",
+    "scikit-learn", "torch", "tqdm", "sentence-transformers"
+  )
+  # finer-grained way to reort what packages are missing.
+  missing_packages <- required_packages[!required_packages %in% env_packages]
+  
+  if (length(missing_packages) == 0) {
+    if (!quietly) {
+      message("All Python dependencies are installed, setup looks good.")
+    }
     return(TRUE)
   } else {
-    if(!quietly){
-      message("bertopic not in installed Python packages of current environment.\nEither load BertopicR environment or run `BertopicR::install_python_dependencies()`")  
+    if (!quietly) {
+      message(
+        "Missing Python dependencies: ", paste(missing_packages, collapse = ", "),
+        "\nRun `BertopicR::install_python_dependencies()` to install all required packages."
+      )
     }
-    
     return(FALSE)
   }
 }
 
+
 get_current_python_environment <- function() {
-  if (Sys.info()["sysname"] == "Windows") {
-    reticulate::py_config()$python %>%
-      stringr::str_extract(".*(?<=/BertopicR)")
-  } else {
-    paste0(
-      "/",
-      reticulate::py_config()$python %>%
-        stringr::str_extract("/.*(?<=/bin/python$)") %>%
-        stringr::str_remove_all("/bin/python") %>%
-        stringr::str_remove("/")
-    )
-  }
+  tryCatch({
+    reticulate::conda_list() |> 
+      dplyr::filter(name == bertopic_env_set())  |> 
+      dplyr::pull(python) |> 
+      dirname()
+  }, error = function(e) {
+    NULL
+  })
 }
 
 
-import_bertopic <- function(){
-  if (!"bertopic" %in% names(reticulate::py)){
-    result <- tryCatch({
-      reticulate::py_run_string("import bertopic")
-    },
-    error = function(e) {e}
+import_bertopic <- function() {
+  if (!check_python_dependencies(quietly = TRUE)) {
+    stop("Python dependencies are not installed. Run `BertopicR::install_python_dependencies()`.")
+  }
+  
+  if (!reticulate::py_module_available("bertopic")) {
+    stop(
+      "The 'bertopic' Python module is not available.  Ensure the BertopicR environment is activated."
     )
   }
-  if("error" %in% class(result)){
-    if(stringr::str_detect(result$message, "No module name")){
-      env <- get_current_python_environment()
-
-      stop(paste0("\nMissing Python Library! Run `BertopicR::install_python_dependencies()` before proceeding"))
-
-    }
-  }
+  reticulate::import("bertopic", delay_load = TRUE)
 }
 
 #' Detach bertopic from the python session
 #'
-#' Call this when you're finished with the topic modelling process. Although, safer may be to simply save your work and then restart your R session, as the Python session is still running (and as far as I know, there's no way to safely close)
-#'
-#' @return Nothing
 #' @export
-#'
-#' @usage
-#' bertopic_detach()
-bertopic_detach <- function(){
-
-  #Import sys
-  reticulate::py_run_string("import sys")
-
-  #Check if bertopic is inside the Python session and delete it if it is (this follows what spacyr does, not 100% it's good practice.)
-  reticulate::py_run_string('if "bertopic" in locals():\n  del bertopic')
-
-  x <- reticulate::py_run_string("locals()")
-  py_info <- reticulate::py_to_r(x)
-  if(!"bertopic" %in% names(py_info)){
-    stop("bertopic was not found in the Python session")
+bertopic_detach <- function() {
+  if (reticulate::py_module_available("bertopic")) {
+    reticulate::py_run_string('
+try:
+    del bertopic
+except:
+    pass
+')
   }
-
-  reticulate::py_run_string("del bertopic")
-
-  y <- reticulate::py_run_string("locals()")
-  py_info_updated <- reticulate::py_to_r(y)
-
-  if(!"bertopic" %in% names(py_info)){
-    stop("bertopic was detached")
-  }
-
-}
-
-
-bertopic_env_set <- function(){
-  # check if the user has already set an environment variable for BERTOPICR_ENV
-  bertopicr_env <- Sys.getenv("BERTOPICR_ENV")
-  
-  if(bertopicr_env == "") {
-    bertopicr_env <- "BertopicR"
-  } 
-  
-  return(bertopicr_env)
 }

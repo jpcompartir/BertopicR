@@ -4,7 +4,10 @@
 \alias{install_python_dependencies}
 \title{Install Python Dependencies}
 \usage{
-install_python_dependencies()
+install_python_dependencies(quietly = TRUE)
+}
+\arguments{
+\item{quietly}{Whether to suppress function's own warnings}
 }
 \value{
 Nothing
