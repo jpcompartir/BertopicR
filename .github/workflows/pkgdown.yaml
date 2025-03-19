@@ -62,7 +62,7 @@ jobs:
           print(conda_path)
           print(R.Version()$platform)
           writeLines(
-            paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
+            paste0("RETICULATE_PYTHON=", reticulate::conda_python("BertopicR")),
             Sys.getenv("GITHUB_ENV"))
       - name: Install BertopicR
         run: |

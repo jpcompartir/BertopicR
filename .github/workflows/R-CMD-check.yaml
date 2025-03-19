@@ -56,7 +56,7 @@ jobs:
           print(conda_path)
           print(R.Version()$platform)
           writeLines(
-            paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
+            paste0("RETICULATE_PYTHON=", reticulate::conda_python("BertopicR")),
             Sys.getenv("GITHUB_ENV"))
       - name: Set OPENAI_API_KEY
         run: echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> $GITHUB_ENV
