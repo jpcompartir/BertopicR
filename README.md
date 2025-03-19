@@ -12,65 +12,11 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 
 <!-- badges: end -->
 
-The goal of BertopicR is to allow R users to access bertopic’s topic
-modelling suite in R via Reticulate. Bertopic was written and developed
-by Maarten Grootendorst (and other contributors!).
+# Quickstart
 
-The package does not aim to implement every feature of bertopic, and is
-designed with specific end users in mind who may not be experienced
-programmers or developers. You may submit issues for feature requests;
-however, it may be faster to go direct to the original, Python library
-which has excellent documentation. \[[BERTopic
-documentation](https://maartengr.github.io/BERTopic/index.html)\]
+Assuming everything is installed ([click here if not](#installation)),
+you can jump in and start using the package like so
 
-We have tried to stay true to the Python library, whilst developing a
-package which has an ‘R feel’ i.e. uses functions more than OOP. In
-places we have changed the names of arguments, for example in the Python
-library BERTopic() takes `hdbscan_model = x`, but we have opted for
-`clustering_model = x`. The reason for this is that `hdbscan_model =` is
-an artifact from the early days of bertopic and the author wants to
-ensure code is backwards compatible, but if the package were being
-developed now it’s likely the author would opt for `clustering_model =`.
-There are other such changes to be aware of.
-
-The package currently installs an exact version of bertopic - 0.15.0,
-features introduced after this version will take time to, or may never,
-reach this package.
-
-## Installation
-
-Before installing bertopic make sure that you have miniconda installed,
-if you don’t:
-
-``` r
-library(reticulate) #install.packages("reticulate") if you don't have this already or aren't sure how to install.
-reticulate::install_miniconda()
-```
-
-Once you have reticulate and miniconda installed, you can then install
-the development version of BertopicR from [GitHub](https://github.com/)
-with:
-
-``` r
-# install.packages("devtools")
-devtools::install_github("jpcompartir/BertopicR")
-
-library(BertopicR)
-
-#Check your environment has been loaded correctly and bertopic has been installed:
-BertopicR::check_python_dependencies()
-```
-
-If you receive the message: “bertopic not in installed packages of
-current environment…” run:
-
-``` r
-BertopicR::install_python_dependencies()
-```
-
-## Quickstart
-
-    #> Python package 'bertopic' is installed, setup looks good.
     #> BertopicR: Using virtual environment 'BertopicR'
 
 BertopicR ships with a dataset of unstructured text data
@@ -103,11 +49,11 @@ bt_fit_model(model = topic_model,
              documents = data$message, 
              embeddings = embeddings)
 #> UMAP(angular_rp_forest=True, low_memory=False, metric='cosine', min_dist=0.0, n_components=10, n_neighbors=10, random_state=42, verbose=True)
-#> Tue Mar 18 18:09:21 2025 Construct fuzzy simplicial set
-#> Tue Mar 18 18:09:26 2025 Finding Nearest Neighbors
-#> Tue Mar 18 18:09:28 2025 Finished Nearest Neighbor Search
-#> Tue Mar 18 18:09:29 2025 Construct embedding
-#> Tue Mar 18 18:09:32 2025 Finished embedding
+#> Wed Mar 19 13:36:10 2025 Construct fuzzy simplicial set
+#> Wed Mar 19 13:36:14 2025 Finding Nearest Neighbors
+#> Wed Mar 19 13:36:16 2025 Finished Nearest Neighbor Search
+#> Wed Mar 19 13:36:17 2025 Construct embedding
+#> Wed Mar 19 13:36:20 2025 Finished embedding
 #> 
 #> The input model has been fitted to the data and updated accordingly
 
@@ -129,10 +75,88 @@ topic_model$get_topic_info() %>%
 #> # ℹ 23 more rows
 ```
 
+# Context
+
+The goal of {BertopicR} is to allow R users to access `bertopic`’s topic
+modelling suite in R via Reticulate.
+
+BertopicR relies heavily on the Python `bertopic` (written and developed
+by Maarten Grootendorst (and other contributors!). package and its
+dependencies. BertopicR manages its own Conda environment for Python
+dependencies. This avoids conflicts with other Python packages you might
+have installed and ensures that the correct versions of all required
+libraries are available.
+
+The package does not aim to implement every feature of `bertopic`, and
+is currently frozen at `bertopic==0.15.0`. The package was created for a
+specific set of non-technical users in mind who are not experienced
+programmers or developers.
+
+You may submit issues for feature requests; however, it may be faster to
+go direct to the original, Python library which has excellent
+documentation. \[[BERTopic
+documentation](https://maartengr.github.io/BERTopic/index.html)\]
+
+We have tried to stay true to the Python library, whilst developing a
+package which has an ‘R feel’ i.e. uses functions more than OOP. In
+places we have changed the names of arguments, for example in the Python
+library BERTopic() takes `hdbscan_model = x`, but we have opted for
+`clustering_model = x`. The reason for this is that `hdbscan_model =` is
+an artifact from the early days of bertopic and the author wants to
+ensure code is backwards compatible, but if the package were being
+developed now it’s likely the author would opt for `clustering_model =`.
+There are other such changes to be aware of.
+
+# Installation
+
+1.  **Install `BertopicR`:** Install the R package from GitHub (code
+    below).
+2.  **Load `BertopicR`:** Call `library(BertopicR)`. This triggers the
+    setup wizard.
+3.  **Follow Prompts:** If prompted, choose to let BertopicR install the
+    environment. If you decline, you’ll need to manually install
+    Miniconda and the Python dependencies.
+4.  **Restart R:** After the installation (either automatic or manual),
+    *restart your R session*. This is crucial for the changes to take
+    effect.
+5.  **Verify Installation:** After restarting, load `BertopicR` again.
+    You should see a message indicating that the BertopicR environment
+    is being used. You can also run
+    `BertopicR:::check_python_dependencies()` to confirm.
+6.  **Use BertopicR:** You’re now ready to use the package!
+
+> The setup wizard will try to assist you in setting up your
+> environment. If you have already set up an environment you wish to
+> use, let the package know with
+> \`Sys.setenv(“BERTOPICR_ENV”=“<your-env-name-here>”)\`
+
+Code for step 1:
+
+``` r
+devtools::install_github("jpcompartir/BertopicR")
+```
+
+Step 2 - Follow the setup wizard to configure and install the Python
+environment. It will instruct you to install Miniconda if it cannot
+detect your installation. After each step you will need to restart your
+R session and load the package again.
+
+You only need to do these steps the first time you install the package.=
+
+``` r
+library(BertopicR)
+```
+
+### I Have Already Setup my Environment
+
+If you’ve already setup your Python environment, make sure to set an
+environment variable so the setup wizard knows where to find it with:
+`Sys.setenv("BERTOPICR_ENV"="<your-env-name-here>")`
+
 ## Error Messages and causes
 
 We have tried to provide informative error messages but sometimes you
-may be faced with error messages that have arisen from the parent python
+may be faced with error messages that have arisen from the parent Python
 function used. If you get an error that begins with “Error in
 py_call_impl(callable, call_args\$unnamed, call_args\$named) :”, you can
 use reticulate::py_last_error() to trace the origin of the error
@@ -147,9 +171,9 @@ environment variable TOKENIZERS_PARALLELISM=(true \| false)
 
 You can ignore it with: `Sys.setenv("TOKENIZERS_PARALLELISM"="0")`
 
-Note that one common cause of error messages when working with python
+Note that one common cause of error messages when working with Python
 functions in R arises when the user fails to specify integer numbers as
-integer type. In R, integers are of type “numeric” by default, python
+integer type. In R, integers are of type “numeric” by default, Python
 functions typically require them to be explicitly specified as integer
 type. For any formal function arguments, this conversion is dealt with
 within in the function, however you should be aware of this if
