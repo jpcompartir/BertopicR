@@ -1,20 +1,36 @@
+name: R-CMD-check
+
 on:
   push:
-    branches: [main, master, rebase-commits]
+    branches: [main, master]
   pull_request:
     branches: [main, master]
   workflow_dispatch:
 
-name: R-CMD-check
-
 jobs:
-  R-CMD-check:
-    runs-on: ubuntu-latest
+  build-and-check:
+    runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: ubuntu-latest, r: 'release'}
+          #   uncomment to est on macOS 
+          # - {os: macos-latest, r: 'release'}
+
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+      _R_CHECK_CRAN_INCOMING_: false
+      _R_CHECK_CRAN_INCOMING_REMOTE_: false
+      BERTOPICR_ENV: "BertopicR"
+      R_BERTOPICR_INSTALL_CHOICE: "TRUE"  
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: r-lib/actions/setup-pandoc@v2
         with: 
@@ -22,44 +38,123 @@ jobs:
 
       - uses: r-lib/actions/setup-r@v2
         with:
-          r-version: latest
+          r-version: ${{ matrix.config.r }}
           use-public-rspm: true
 
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.10.16'
-
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: rcmdcheck remotes reticulate
-          cache-version: 3
-          upgrade: 'TRUE'
-
-      - name: setup env
-        shell: Rscript {0}
+      - name: Install system dependencies (Ubuntu)
+        if: runner.os == 'Linux'
         run: |
-          reticulate::install_miniconda()
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libcurl4-openssl-dev libssl-dev
 
-          conda_path <- reticulate::conda_create(envname = "BertopicR",
-            conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
-            packages = c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29",
-              "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2",
-              "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2",
-              "plotly==5.15.0", "openai==0.27.8", "spacy==3.6.1", "huggingface_hub==0.25.0", "transformers==4.47.0", "scipy==1.11.3"))
+      - name: Cache R packages
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: ${{ runner.os }}-r-${{ matrix.config.r }}-${{ hashFiles('**/DESCRIPTION', '**/environment.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-r-${{ matrix.config.r }}-
 
-          print(conda_path)
-          print(R.Version()$platform)
+      - name: Cache Python environment
+        uses: actions/cache@v3
+        with:
+          path: ~/.conda/envs/BertopicR
+          key: ${{ runner.os }}-python-${{ hashFiles('**/environment.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-python-
 
-          writeLines(
-            paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
-            Sys.getenv("GITHUB_ENV"))
+      - name: Install required R packages
+        run: |
+          R -e 'install.packages(c("remotes", "rcmdcheck", "testthat", "knitr", "rmarkdown", "dplyr", "stringr", "reticulate"))'
+
+      - name: Install BertopicR from source
+        run: |
+          R -e 'options(BertopicR.install_choice = TRUE); remotes::install_local(dependencies = TRUE, upgrade = "never")'
+
+      - name: Install BertopicR Python environment
+        run: |
+          R -e 'Sys.setenv(R_BERTOPICR_INSTALL_CHOICE = "TRUE"); BertopicR::install_bertopic()'
 
       - name: Set OPENAI_API_KEY
+        if: secrets.OPENAI_API_KEY != ''
         run: echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> $GITHUB_ENV
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
-      - uses: r-lib/actions/check-r-package@v2
-        with:
-          args: 'c("--no-manual")'
-          error-on: '"error"'
+      - name: Check
+        run: |
+          R CMD check --no-manual .
+
+      - name: Run tests
+        run: |
+          R -e 'testthat::test_local()'
+
+
+#----
+
+
+# on:
+#   push:
+#     branches: [main, master, rebase-commits]
+#   pull_request:
+#     branches: [main, master]
+#   workflow_dispatch:
+# 
+# name: R-CMD-check
+# 
+# jobs:
+#   R-CMD-check:
+#     runs-on: ubuntu-latest
+#     env:
+#       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+#       R_KEEP_PKG_SOURCE: yes
+#     steps:
+#       - uses: actions/checkout@v3
+# 
+#       - uses: r-lib/actions/setup-pandoc@v2
+#         with: 
+#           pandoc-version: '3.1.8'
+# 
+#       - uses: r-lib/actions/setup-r@v2
+#         with:
+#           r-version: latest
+#           use-public-rspm: true
+# 
+#       - uses: actions/setup-python@v4
+#         with:
+#           python-version: '3.10.16'
+# 
+#       - uses: r-lib/actions/setup-r-dependencies@v2
+#         with:
+#           extra-packages: rcmdcheck remotes reticulate
+#           cache-version: 3
+#           upgrade: 'TRUE'
+# 
+#       - name: setup env
+#         shell: Rscript {0}
+#         run: |
+#           reticulate::install_miniconda()
+# 
+#           conda_path <- reticulate::conda_create(envname = "BertopicR",
+#             conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
+#             packages = c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29",
+#               "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2",
+#               "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2",
+#               "plotly==5.15.0", "openai==0.27.8", "spacy==3.6.1", "huggingface_hub==0.25.0", "transformers==4.47.0", "scipy==1.11.3"))
+# 
+#           print(conda_path)
+#           print(R.Version()$platform)
+# 
+#           writeLines(
+#             paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
+#             Sys.getenv("GITHUB_ENV"))
+# 
+#       - name: Set OPENAI_API_KEY
+#         run: echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> $GITHUB_ENV
+#         env:
+#           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+# 
+#       - uses: r-lib/actions/check-r-package@v2
+#         with:
+#           args: 'c("--no-manual")'
+#           error-on: '"error"'
