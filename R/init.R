@@ -21,12 +21,12 @@
   }
   
   python_path <- reticulate::conda_list()
-  python_path <- python_path[python_path["name"] == bertopicr_env, 2]
+  python_path <- python_path[python_path$name == bertopicr_env, "python"]
   Sys.setenv(RETICULATE_PYTHON = python_path)
   reticulate::use_condaenv(condaenv = bertopicr_env, required = TRUE)
   
-  if(!check_python_dependencies()) {
-    warning("Missing Python dependencies. Run `bertopicr::install_python_dependencies()` to install.")
+  if(!check_python_dependencies(quietly = TRUE)) {
+    warning("Missing Python dependencies. Run `BertopicR::install_python_dependencies()` to install.")
   }
   
   invisible()
@@ -59,7 +59,7 @@ install_python_dependencies <- function(){
       file = environment_yml_path
     )
     
-    if(check_python_dependencies()){
+    if(check_python_dependencies(quietly = TRUE)){
       return(TRUE)
     }
   }
@@ -102,7 +102,7 @@ install_python_dependencies <- function(){
 #' @return A message confirming whether or not dependencies are loaded
 #' @export
 #'
-check_python_dependencies <- function(){
+check_python_dependencies <- function(quietly = FALSE){
   # browser()
   bertopicr_env <- bertopic_env_set()
   installed_packages_auto <- reticulate::py_list_packages(envname = bertopicr_env)
@@ -110,16 +110,21 @@ check_python_dependencies <- function(){
 
   env_packages <- unique(c(installed_packages_auto$package, installed_packages_conda$package))
   if("bertopic" %in% env_packages){
-    message("Python package 'bertopic' is installed, setup looks good.")
+    if(!quietly){
+      message("Python package 'bertopic' is installed, setup looks good.")  
+    }
+    
     
     return(TRUE)
   } else {
-    message("bertopic not in installed packages of current environment.\nEither load BertopicR environment or run `bertopicr::install_python_dependencies()`")
+    if(!quietly){
+      message("bertopic not in installed Python packages of current environment.\nEither load BertopicR environment or run `BertopicR::install_python_dependencies()`")  
+    }
+    
     return(FALSE)
   }
 }
 
-# get the current python environment
 get_current_python_environment <- function() {
   if (Sys.info()["sysname"] == "Windows") {
     reticulate::py_config()$python %>%
@@ -134,7 +139,6 @@ get_current_python_environment <- function() {
     )
   }
 }
-
 
 
 import_bertopic <- function(){
