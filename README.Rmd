@@ -68,10 +68,13 @@ We have tried to stay true to the Python library, whilst developing a package wh
 # Installation {#installation}
 
 1.  **Install `BertopicR`:** Install the R package from GitHub (code below).
-2.  **Load `BertopicR`:** Call `library(BertopicR)`. This triggers the setup wizard.
+2.  **Load `BertopicR`:** Call `library(BertopicR)`. If you have not installed miniconda previously, you will receive this message: "BertopicR requires miniconda. Install with `reticulate::install_miniconda()` and then restart your R session."
+  2.1 Execute this code: `reticulate::install_miniconda()`
+  2.2 Restart your R session
+  2.3 Execute this code: `library(BertopicR)`, this should now trigger a set up wizard.
 3.  **Follow Prompts:** If prompted, choose to let BertopicR install the environment. If you decline, you'll need to manually install Miniconda and the Python dependencies.
 4.  **Restart R:** After the installation (either automatic or manual), *restart your R session*. This is crucial for the changes to take effect.
-5.  **Verify Installation:** After restarting, load `BertopicR` again. You should see a message indicating that the BertopicR environment is being used. You can also run `BertopicR:::check_python_dependencies()` to confirm.
+5.  **Verify Installation:** After restarting, load `BertopicR` again. You should see a message indicating that the BertopicR environment is being used. You can also run `BertopicR:::check_python_dependencies()` to confirm the core package dependencies have been installed.
 6.  **Use BertopicR:** You're now ready to use the package!
 
 > The setup wizard will try to assist you in setting up your environment. If you have already set up an environment you wish to use, let the package know with \`Sys.setenv("BERTOPICR_ENV"="<your-env-name-here>")\`
