@@ -28,6 +28,12 @@ BertopicR ships with a dataset of unstructured text data
 data <- BertopicR::bert_example_data
 
 embedder <- bt_make_embedder_st("all-minilm-l6-v2")
+
+# Uncomment and send to a GPU if you have one available - mps for Apple Silicon, cuda for Nvidia GPUs
+# embedder <- embedder$to("mps")
+# embedder <- embedder$to("cuda")
+
+
 embeddings <- bt_do_embedding(embedder, documents = data$message,  batch_size = 16L)
 
 reducer <- bt_make_reducer_umap(n_neighbours = 10L, n_components = 10L, metric = "cosine")
