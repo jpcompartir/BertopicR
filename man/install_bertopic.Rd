@@ -13,4 +13,3 @@ conda environment using the package's \code{environment.yml} file.
 \details{
 After running this function, you \strong{must} restart your R session for the
 changes to take effect.
-}

@@ -24,6 +24,7 @@ jobs:
       BERTOPICR_ENV: BertopicR
       # Standard PAT for repo interactions
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
       # R specific env vars
       R_KEEP_PKG_SOURCE: yes
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true # Keep if needed, but be aware it can hide issues
@@ -66,6 +67,7 @@ jobs:
       - name: Set RETICULATE_PYTHON Env Var
         shell: bash
         run: |
+
           # Find the python executable in the activated conda environment
           PYTHON_PATH=$(conda run -n ${{ env.CONDA_ENV_NAME }} which python)
           echo "Found Python at: $PYTHON_PATH"

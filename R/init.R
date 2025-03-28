@@ -1,3 +1,4 @@
+
 # We need to take care of a few cases: 1. User has not miniconda. 2. User has Miniconda but no environment for BertopicR 3. User has an environment for BertopicR but does not have any packages. 4. User has an environment for BertopicR but does not have up-to-date packages.
 # To reduce pain in installation and versions, we export the conda environment using `conda env export > inst/environment.yml` this outputs a file, like requirements.txt or uv.lock/pyproject.toml which we can use as a formula to rebuild the environment. This ships with the package so we can find it with `system.file()`
 # The user has to restart their R session at different steps in the process to see the changes. Reticulate does not allow us to load a Python interpreter, and then load another in the same R Session.
@@ -24,6 +25,7 @@ bertopic_env_set <- function() {
     dir.exists(reticulate::miniconda_path())
   }, error = function(e) FALSE)
   
+
   # if (pkg_env$env_exists) {
   #     reticulate::use_condaenv(condaenv = pkg_env)
   # }
@@ -48,7 +50,9 @@ bertopic_env_set <- function() {
     packageStartupMessage("BertopicR requires miniconda. Install with `reticulate::install_miniconda()` and then restart your R session.")
     return(invisible())
   }
+
   
+
   
   conda_envs <- tryCatch({
     reticulate::conda_list()$name
@@ -146,6 +150,7 @@ bertopic_env_set <- function() {
     return(invisible())
   }
   
+
   # --- Environment Exists and Dependencies Look Good: Activate ---
   packageStartupMessage("Found BertopicR environment: '", bertopicr_env, "' with all required packages.")
   tryCatch({
@@ -181,6 +186,7 @@ bertopic_env_set <- function() {
 
 #' Install BertopicR's Python Environment and Dependencies
 #'
+
 #' This function ensures Miniconda is available and then sets up the necessary
 #' conda environment using the package's `environment.yml` file.
 #'
@@ -358,10 +364,12 @@ install_python_dependencies <- function(quietly = FALSE) {
   }
   
   invisible(final_check_passed)
+
 }
 
 #' Check Python Dependencies
 #'
+
 #' Verifies if the target conda environment exists and contains the essential
 #' Python packages required by BertopicR.
 #'
@@ -433,6 +441,7 @@ check_python_dependencies <- function(quietly = FALSE) {
   }
 }
 
+
 #' Import the main Bertopic Python module
 #'
 #' @return The imported 'bertopic' Python module.
@@ -470,10 +479,12 @@ import_bertopic <- function() {
 }
 
 #' Detach Bertopic from the Python session (if loaded)
+
 #'
 #' @export
 bertopic_detach <- function() {
   if (reticulate::py_module_available("bertopic")) {
+
     main_vars <- reticulate::py_list_attributes(reticulate::py_main_environment())
     
     if ("bertopic" %in% main_vars) {
