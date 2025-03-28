@@ -9,15 +9,14 @@ check_python_dependencies(quietly = FALSE)
 check_python_dependencies(quietly = FALSE)
 }
 \arguments{
-\item{quietly}{Whether to suppress function's own warnings}
+\item{quietly}{Logical. If \code{TRUE}, suppresses messages. If \code{FALSE} (default), prints informative messages.}
 }
 \value{
 A message confirming whether or not dependencies are loaded
 
-A message confirming whether or not dependencies are loaded
+Logical. \code{TRUE} if the environment exists and all dependencies are found, \code{FALSE} otherwise.
 }
 \description{
-Check that dependencies are loaded
-
-Check that dependencies are loaded
+Verifies if the target conda environment exists and contains the essential
+Python packages required by BertopicR.
 }

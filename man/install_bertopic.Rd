@@ -7,7 +7,10 @@
 install_bertopic()
 }
 \description{
-This function installs Miniconda and creates a Conda
-environment named "BertopicR" (or the value of the \code{BERTOPICR_ENV}
-environment variable if user has set it/installed individually), and installs the required Python packages.
+This function ensures Miniconda is available and then sets up the necessary
+conda environment using the package's \code{environment.yml} file.
+}
+\details{
+After running this function, you \strong{must} restart your R session for the
+changes to take effect.
 }

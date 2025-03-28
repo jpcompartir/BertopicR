@@ -2,7 +2,7 @@
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
-    branches: [main, master, rebase-commits]
+    branches: [main, master, rebase-commits] # Keep your specific branches
   pull_request:
     branches: [main, master]
   release:
@@ -18,150 +18,125 @@ jobs:
     concurrency:
       group: pkgdown-${{ github.workflow }}-${{ github.ref }}
     env:
+      # Define Conda env name - used by setup-miniconda and potentially R code
+      CONDA_ENV_NAME: BertopicR
+      # Make sure R knows which conda env name to use (matches R code's bertopic_env_set default)
+      BERTOPICR_ENV: BertopicR
+      # Standard PAT for repo interactions
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      # R specific env vars
       R_KEEP_PKG_SOURCE: yes
-      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
-      _R_CHECK_CRAN_INCOMING_: false
-      _R_CHECK_CRAN_INCOMING_REMOTE_: false
-      BERTOPICR_ENV: "BertopicR"
-      R_BERTOPICR_INSTALL_CHOICE: "TRUE"
+      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true # Keep if needed, but be aware it can hide issues
+      # _R_CHECK flags likely not needed for pkgdown, removed for simplicity
     permissions:
-      contents: write
-      
+      contents: write # Needed for gh-pages deploy
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4 # Use latest checkout action
 
-      - uses: r-lib/actions/setup-pandoc@v2
-        with: 
-          pandoc-version: '3.1.8'
-
-      - uses: r-lib/actions/setup-r@v2
+      - name: Setup Pandoc
+        uses: r-lib/actions/setup-pandoc@v2
         with:
-          r-version: latest
-          use-public-rspm: true      
+          pandoc-version: '3.1.8' # Keep pinned version
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      # Setup Conda Environment BEFORE R
+      # This action installs Miniconda, activates base, creates/updates the env,
+      # and can output the path to the python executable.
+      - name: Setup Conda Environment (BertopicR)
+        uses: conda-incubator/setup-miniconda@v3 # Use dedicated action
         with:
-          extra-packages: any::pkgdown, any::rcmdcheck, any::remotes
-          needs: website
-
-      - uses: actions/setup-python@v4
-        with:
+          # Auto update conda itself first
+          auto-update-conda: true
+          # Specify Python version for the base env if needed, but env file takes precedence for the created env
           python-version: '3.10.16'
-          
-      - name: setup env
-        shell: Rscript {0}
-        run: |
-          reticulate::install_miniconda()
-          conda_path <- reticulate::conda_create(envname = "BertopicR",
-            conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
-            packages = c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29",
-              "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2",
-              "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2",
-              "plotly==5.15.0", "openai==0.27.8", "huggingface_hub==0.25.0", "transformers==4.47.0", "scipy==1.11.3"))
-          print(conda_path)
-          print(R.Version()$platform)
-          writeLines(
-            paste0("RETICULATE_PYTHON=", reticulate::conda_python("BertopicR")),
-            Sys.getenv("GITHUB_ENV"))
-      - name: Install BertopicR
-        run: |
-          remotes::install_local(".")  # install the package from the current repository
-        shell: Rscript {0}
+          # Specify the environment file relative to repo root
+          # Assuming your R package structure puts it in inst/
+          environment-file: inst/environment.yml
+          # Activate the environment for subsequent steps in the workflow
+          activate-environment: ${{ env.CONDA_ENV_NAME }}
+          # Use conda-forge by default, add others if needed by environment.yml
+          channels: conda-forge
+          # Pin conda-build version for stability if needed (optional)
+          # conda-build-version: "3.21"
 
-      - name: Build site
-        run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
-        shell: Rscript {0}
+      # Set RETICULATE_PYTHON *after* Conda env is created/updated
+      # This explicitly tells R/reticulate which Python executable to use.
+      # The setup-miniconda action makes the path available.
+      - name: Set RETICULATE_PYTHON Env Var
+        shell: bash
+        run: |
+          # Find the python executable in the activated conda environment
+          PYTHON_PATH=$(conda run -n ${{ env.CONDA_ENV_NAME }} which python)
+          echo "Found Python at: $PYTHON_PATH"
+          echo "RETICULATE_PYTHON=$PYTHON_PATH" >> $GITHUB_ENV
+          echo "Python version check:"
+          conda run -n ${{ env.CONDA_ENV_NAME }} python --version
 
-      - name: Deploy to GitHub pages 🚀
-        if: github.event_name != 'pull_request'
-        uses: JamesIves/github-pages-deploy-action@v4.4.1
+      # Now setup R, it should pick up RETICULATE_PYTHON automatically
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
         with:
-          clean: false
-          branch: gh-pages
-          folder: docs
+          r-version: 'latest' 
+          # r-version: '4.3' # should we pin to a specific R version (e.g., latest stable)
+          use-public-rspm: true
 
+      - name: Set BertopicR Install Choice Option
+        run: |
+          options(BertopicR.install_choice = TRUE)
+          message("Set BertopicR.install_choice = TRUE")
+        shell: Rscript {0}
 
+      - name: Install R Dependencies (including pkgdown, remotes)
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: pkgdown, remotes, rcmdcheck
+          needs: website 
 
+      - name: Install Local BertopicR Package
+        run: |
+          remotes::install_local(upgrade = "never") # install the package from the current repository
+        shell: Rscript {0}
 
-# 
-# # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
-# on:
-#   push:
-#     branches: [main, master, rebase-commits]
-#   pull_request:
-#     branches: [main, master]
-#   release:
-#     types: [published]
-#   workflow_dispatch:
-# 
-# name: pkgdown
-# 
-# jobs:
-#   pkgdown:
-#     runs-on: ubuntu-latest
-#     # Only restrict concurrency for non-PR jobs
-#     concurrency:
-#       group: pkgdown-${{ github.workflow }}-${{ github.ref }}
-#     env:
-#       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-#     permissions:
-#       contents: write
-#       
-#     steps:
-#       - uses: actions/checkout@v3
-# 
-#       - uses: r-lib/actions/setup-pandoc@v2
-#         with: 
-#           pandoc-version: '3.1.8'
-# 
-#       - uses: r-lib/actions/setup-r@v2
-#         with:
-#           r-version: latest
-#           use-public-rspm: true      
-# 
-#       - uses: r-lib/actions/setup-r-dependencies@v2
-#         with:
-#           extra-packages: any::pkgdown, any::rcmdcheck, any::remotes
-#           needs: website
-# 
-#       - uses: actions/setup-python@v4
-#         with:
-#           python-version: '3.10.16'
-#           
-#       - name: setup env
-#         shell: Rscript {0}
-#         run: |
-#           reticulate::install_miniconda()
-# 
-#           conda_path <- reticulate::conda_create(envname = "BertopicR",
-#             conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
-#             packages = c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29",
-#               "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2",
-#               "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2",
-#               "plotly==5.15.0", "openai==0.27.8", "huggingface_hub==0.25.0", "transformers==4.47.0", "scipy==1.11.3"))
-# 
-#           print(conda_path)
-#           print(R.Version()$platform)
-# 
-#           writeLines(
-#             paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
-#             Sys.getenv("GITHUB_ENV"))
-# 
-#       - name: Install BertopicR
-#         run: |
-#           remotes::install_local(".")  # install the package from the current repository
-#         shell: Rscript {0}
-# 
-#       - name: Build site
-#         run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
-#         shell: Rscript {0}
-# 
-#       - name: Deploy to GitHub pages 🚀
-#         if: github.event_name != 'pull_request'
-#         uses: JamesIves/github-pages-deploy-action@v4.4.1
-#         with:
-#           clean: false
-#           branch: gh-pages
-#           folder: docs
+      - name: Verify Python Setup within R
+        run: |
+          # Print reticulate config to verify it picked up the right Python
+          message("--- Reticulate Configuration ---")
+          print(reticulate::py_config())
+          message("--- Checking RETICULATE_PYTHON Env Var ---")
+          print(Sys.getenv("RETICULATE_PYTHON"))
+          message("--- Loading BertopicR and Checking Dependencies ---")
+          # Loading the library triggers .onAttach checks
+          library(BertopicR)
+          # Explicitly run check function (optional, .onAttach should do this)
+          print(BertopicR::check_python_dependencies())
+          message("--- Attempting to Import Bertopic Module ---")
+          # Try importing the core module
+          tryCatch({
+            module <- import_bertopic()
+            message("Successfully imported bertopic module via import_bertopic()")
+            # Optionally check module attributes
+             print(module)
+          }, error = function(e) {
+            warning("Error importing bertopic module: ", e$message)
+            # Consider failing the build if import is critical for pkgdown
+            # stop("Failed to import bertopic module.")
+          })
+        shell: Rscript {0}
+
+      - name: Build pkgdown Site
+        run: |
+          # Ensure pkgdown doesn't try to reinstall the package or dependencies
+          # new_process=FALSE is crucial for reticulate python state
+          pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
+        shell: Rscript {0}
+
+      - name: Deploy pkgdown Site to GitHub Pages
+        if: github.event_name != 'pull_request' # Don't deploy from PRs
+        uses: JamesIves/github-pages-deploy-action@v4.6.3 # Use latest version
+        with:
+          clean: true # Recommended to remove old files before deploying new site
+          branch: gh-pages # The branch the action should deploy to.
+          folder: docs # The folder the action should deploy. Matches pkgdown default
+    
+    

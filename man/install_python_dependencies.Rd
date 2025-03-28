@@ -2,16 +2,18 @@
 % Please edit documentation in R/init.R
 \name{install_python_dependencies}
 \alias{install_python_dependencies}
-\title{Install Python Dependencies}
+\title{Install or Update Python Dependencies from YAML}
 \usage{
-install_python_dependencies(quietly = TRUE)
+install_python_dependencies(quietly = FALSE)
 }
 \arguments{
-\item{quietly}{Whether to suppress function's own warnings}
+\item{quietly}{Logical. If \code{TRUE}, suppresses informational messages. Defaults to \code{FALSE}.}
 }
 \value{
-Nothing
+Invisibly returns \code{TRUE} on successful installation, \code{FALSE} otherwise.
 }
 \description{
-Install Python Dependencies
+Creates the BertopicR conda environment (or the one specified by
+\code{BERTOPICR_ENV}) if it doesn't exist, or updates it if it does,
+using the \code{environment.yml} file included with the package.
 }

@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [main, master, rebase-commits]
+    branches: [main, master, rebase-commits] # Keep your specific branches
   pull_request:
     branches: [main, master]
   workflow_dispatch:
@@ -11,133 +11,92 @@ jobs:
   R-CMD-check:
     runs-on: ubuntu-latest
     env:
+      # Define Conda env name - used by setup-miniconda and potentially R code
+      CONDA_ENV_NAME: BertopicR
+      # Make sure R knows which conda env name to use (matches R code's bertopic_env_set default)
+      BERTOPICR_ENV: BertopicR
+      # Standard PAT for repo interactions
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      # R specific env vars
       R_KEEP_PKG_SOURCE: yes
+      # Keep this if your R *dependency installation* throws warnings you want to ignore
+      # It doesn't affect R CMD check warnings/errors directly
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
-      _R_CHECK_CRAN_INCOMING_: false
-      _R_CHECK_CRAN_INCOMING_REMOTE_: false
-      BERTOPICR_ENV: "BertopicR"
-      R_BERTOPICR_INSTALL_CHOICE: "TRUE"
     permissions:
       contents: write
-      
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4 # Use latest checkout action
 
-      - uses: r-lib/actions/setup-pandoc@v2
-        with: 
-          pandoc-version: '3.1.8'
-
-      - uses: r-lib/actions/setup-r@v2
+      - name: Setup Pandoc
+        uses: r-lib/actions/setup-pandoc@v2
         with:
-          r-version: latest
+          pandoc-version: '3.1.8' # Keep pinned version
+
+      # Setup Conda Environment BEFORE R
+      - name: Setup Conda Environment (BertopicR)
+        uses: conda-incubator/setup-miniconda@v3 # Use dedicated action
+        with:
+          auto-update-conda: true
+          python-version: '3.10.16' # Base python, env file takes precedence
+          # Assuming your R package structure puts it in inst/
+          environment-file: inst/environment.yml
+          activate-environment: ${{ env.CONDA_ENV_NAME }}
+          channels: conda-forge # Add others if needed by environment.yml
+
+      # Set RETICULATE_PYTHON *after* Conda env is created/updated
+      - name: Set RETICULATE_PYTHON Env Var
+        shell: bash
+        run: |
+          PYTHON_PATH=$(conda run -n ${{ env.CONDA_ENV_NAME }} which python)
+          echo "Found Python at: $PYTHON_PATH"
+          echo "RETICULATE_PYTHON=$PYTHON_PATH" >> $GITHUB_ENV
+          echo "Python version check:"
+          conda run -n ${{ env.CONDA_ENV_NAME }} python --version
+
+      # Now setup R, it should pick up RETICULATE_PYTHON automatically
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'latest' # Pin to a specific R version (e.g., latest stable)
+          # r-version: '4.3' # Pin to a specific R version (e.g., latest stable)
           use-public-rspm: true
 
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.10.16'
-
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: rcmdcheck remotes reticulate
-          cache-version: 3
-          upgrade: 'TRUE'
-
-      - name: setup env
-        shell: Rscript {0}
+      # Set the R option needed by the package's .onAttach logic to signal non-interactive
+      - name: Set BertopicR Install Choice Option
         run: |
-          reticulate::install_miniconda()
-          conda_path <- reticulate::conda_create(envname = "BertopicR",
-            conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
-            packages = c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29",
-              "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2",
-              "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2",
-              "plotly==5.15.0", "openai==0.27.8", "spacy==3.6.1", "huggingface_hub==0.25.0", "transformers==4.47.0", "scipy==1.11.3"))
-          print(conda_path)
-          print(R.Version()$platform)
-          writeLines(
-            paste0("RETICULATE_PYTHON=", reticulate::conda_python("BertopicR")),
-            Sys.getenv("GITHUB_ENV"))
-      - name: Set OPENAI_API_KEY
-        run: echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> $GITHUB_ENV
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          options(BertopicR.install_choice = TRUE)
+          message("Set BertopicR.install_choice = TRUE")
+        shell: Rscript {0}
 
-      - uses: r-lib/actions/check-r-package@v2
+      - name: Install R Dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          args: 'c("--no-manual")'
-          error-on: '"error"'
-          
-      # - name: Run tests
-      #   run: |
-      #     R -e 'testthat::test_local()'
+          # rcmdcheck is needed by the check action below
+          # remotes might be needed if DESCRIPTION has Remotes field
+          # reticulate is needed if check uses it, or package loads it
+          extra-packages: rcmdcheck, remotes, reticulate
+          needs: check # Install dependencies needed for check
 
+      # Set secrets needed by tests/checks BEFORE running check
+      - name: Set Secrets for Check/Tests
+        run: echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+        # Note: Directly exporting secrets like this makes them available to the R session
+        # during the check process. Ensure your tests handle the key securely if needed.
 
-#----
-
-# 
-# on:
-#   push:
-#     branches: [main, master, rebase-commits]
-#   pull_request:
-#     branches: [main, master]
-#   workflow_dispatch:
-# 
-# name: R-CMD-check
-# 
-# jobs:
-#   R-CMD-check:
-#     runs-on: ubuntu-latest
-#     env:
-#       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-#       R_KEEP_PKG_SOURCE: yes
-#     steps:
-#       - uses: actions/checkout@v3
-# 
-#       - uses: r-lib/actions/setup-pandoc@v2
-#         with:
-#           pandoc-version: '3.1.8'
-# 
-#       - uses: r-lib/actions/setup-r@v2
-#         with:
-#           r-version: latest
-#           use-public-rspm: true
-# 
-#       - uses: actions/setup-python@v4
-#         with:
-#           python-version: '3.10.16'
-# 
-#       - uses: r-lib/actions/setup-r-dependencies@v2
-#         with:
-#           extra-packages: rcmdcheck remotes reticulate
-#           cache-version: 3
-#           upgrade: 'TRUE'
-# 
-#       - name: setup env
-#         shell: Rscript {0}
-#         run: |
-#           reticulate::install_miniconda()
-# 
-#           conda_path <- reticulate::conda_create(envname = "BertopicR",
-#             conda = paste0(reticulate::miniconda_path(), "/condabin/conda"),
-#             packages = c("bertopic==0.15.0", "numpy==1.24.3", "hdbscan==0.8.29",
-#               "umap-learn==0.5.3", "pandas==2.0.2", "scikit-learn==1.2.2",
-#               "pytorch==2.0.0","tqdm==4.65.0", "sentence-transformers==2.2.2",
-#               "plotly==5.15.0", "openai==0.27.8", "spacy==3.6.1", "huggingface_hub==0.25.0", "transformers==4.47.0", "scipy==1.11.3"))
-# 
-#           print(conda_path)
-#           print(R.Version()$platform)
-# 
-#           writeLines(
-#             paste0("RETICULATE_PYTHON=", reticulate::virtualenv_python(conda_path)),
-#             Sys.getenv("GITHUB_ENV"))
-# 
-#       - name: Set OPENAI_API_KEY
-#         run: echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> $GITHUB_ENV
-#         env:
-#           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-# 
-#       - uses: r-lib/actions/check-r-package@v2
-#         with:
-#           args: 'c("--no-manual")'
-#           error-on: '"error"'
+      # Run R CMD check via the dedicated action
+      - name: Check R Package
+        uses: r-lib/actions/check-r-package@v2
+        with:
+          # Arguments passed to R CMD check
+          # --no-manual: Skips building the PDF manual (saves time, avoids LaTeX)
+          # Add other args like --no-build-vignettes if needed
+          args: '--no-manual --as-cran' # --as-cran enables more checks but still respects error-on
+          # Control failure conditions:
+          # "error": Fail only on errors.
+          # "warning": Fail on warnings and errors.
+          # "note": Fail on notes, warnings, and errors (like CRAN)
+          error-on: 'error' # Fail ONLY on errors, as requested
+          # Set check directory if needed (usually not)
+          # check-dir: "check"
