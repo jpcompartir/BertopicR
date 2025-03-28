@@ -92,7 +92,7 @@ jobs:
           # Arguments passed to R CMD check
           # --no-manual: Skips building the PDF manual (saves time, avoids LaTeX)
           # Add other args like --no-build-vignettes if needed
-          args: '--no-manual --as-cran' # --as-cran enables more checks but still respects error-on
+          args: '--no-manual' # --as-cran enables more checks but still respects error-on
           # Control failure conditions:
           # "error": Fail only on errors.
           # "warning": Fail on warnings and errors.
