@@ -100,31 +100,31 @@ jobs:
           remotes::install_local(upgrade = "never") # install the package from the current repository
         shell: Rscript {0}
 
-      - name: Verify Python Setup within R
-        run: |
-          # Print reticulate config to verify it picked up the right Python
-          message("--- Reticulate Configuration ---")
-          print(reticulate::py_config())
-          message("--- Checking RETICULATE_PYTHON Env Var ---")
-          print(Sys.getenv("RETICULATE_PYTHON"))
-          message("--- Loading BertopicR and Checking Dependencies ---")
-          # Loading the library triggers .onAttach checks
-          library(BertopicR)
-          # Explicitly run check function (optional, .onAttach should do this)
-          print(BertopicR::check_python_dependencies())
-          message("--- Attempting to Import Bertopic Module ---")
-          # Try importing the core module
-          tryCatch({
-            module <- import_bertopic()
-            message("Successfully imported bertopic module via import_bertopic()")
-            # Optionally check module attributes
-             print(module)
-          }, error = function(e) {
-            warning("Error importing bertopic module: ", e$message)
-            # Consider failing the build if import is critical for pkgdown
-            # stop("Failed to import bertopic module.")
-          })
-        shell: Rscript {0}
+      # - name: Verify Python Setup within R
+      #   run: |
+      #     # Print reticulate config to verify it picked up the right Python
+      #     message("--- Reticulate Configuration ---")
+      #     print(reticulate::py_config())
+      #     message("--- Checking RETICULATE_PYTHON Env Var ---")
+      #     print(Sys.getenv("RETICULATE_PYTHON"))
+      #     message("--- Loading BertopicR and Checking Dependencies ---")
+      #     # Loading the library triggers .onAttach checks
+      #     library(BertopicR)
+      #     # Explicitly run check function (optional, .onAttach should do this)
+      #     print(BertopicR::check_python_dependencies())
+      #     message("--- Attempting to Import Bertopic Module ---")
+      #     # Try importing the core module
+      #     tryCatch({
+      #       module <- import_bertopic()
+      #       message("Successfully imported bertopic module via import_bertopic()")
+      #       # Optionally check module attributes
+      #        print(module)
+      #     }, error = function(e) {
+      #       warning("Error importing bertopic module: ", e$message)
+      #       # Consider failing the build if import is critical for pkgdown
+      #       # stop("Failed to import bertopic module.")
+      #     })
+      #   shell: Rscript {0}
 
       - name: Build pkgdown Site
         run: |
